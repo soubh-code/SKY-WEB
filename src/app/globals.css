@@ -2088,6 +2088,9 @@ form button:hover {
     box-shadow:
       0 0 0 1px rgba(212, 168, 90, 0.08),
       0 18px 48px rgba(0, 0, 0, 0.38);
+    backface-visibility: hidden;
+    contain: paint;
+    transition: border-color 0.24s ease, box-shadow 0.24s ease;
   }
 
   .circular-gallery__item.is-active {
@@ -2098,22 +2101,7 @@ form button:hover {
       0 22px 56px rgba(0, 0, 0, 0.46);
   }
 
-  .circular-gallery__item::before {
-    inset: -4px;
-    opacity: 0.32;
-    box-shadow: 0 0 12px rgba(212, 168, 90, 0.1);
-  }
-
-  .circular-gallery__item::after {
-    opacity: 0.42;
-  }
-
-  .circular-gallery__item.is-active::before {
-    inset: -6px;
-    border-color: rgba(240, 216, 160, 0.28);
-    box-shadow: 0 0 18px rgba(212, 168, 90, 0.16);
-  }
-
+  .circular-gallery__item::before,
   .circular-gallery__item::after {
     display: none;
   }

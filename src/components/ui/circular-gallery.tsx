@@ -1,6 +1,6 @@
 "use client";
 
-import React, { HTMLAttributes } from "react";
+import React, { HTMLAttributes, useEffect, useState } from "react";
 
 const cn = (...classes: (string | undefined | null | false)[]) => classes.filter(Boolean).join(" ");
 
@@ -25,6 +25,24 @@ const getTowerOcclusion = (angle: number) => {
   return (angle - hiddenEnd) / (fadeOutEnd - hiddenEnd);
 };
 
+const getMobileOpacity = (relativeAngle: number, normalizedAngle: number) => {
+  const behindTower = relativeAngle >= 162 && relativeAngle <= 208;
+
+  if (behindTower) {
+    return 0;
+  }
+
+  if (normalizedAngle <= 100) {
+    return 1;
+  }
+
+  if (normalizedAngle <= 142) {
+    return 0.62;
+  }
+
+  return 0.34;
+};
+
 export interface GalleryItem {
   name: string;
   location: string;
@@ -46,6 +64,17 @@ interface CircularGalleryProps extends HTMLAttributes<HTMLDivElement> {
 const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
   ({ items, className, rotation = 0, radius = 560, activeIndex = 0, onItemSelect, ...props }, ref) => {
     const anglePerItem = 360 / items.length;
+    const [isMobileGallery, setIsMobileGallery] = useState(false);
+
+    useEffect(() => {
+      const mediaQuery = window.matchMedia("(max-width: 560px)");
+      const updateMobileState = () => setIsMobileGallery(mediaQuery.matches);
+
+      updateMobileState();
+      mediaQuery.addEventListener("change", updateMobileState);
+
+      return () => mediaQuery.removeEventListener("change", updateMobileState);
+    }, []);
 
     return (
       <div
@@ -63,7 +92,9 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
             const isActive = index === activeIndex;
             const depthOpacity = normalizedAngle <= 72 ? 1 : Math.max(0.18, 1 - (normalizedAngle - 72) / 86);
             const towerOcclusion = getTowerOcclusion(relativeAngle);
-            const opacity = depthOpacity * towerOcclusion;
+            const opacity = isMobileGallery
+              ? getMobileOpacity(relativeAngle, normalizedAngle)
+              : depthOpacity * towerOcclusion;
             const scale = isActive ? 1 : 0.84 + (1 - normalizedAngle / 180) * 0.1;
 
             return (
