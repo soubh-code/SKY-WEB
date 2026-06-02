@@ -226,9 +226,10 @@ function EntryTransition() {
     );
 
     let disposed = false;
+    const isTouchViewport = () => window.innerWidth <= 820 || window.matchMedia("(pointer: coarse)").matches;
 
     const resize = () => {
-      const ratio = window.devicePixelRatio || 1;
+      const ratio = isTouchViewport() ? Math.min(window.devicePixelRatio || 1, 1.6) : window.devicePixelRatio || 1;
       const { width, height } = canvas.getBoundingClientRect();
       canvas.width = Math.round(width * ratio);
       canvas.height = Math.round(height * ratio);
@@ -291,10 +292,11 @@ function EntryTransition() {
       ScrollTrigger.create({
         trigger: section,
         start: "top top",
-        end: "+=220%",
+        end: () => (isTouchViewport() ? "+=250%" : "+=220%"),
         pin: true,
-        scrub: 0.55,
+        scrub: isTouchViewport() ? 0.85 : 0.55,
         anticipatePin: 1,
+        invalidateOnRefresh: true,
         onUpdate: (self) => {
           const frame = Math.round(self.progress * (frameCount - 1));
           drawFrame(frame);
@@ -403,24 +405,28 @@ function CompletedProjects() {
   const [rotation, setRotation] = useState(0);
   const [paused, setPaused] = useState(false);
   const [galleryRadius, setGalleryRadius] = useState(410);
+  const [isTouchViewport, setIsTouchViewport] = useState(false);
   const anglePerProject = 360 / projects.length;
   const previousScrollProgressRef = useRef(0);
-  const rotationRef = useRef(0);
+  const targetRotationRef = useRef(0);
+  const displayRotationRef = useRef(0);
   const lastAutoFrameRef = useRef<number | null>(null);
   const resumeTimeoutRef = useRef<number | null>(null);
+  const scrollIdleTimeoutRef = useRef<number | null>(null);
 
   const getActiveProject = useCallback((nextRotation: number) => {
     const normalized = ((-nextRotation % 360) + 360) % 360;
     return Math.round(normalized / anglePerProject) % projects.length;
   }, [anglePerProject]);
 
-  const rotateBy = useCallback((delta: number) => {
-    setRotation((value) => {
-      const nextRotation = value + delta;
-      rotationRef.current = nextRotation;
-      setActive(getActiveProject(nextRotation));
-      return nextRotation;
-    });
+  const rotateBy = useCallback((delta: number, immediate = false) => {
+    targetRotationRef.current += delta;
+
+    if (immediate) {
+      displayRotationRef.current = targetRotationRef.current;
+      setRotation(displayRotationRef.current);
+      setActive(getActiveProject(displayRotationRef.current));
+    }
   }, [getActiveProject]);
 
   const pauseBriefly = useCallback(() => {
@@ -445,18 +451,31 @@ function CompletedProjects() {
           previousScrollProgressRef.current = self.progress;
 
           if (deltaProgress > 0) {
-            rotateBy(deltaProgress * -360);
+            if (isTouchViewport) {
+              setPaused(true);
+              if (scrollIdleTimeoutRef.current) {
+                window.clearTimeout(scrollIdleTimeoutRef.current);
+              }
+              scrollIdleTimeoutRef.current = window.setTimeout(() => setPaused(false), 650);
+            }
+
+            rotateBy(deltaProgress * (isTouchViewport ? -180 : -360));
           }
         },
       });
     }, section);
 
-    return () => ctx.revert();
-  }, [rotateBy]);
+    return () => {
+      ctx.revert();
+      if (scrollIdleTimeoutRef.current) {
+        window.clearTimeout(scrollIdleTimeoutRef.current);
+      }
+    };
+  }, [isTouchViewport, rotateBy]);
 
   useEffect(() => {
     let frameId = 0;
-    const degreesPerMs = anglePerProject / 3000;
+    const degreesPerMs = anglePerProject / (isTouchViewport ? 5200 : 3000);
 
     const animate = (time: number) => {
       if (lastAutoFrameRef.current === null) {
@@ -467,9 +486,12 @@ function CompletedProjects() {
       lastAutoFrameRef.current = time;
 
       if (!paused) {
-        rotateBy(-deltaTime * degreesPerMs);
+        targetRotationRef.current -= deltaTime * degreesPerMs;
       }
 
+      displayRotationRef.current += (targetRotationRef.current - displayRotationRef.current) * (isTouchViewport ? 0.055 : 0.12);
+      setRotation(displayRotationRef.current);
+      setActive(getActiveProject(displayRotationRef.current));
       frameId = window.requestAnimationFrame(animate);
     };
 
@@ -482,10 +504,12 @@ function CompletedProjects() {
         window.clearTimeout(resumeTimeoutRef.current);
       }
     };
-  }, [anglePerProject, paused, rotateBy]);
+  }, [anglePerProject, getActiveProject, isTouchViewport, paused]);
 
   useEffect(() => {
     const syncRadius = () => {
+      setIsTouchViewport(window.innerWidth <= 820 || window.matchMedia("(pointer: coarse)").matches);
+
       if (window.innerWidth <= 560) {
         setGalleryRadius(218);
         return;
@@ -589,6 +613,7 @@ function CompletedProjects() {
 function OngoingProjects() {
   const [active, setActive] = useState(2);
   const icons = [Home, Building2, Sparkles, Waves, MapPin];
+  const activateProject = (index: number) => setActive((current) => (current === index ? current : index));
 
   return (
     <section className="ongoing" data-nav-section="our-projects">
@@ -622,13 +647,16 @@ function OngoingProjects() {
           <motion.button
             key={project.name}
             className={`ongoing-card ${active === index ? "is-active" : ""}`}
-            onMouseEnter={() => setActive(index)}
-            onFocus={() => setActive(index)}
-            variants={{
-              hidden: { opacity: 0, x: -56, scale: 0.94, filter: "blur(14px)" },
-              visible: { opacity: 1, x: 0, scale: 1, filter: "blur(0px)" },
+            onPointerEnter={(event) => {
+              if (event.pointerType !== "touch") activateProject(index);
             }}
-            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+            onClick={() => activateProject(index)}
+            onFocus={() => activateProject(index)}
+            variants={{
+              hidden: { opacity: 0, x: -32, scale: 0.97 },
+              visible: { opacity: 1, x: 0, scale: 1 },
+            }}
+            transition={{ duration: 0.64, ease: [0.22, 1, 0.36, 1] }}
           >
             <span
               className="ongoing-card__image"
@@ -688,7 +716,7 @@ function About() {
       </div>
       <i className="vertical-rule" />
       <div className="about__image">
-        <Image src="/assets/section-5-master-bedroom.jpg" alt="Luxury villa master bedroom" fill />
+        <Image src="/assets/section-2.png" alt="Luxury villa master bedroom" fill sizes="(max-width: 820px) 100vw, 42vw" priority={false} />
       </div>
     </section>
   );

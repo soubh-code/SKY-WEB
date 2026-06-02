@@ -726,7 +726,7 @@ h2 {
     0 0 0 1px rgba(212, 168, 90, 0.18),
     0 0 34px rgba(212, 168, 90, 0.16),
     0 28px 90px rgba(0, 0, 0, 0.42);
-  transition: opacity 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease, transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
   will-change: transform, opacity;
 }
 
@@ -1170,7 +1170,7 @@ h2 {
 
 .ongoing-card {
   position: relative;
-  flex: 1 1 0%;
+  flex: 0 0 11%;
   min-width: 70px;
   overflow: hidden;
   border: 0;
@@ -1180,12 +1180,12 @@ h2 {
   color: var(--ivory);
   cursor: pointer;
   transform: translateZ(0);
-  transition: flex 0.56s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.32s ease;
-  will-change: flex;
+  transition: flex-basis 0.48s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.28s ease;
+  will-change: flex-basis;
 }
 
 .ongoing-card.is-active {
-  flex: 7 1 0%;
+  flex-basis: 56%;
   box-shadow: inset 0 0 0 1px rgba(240, 216, 160, 0.5), 0 0 56px rgba(212, 168, 90, 0.2);
   z-index: 5;
 }
@@ -1195,14 +1195,13 @@ h2 {
   inset: 0;
   background-size: cover;
   background-position: center;
-  filter: saturate(0.92) contrast(1.03) brightness(0.9);
-  transition: filter 0.42s ease, transform 0.62s cubic-bezier(0.22, 1, 0.36, 1);
+  filter: saturate(0.96) contrast(1.03) brightness(0.92);
+  transition: transform 0.48s cubic-bezier(0.22, 1, 0.36, 1);
   transform: translateZ(0) scale(1.07);
   will-change: transform;
 }
 
 .ongoing-card.is-active .ongoing-card__image {
-  filter: saturate(1.02) contrast(1.06) brightness(0.96);
   transform: translateZ(0) scale(1.02);
 }
 
@@ -1942,12 +1941,12 @@ form button:hover {
   .ongoing-card {
     min-width: 45px;
     min-height: 0;
-    flex: 0.85 1 0%;
+    flex-basis: 10%;
   }
 
   .ongoing-card.is-active {
     min-height: 0;
-    flex: 5.2 1 0%;
+    flex-basis: 60%;
   }
 
   .ongoing-card__content {
@@ -2203,11 +2202,11 @@ form button:hover {
 
   .ongoing-card {
     min-width: 34px;
-    flex: 0.65 1 0%;
+    flex-basis: 8.5%;
   }
 
   .ongoing-card.is-active {
-    flex: 5.8 1 0%;
+    flex-basis: 66%;
   }
 
   .ongoing-card__content {
