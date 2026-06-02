@@ -2233,6 +2233,18 @@ form button:hover {
     backface-visibility: hidden;
     contain: paint;
     transition: border-color 0.24s ease, box-shadow 0.24s ease;
+    will-change: transform;
+  }
+
+  .circular-gallery__stage {
+    perspective: 1200px;
+  }
+
+  .circular-gallery__image-wrap,
+  .circular-gallery__shade,
+  .circular-gallery__content {
+    transform: translateZ(0);
+    backface-visibility: hidden;
   }
 
   .circular-gallery__item.is-active {

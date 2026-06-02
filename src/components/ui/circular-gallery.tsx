@@ -3,6 +3,7 @@
 import React, { HTMLAttributes, useEffect, useState } from "react";
 
 const cn = (...classes: (string | undefined | null | false)[]) => classes.filter(Boolean).join(" ");
+const roundTo = (value: number, precision = 100) => Math.round(value * precision) / precision;
 
 const getTowerOcclusion = (angle: number) => {
   const fadeInStart = 158;
@@ -96,6 +97,8 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
               ? getMobileOpacity(relativeAngle, normalizedAngle)
               : depthOpacity * towerOcclusion;
             const scale = isActive ? 1 : 0.84 + (1 - normalizedAngle / 180) * 0.1;
+            const displayAngle = isMobileGallery ? roundTo(itemAngle, 10) : itemAngle;
+            const displayScale = isMobileGallery ? roundTo(scale, 100) : scale;
 
             return (
               <button
@@ -106,7 +109,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                 onClick={() => onItemSelect?.(index)}
                 style={
                   {
-                    "--item-transform": `rotateY(${itemAngle}deg) translateZ(${radius}px) rotateY(${-itemAngle}deg) scale(${scale})`,
+                    "--item-transform": `rotateY(${displayAngle}deg) translateZ(${radius}px) rotateY(${-displayAngle}deg) scale(${displayScale})`,
                     "--item-opacity": opacity,
                     "--item-z": Math.round(1000 - normalizedAngle),
                     pointerEvents: opacity < 0.08 ? "none" : "auto",
