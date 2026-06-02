@@ -2156,6 +2156,34 @@ form button:hover {
   .circular-gallery__item {
     width: clamp(122px, 39vw, 148px);
     height: clamp(184px, 58vw, 224px);
+    border-color: rgba(240, 216, 160, 0.26);
+    box-shadow:
+      0 0 0 1px rgba(212, 168, 90, 0.08),
+      0 18px 48px rgba(0, 0, 0, 0.38);
+  }
+
+  .circular-gallery__item.is-active {
+    border-color: rgba(240, 216, 160, 0.52);
+    box-shadow:
+      0 0 0 1px rgba(240, 216, 160, 0.16),
+      0 0 24px rgba(212, 168, 90, 0.16),
+      0 22px 56px rgba(0, 0, 0, 0.46);
+  }
+
+  .circular-gallery__item::before {
+    inset: -4px;
+    opacity: 0.32;
+    box-shadow: 0 0 12px rgba(212, 168, 90, 0.1);
+  }
+
+  .circular-gallery__item::after {
+    opacity: 0.42;
+  }
+
+  .circular-gallery__item.is-active::before {
+    inset: -6px;
+    border-color: rgba(240, 216, 160, 0.28);
+    box-shadow: 0 0 18px rgba(212, 168, 90, 0.16);
   }
 
   .circular-gallery__content {

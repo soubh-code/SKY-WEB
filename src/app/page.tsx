@@ -410,6 +410,7 @@ function CompletedProjects() {
   const previousScrollProgressRef = useRef(0);
   const targetRotationRef = useRef(0);
   const displayRotationRef = useRef(0);
+  const activeRef = useRef(0);
   const lastAutoFrameRef = useRef<number | null>(null);
   const resumeTimeoutRef = useRef<number | null>(null);
   const scrollIdleTimeoutRef = useRef<number | null>(null);
@@ -422,10 +423,12 @@ function CompletedProjects() {
   const rotateBy = useCallback((delta: number, immediate = false) => {
     targetRotationRef.current += delta;
 
-    if (immediate) {
-      displayRotationRef.current = targetRotationRef.current;
-      setRotation(displayRotationRef.current);
-      setActive(getActiveProject(displayRotationRef.current));
+      if (immediate) {
+        displayRotationRef.current = targetRotationRef.current;
+        setRotation(displayRotationRef.current);
+      const nextActive = getActiveProject(displayRotationRef.current);
+      activeRef.current = nextActive;
+      setActive(nextActive);
     }
   }, [getActiveProject]);
 
@@ -459,7 +462,7 @@ function CompletedProjects() {
               scrollIdleTimeoutRef.current = window.setTimeout(() => setPaused(false), 650);
             }
 
-            rotateBy(deltaProgress * (isTouchViewport ? -180 : -360));
+            rotateBy(deltaProgress * -360);
           }
         },
       });
@@ -475,7 +478,7 @@ function CompletedProjects() {
 
   useEffect(() => {
     let frameId = 0;
-    const degreesPerMs = anglePerProject / (isTouchViewport ? 5200 : 3000);
+    const degreesPerMs = anglePerProject / 3000;
 
     const animate = (time: number) => {
       if (lastAutoFrameRef.current === null) {
@@ -489,9 +492,13 @@ function CompletedProjects() {
         targetRotationRef.current -= deltaTime * degreesPerMs;
       }
 
-      displayRotationRef.current += (targetRotationRef.current - displayRotationRef.current) * (isTouchViewport ? 0.055 : 0.12);
+      displayRotationRef.current += (targetRotationRef.current - displayRotationRef.current) * (isTouchViewport ? 0.11 : 0.12);
       setRotation(displayRotationRef.current);
-      setActive(getActiveProject(displayRotationRef.current));
+      const nextActive = getActiveProject(displayRotationRef.current);
+      if (nextActive !== activeRef.current) {
+        activeRef.current = nextActive;
+        setActive(nextActive);
+      }
       frameId = window.requestAnimationFrame(animate);
     };
 
