@@ -20,7 +20,7 @@ import {
   WalletCards,
 } from "lucide-react";
 import Image from "next/image";
-import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -735,6 +735,25 @@ function VirtualTours() {
     ["Greater Kailash Villa", "Cinematic room preview", "/assets/section-3.png"],
     ["South Extension Floor", "Immersive residence scan", "/assets/section-4.png"],
   ];
+  const handleTourCardMove = (event: MouseEvent<HTMLElement>) => {
+    if (!window.matchMedia("(hover: hover) and (min-width: 821px)").matches) {
+      return;
+    }
+
+    const card = event.currentTarget;
+    const rect = card.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    const rotateX = ((y - rect.height / 2) / (rect.height / 2)) * -7;
+    const rotateY = ((x - rect.width / 2) / (rect.width / 2)) * 7;
+
+    card.style.setProperty("--tour-rotate-x", `${rotateX.toFixed(2)}deg`);
+    card.style.setProperty("--tour-rotate-y", `${rotateY.toFixed(2)}deg`);
+  };
+  const handleTourCardLeave = (event: MouseEvent<HTMLElement>) => {
+    event.currentTarget.style.setProperty("--tour-rotate-x", "0deg");
+    event.currentTarget.style.setProperty("--tour-rotate-y", "0deg");
+  };
 
   return (
     <section id="virtual-tours" className="tour reveal-section">
@@ -744,13 +763,31 @@ function VirtualTours() {
       </div>
       <div className="tour-card-grid">
         {tours.map(([title, description, image]) => (
-          <article className="tour-card" key={title}>
+          <article
+            className="tour-card"
+            key={title}
+            onMouseMove={handleTourCardMove}
+            onMouseLeave={handleTourCardLeave}
+          >
             <Image src={image} alt="" fill sizes="(max-width: 820px) 100vw, 33vw" />
             <span className="tour-card__shade" />
+            <div className="tour-card__glass">
+              <div>
+                <h3>{title}</h3>
+                <small>{description}</small>
+              </div>
+              <Sparkles aria-hidden="true" size={18} />
+            </div>
             <div className="tour-card__content">
               <small>{description}</small>
               <h3>{title}</h3>
               <strong>Unavailable</strong>
+            </div>
+            <div className="tour-card__dots" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+              <span />
             </div>
           </article>
         ))}

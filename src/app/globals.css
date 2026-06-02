@@ -1361,6 +1361,8 @@ h2 {
   border-radius: 8px;
   background: var(--card);
   box-shadow: 0 24px 72px rgba(0, 0, 0, 0.34);
+  --tour-rotate-x: 0deg;
+  --tour-rotate-y: 0deg;
 }
 
 .tour-card img {
@@ -1374,6 +1376,10 @@ h2 {
   background:
     linear-gradient(180deg, rgba(5, 11, 20, 0.04), rgba(5, 11, 20, 0.84)),
     linear-gradient(90deg, rgba(5, 11, 20, 0.56), transparent 62%);
+}
+
+.tour-card__glass {
+  display: none;
 }
 
 .tour-card__content {
@@ -1405,6 +1411,140 @@ h2 {
   font-size: 0.72rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
+}
+
+.tour-card__dots {
+  display: none;
+}
+
+@media (hover: hover) and (min-width: 821px) {
+  .tour-card-grid {
+    perspective: 1400px;
+  }
+
+  .tour-card {
+    min-height: 500px;
+    border-color: rgba(240, 216, 160, 0.32);
+    background:
+      linear-gradient(145deg, rgba(17, 31, 48, 0.78), rgba(5, 11, 20, 0.9)),
+      var(--card);
+    box-shadow:
+      0 0 0 1px rgba(212, 168, 90, 0.14),
+      0 0 34px rgba(87, 161, 255, 0.1),
+      0 34px 92px rgba(0, 0, 0, 0.42);
+    transform: perspective(1000px) rotateX(var(--tour-rotate-x)) rotateY(var(--tour-rotate-y)) translateZ(0);
+    transform-style: preserve-3d;
+    transition: transform 0.16s ease-out, border-color 0.28s ease, box-shadow 0.28s ease;
+    will-change: transform;
+  }
+
+  .tour-card:hover {
+    border-color: rgba(240, 216, 160, 0.62);
+    box-shadow:
+      0 0 0 1px rgba(240, 216, 160, 0.22),
+      0 0 26px rgba(212, 168, 90, 0.22),
+      0 0 58px rgba(87, 161, 255, 0.16),
+      0 42px 110px rgba(0, 0, 0, 0.5);
+  }
+
+  .tour-card img {
+    transform: translateZ(-20px) scale(1.08);
+    transition: transform 0.35s ease;
+  }
+
+  .tour-card:hover img {
+    transform: translateZ(-20px) scale(1.12);
+  }
+
+  .tour-card__shade {
+    background:
+      radial-gradient(circle at 78% 18%, rgba(87, 161, 255, 0.2), transparent 16rem),
+      linear-gradient(180deg, rgba(5, 11, 20, 0.12), rgba(5, 11, 20, 0.9)),
+      linear-gradient(90deg, rgba(5, 11, 20, 0.5), transparent 62%);
+  }
+
+  .tour-card__glass {
+    position: absolute;
+    inset: 1.35rem 1.35rem auto;
+    z-index: 3;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 82px;
+    padding: 1rem;
+    border: 1px solid rgba(240, 216, 160, 0.18);
+    border-radius: 8px;
+    background:
+      linear-gradient(105deg, rgba(13, 25, 41, 0.62), rgba(5, 11, 20, 0.18) 58%, rgba(212, 168, 90, 0.14)),
+      rgba(245, 241, 232, 0.04);
+    box-shadow:
+      inset 0 1px 0 rgba(245, 241, 232, 0.12),
+      0 16px 40px rgba(0, 0, 0, 0.28);
+    backdrop-filter: blur(12px);
+    transform: translateZ(42px);
+  }
+
+  .tour-card__glass h3 {
+    margin: 0 0 0.28rem;
+    color: var(--ivory);
+    font-size: clamp(1.12rem, 1.25vw, 1.38rem);
+    line-height: 1.1;
+  }
+
+  .tour-card__glass small {
+    color: rgba(245, 241, 232, 0.72);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+  }
+
+  .tour-card__glass svg {
+    flex: 0 0 auto;
+    color: var(--gold-light);
+    filter: drop-shadow(0 0 10px rgba(212, 168, 90, 0.32));
+  }
+
+  .tour-card__content {
+    inset: 7.4rem auto auto 1.35rem;
+    transform: translateZ(52px);
+  }
+
+  .tour-card__content small,
+  .tour-card__content h3 {
+    display: none;
+  }
+
+  .tour-card__content strong {
+    min-height: 38px;
+    border-color: rgba(240, 216, 160, 0.28);
+    background: rgba(5, 11, 20, 0.48);
+    box-shadow:
+      inset 0 1px 0 rgba(245, 241, 232, 0.1),
+      0 0 22px rgba(212, 168, 90, 0.16);
+    backdrop-filter: blur(10px);
+  }
+
+  .tour-card__dots {
+    position: absolute;
+    left: 50%;
+    bottom: 1.35rem;
+    z-index: 3;
+    display: flex;
+    gap: 0.42rem;
+    transform: translateX(-50%) translateZ(45px);
+  }
+
+  .tour-card__dots span {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(245, 241, 232, 0.36);
+  }
+
+  .tour-card__dots span:first-child {
+    background: var(--gold-light);
+    box-shadow: 0 0 12px rgba(212, 168, 90, 0.42);
+  }
 }
 
 .blogs {
