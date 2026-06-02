@@ -1,7 +1,6 @@
 "use client";
 
 import { CircularGallery, GalleryItem } from "@/components/ui/circular-gallery";
-import { InteractiveTourCard } from "@/components/ui/interactive-tour-card";
 import { motion } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -357,6 +356,7 @@ function ServicesPanel() {
   useEffect(() => {
     const container = cardsRef.current;
     if (!container) return;
+    if (window.innerWidth <= 820 || window.matchMedia("(pointer: coarse)").matches) return;
 
     const syncPointer = (event: PointerEvent) => {
       container.querySelectorAll<HTMLElement>(".service-card").forEach((card) => {
@@ -387,7 +387,7 @@ function ServicesPanel() {
       </div>
       <div className="service-cards" ref={cardsRef}>
         {cards.map(([Icon, title, copy]) => (
-          <article className="glass-card service-card" data-glow-card key={title}>
+          <article className="glass-card service-card" data-glow-card tabIndex={0} key={title}>
             <Icon size={46} />
             <h3>{title}</h3>
             <i />
@@ -744,13 +744,15 @@ function VirtualTours() {
       </div>
       <div className="tour-card-grid">
         {tours.map(([title, description, image]) => (
-          <InteractiveTourCard
-            key={title}
-            title={title}
-            description={description}
-            image={image}
-            status="Unavailable"
-          />
+          <article className="tour-card" key={title}>
+            <Image src={image} alt="" fill sizes="(max-width: 820px) 100vw, 33vw" />
+            <span className="tour-card__shade" />
+            <div className="tour-card__content">
+              <small>{description}</small>
+              <h3>{title}</h3>
+              <strong>Unavailable</strong>
+            </div>
+          </article>
         ))}
       </div>
     </section>
@@ -883,7 +885,7 @@ export default function HomePage() {
     const ctx = gsap.context(() => {
       gsap.from(".site-header", { y: -26, autoAlpha: 0, duration: 1.1, ease: "power3.out" });
       gsap.utils.toArray<HTMLElement>(".reveal-section").forEach((section) => {
-        gsap.from(section.querySelectorAll("h2, .eyebrow, .section-copy, .glass-card, .ongoing-card, .interactive-tour-card"), {
+        gsap.from(section.querySelectorAll("h2, .eyebrow, .section-copy, .glass-card, .ongoing-card"), {
           y: 38,
           autoAlpha: 0,
           stagger: 0.08,
