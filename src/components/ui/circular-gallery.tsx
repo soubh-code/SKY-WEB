@@ -44,6 +44,19 @@ const getMobileOpacity = (relativeAngle: number, normalizedAngle: number) => {
   return 0.34;
 };
 
+const getMobileTransform = (relativeAngle: number, radius: number, isActive: boolean) => {
+  const radians = (relativeAngle * Math.PI) / 180;
+  const depth = (Math.cos(radians) + 1) / 2;
+  const x = roundTo(Math.sin(radians) * radius * 0.92, 10);
+  const y = roundTo((1 - depth) * 20, 10);
+  const scale = roundTo(isActive ? 1 : 0.82 + depth * 0.16, 1000);
+
+  return {
+    transform: `translate3d(${x}px, ${y}px, 0) scale(${scale})`,
+    zIndex: Math.round(800 + depth * 220),
+  };
+};
+
 export interface GalleryItem {
   name: string;
   location: string;
@@ -99,6 +112,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
             const scale = isActive ? 1 : 0.84 + (1 - normalizedAngle / 180) * 0.1;
             const displayAngle = isMobileGallery ? roundTo(itemAngle, 10) : itemAngle;
             const displayScale = isMobileGallery ? roundTo(scale, 100) : scale;
+            const mobileTransform = isMobileGallery ? getMobileTransform(relativeAngle, radius, isActive) : null;
 
             return (
               <button
@@ -109,9 +123,9 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                 onClick={() => onItemSelect?.(index)}
                 style={
                   {
-                    "--item-transform": `rotateY(${displayAngle}deg) translateZ(${radius}px) rotateY(${-displayAngle}deg) scale(${displayScale})`,
+                    "--item-transform": mobileTransform?.transform ?? `rotateY(${displayAngle}deg) translateZ(${radius}px) rotateY(${-displayAngle}deg) scale(${displayScale})`,
                     "--item-opacity": opacity,
-                    "--item-z": Math.round(1000 - normalizedAngle),
+                    "--item-z": mobileTransform?.zIndex ?? Math.round(1000 - normalizedAngle),
                     pointerEvents: opacity < 0.08 ? "none" : "auto",
                   } as React.CSSProperties
                 }
