@@ -220,7 +220,7 @@ function EntryTransition() {
     const context = canvas.getContext("2d");
     if (!context) return;
 
-    const frameCount = 48;
+    const frameCount = 60;
     const framePaths = Array.from(
       { length: frameCount },
       (_, index) => `/assets/entry-frames/frame-${String(index).padStart(3, "0")}.webp`,
@@ -252,7 +252,7 @@ function EntryTransition() {
       return !("complete" in image) || image.complete;
     };
 
-    const drawCover = (image: HTMLImageElement | ImageBitmap) => {
+    const drawCover = (image: HTMLImageElement | ImageBitmap, alpha = 1) => {
       const size = getFrameSize(image);
       if (!size.width || !size.height) return;
       const { width, height } = canvas.getBoundingClientRect();
@@ -263,17 +263,30 @@ function EntryTransition() {
       const y = (height - drawHeight) / 2;
       context.imageSmoothingEnabled = true;
       context.imageSmoothingQuality = isTouchViewport() ? "medium" : "high";
-      context.clearRect(0, 0, width, height);
+      context.globalAlpha = alpha;
       context.drawImage(image, x, y, drawWidth, drawHeight);
+      context.globalAlpha = 1;
     };
 
     const drawFrame = (index: number) => {
-      const frame = Math.max(0, Math.min(frameCount - 1, index));
-      if (frame === currentFrameRef.current) return;
-      const image = framesRef.current[frame];
-      if (!isFrameReady(image)) return;
-      currentFrameRef.current = frame;
-      drawCover(image);
+      const framePosition = Math.max(0, Math.min(frameCount - 1, index));
+      if (Math.abs(framePosition - currentFrameRef.current) < 0.001) return;
+
+      const lowerFrame = Math.floor(framePosition);
+      const upperFrame = Math.min(frameCount - 1, lowerFrame + 1);
+      const blend = framePosition - lowerFrame;
+      const lowerImage = framesRef.current[lowerFrame];
+      const upperImage = framesRef.current[upperFrame];
+      if (!isFrameReady(lowerImage)) return;
+
+      const { width, height } = canvas.getBoundingClientRect();
+      context.clearRect(0, 0, width, height);
+      currentFrameRef.current = framePosition;
+      drawCover(lowerImage, 1);
+
+      if (blend > 0.01 && isFrameReady(upperImage)) {
+        drawCover(upperImage, blend);
+      }
     };
 
     const scheduleFrame = (index: number) => {
@@ -341,11 +354,11 @@ function EntryTransition() {
         start: "top top",
         end: () => (isTouchViewport() ? "+=250%" : "+=220%"),
         pin: true,
-        scrub: isTouchViewport() ? 0.85 : 0.55,
+        scrub: isTouchViewport() ? 0.24 : 0.18,
         anticipatePin: 1,
         invalidateOnRefresh: true,
         onUpdate: (self) => {
-          const frame = Math.round(self.progress * (frameCount - 1));
+          const frame = self.progress * (frameCount - 1);
           scheduleFrame(frame);
 
           const copyAlpha = gsap.utils.clamp(0, 1, 1 - self.progress / 0.28);
