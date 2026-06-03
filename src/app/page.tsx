@@ -206,8 +206,10 @@ function EntryTransition() {
   const copyRef = useRef<HTMLDivElement>(null);
   const hintRef = useRef<HTMLDivElement>(null);
   const servicesRef = useRef<HTMLDivElement>(null);
-  const framesRef = useRef<HTMLImageElement[]>([]);
+  const framesRef = useRef<(HTMLImageElement | ImageBitmap)[]>([]);
   const currentFrameRef = useRef(-1);
+  const pendingFrameRef = useRef(0);
+  const drawRafRef = useRef<number | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -218,7 +220,7 @@ function EntryTransition() {
     const context = canvas.getContext("2d");
     if (!context) return;
 
-    const frameCount = 96;
+    const frameCount = 48;
     const framePaths = Array.from(
       { length: frameCount },
       (_, index) => `/assets/entry-frames/frame-${String(index).padStart(3, "0")}.webp`,
@@ -228,24 +230,39 @@ function EntryTransition() {
     const isTouchViewport = () => window.innerWidth <= 820 || window.matchMedia("(pointer: coarse)").matches;
 
     const resize = () => {
-      const ratio = isTouchViewport() ? Math.min(window.devicePixelRatio || 1, 1.6) : window.devicePixelRatio || 1;
+      const ratio = Math.min(window.devicePixelRatio || 1, isTouchViewport() ? 1.35 : 1.5);
       const { width, height } = canvas.getBoundingClientRect();
       canvas.width = Math.round(width * ratio);
       canvas.height = Math.round(height * ratio);
       context.setTransform(ratio, 0, 0, ratio, 0, 0);
       currentFrameRef.current = -1;
-      drawFrame(currentFrameRef.current < 0 ? 0 : currentFrameRef.current);
+      drawFrame(pendingFrameRef.current);
     };
 
-    const drawCover = (image: HTMLImageElement) => {
+    const getFrameSize = (image: HTMLImageElement | ImageBitmap) => {
+      if ("naturalWidth" in image) {
+        return { width: image.naturalWidth, height: image.naturalHeight };
+      }
+
+      return { width: image.width, height: image.height };
+    };
+
+    const isFrameReady = (image: HTMLImageElement | ImageBitmap | undefined) => {
+      if (!image) return false;
+      return !("complete" in image) || image.complete;
+    };
+
+    const drawCover = (image: HTMLImageElement | ImageBitmap) => {
+      const size = getFrameSize(image);
+      if (!size.width || !size.height) return;
       const { width, height } = canvas.getBoundingClientRect();
-      const scale = Math.max(width / image.naturalWidth, height / image.naturalHeight);
-      const drawWidth = image.naturalWidth * scale;
-      const drawHeight = image.naturalHeight * scale;
+      const scale = Math.max(width / size.width, height / size.height);
+      const drawWidth = size.width * scale;
+      const drawHeight = size.height * scale;
       const x = (width - drawWidth) / 2;
       const y = (height - drawHeight) / 2;
       context.imageSmoothingEnabled = true;
-      context.imageSmoothingQuality = "high";
+      context.imageSmoothingQuality = isTouchViewport() ? "medium" : "high";
       context.clearRect(0, 0, width, height);
       context.drawImage(image, x, y, drawWidth, drawHeight);
     };
@@ -254,17 +271,45 @@ function EntryTransition() {
       const frame = Math.max(0, Math.min(frameCount - 1, index));
       if (frame === currentFrameRef.current) return;
       const image = framesRef.current[frame];
-      if (!image?.complete) return;
+      if (!isFrameReady(image)) return;
       currentFrameRef.current = frame;
       drawCover(image);
+    };
+
+    const scheduleFrame = (index: number) => {
+      pendingFrameRef.current = Math.max(0, Math.min(frameCount - 1, index));
+      if (drawRafRef.current !== null) return;
+
+      drawRafRef.current = window.requestAnimationFrame(() => {
+        drawRafRef.current = null;
+        drawFrame(pendingFrameRef.current);
+      });
     };
 
     framesRef.current = framePaths.map((src, index) => {
       const image = new window.Image();
       image.decoding = "async";
       image.src = src;
-      image.onload = () => {
-        if (!disposed && index === 0) drawFrame(0);
+      image.onload = async () => {
+        if ("decode" in image) {
+          try {
+            await image.decode();
+          } catch {
+            // The load event already guarantees a drawable image in browsers that reject decode().
+          }
+        }
+
+        if ("createImageBitmap" in window) {
+          try {
+            framesRef.current[index] = await window.createImageBitmap(image);
+          } catch {
+            framesRef.current[index] = image;
+          }
+        }
+
+        if (!disposed && index === pendingFrameRef.current) {
+          scheduleFrame(index);
+        }
       };
       return image;
     });
@@ -273,12 +318,15 @@ function EntryTransition() {
     window.addEventListener("resize", resize);
 
     if (reduced) {
-      drawFrame(frameCount - 1);
+      scheduleFrame(frameCount - 1);
       gsap.set(copyRef.current, { autoAlpha: 0 });
       gsap.set(hintRef.current, { autoAlpha: 0 });
       gsap.set(servicesRef.current, { autoAlpha: 1, y: 0 });
       return () => {
         disposed = true;
+        if (drawRafRef.current !== null) {
+          window.cancelAnimationFrame(drawRafRef.current);
+        }
         window.removeEventListener("resize", resize);
       };
     }
@@ -298,11 +346,11 @@ function EntryTransition() {
         invalidateOnRefresh: true,
         onUpdate: (self) => {
           const frame = Math.round(self.progress * (frameCount - 1));
-          drawFrame(frame);
+          scheduleFrame(frame);
 
           const copyAlpha = gsap.utils.clamp(0, 1, 1 - self.progress / 0.28);
           const hintAlpha = gsap.utils.clamp(0, 1, 1 - self.progress / 0.36);
-          const servicesAlpha = gsap.utils.clamp(0, 1, (self.progress - 0.72) / 0.22);
+          const servicesAlpha = gsap.utils.clamp(0, 1, (self.progress - 0.58) / 0.16);
 
           gsap.set(copyRef.current, { autoAlpha: copyAlpha, y: -36 * (1 - copyAlpha) });
           gsap.set(hintRef.current, { autoAlpha: hintAlpha, y: -18 * (1 - hintAlpha) });
@@ -313,6 +361,14 @@ function EntryTransition() {
 
     return () => {
       disposed = true;
+      if (drawRafRef.current !== null) {
+        window.cancelAnimationFrame(drawRafRef.current);
+      }
+      framesRef.current.forEach((frame) => {
+        if ("close" in frame) {
+          frame.close();
+        }
+      });
       window.removeEventListener("resize", resize);
       ctx.revert();
     };
