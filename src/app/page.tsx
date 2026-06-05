@@ -698,8 +698,18 @@ function CompletedProjects() {
 
 function OngoingProjects() {
   const [active, setActive] = useState(2);
+  const [clickToExpand, setClickToExpand] = useState(false);
   const icons = [Home, Building2, Sparkles, Waves, MapPin];
   const activateProject = (index: number) => setActive((current) => (current === index ? current : index));
+
+  useEffect(() => {
+    const query = window.matchMedia("(max-width: 820px), (pointer: coarse)");
+    const syncMode = () => setClickToExpand(query.matches);
+
+    syncMode();
+    query.addEventListener("change", syncMode);
+    return () => query.removeEventListener("change", syncMode);
+  }, []);
 
   return (
     <section className="ongoing" data-nav-section="our-projects">
@@ -734,10 +744,11 @@ function OngoingProjects() {
             key={project.name}
             className={`ongoing-card ${active === index ? "is-active" : ""}`}
             onPointerEnter={(event) => {
-              if (event.pointerType !== "touch") activateProject(index);
+              if (!clickToExpand && event.pointerType !== "touch") activateProject(index);
             }}
             onClick={() => activateProject(index)}
             onFocus={() => activateProject(index)}
+            aria-pressed={active === index}
             variants={{
               hidden: { opacity: 0, x: -32, scale: 0.97 },
               visible: { opacity: 1, x: 0, scale: 1 },
