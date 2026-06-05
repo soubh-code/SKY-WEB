@@ -77,7 +77,11 @@ video {
   place-items: center;
   overflow: hidden;
   background: #03070d;
-  animation: loader-exit 0.8s ease 1.8s forwards;
+}
+
+.loader--ready {
+  pointer-events: none;
+  animation: loader-exit 0.8s ease forwards;
 }
 
 .loader__image {
@@ -306,20 +310,6 @@ video {
   border-radius: 999px;
   background: rgba(8, 17, 31, 0.7);
   color: var(--ivory);
-}
-
-.hero {
-  position: relative;
-  min-height: 100svh;
-  overflow: hidden;
-  background: #02060d;
-}
-
-.hero__image {
-  object-fit: cover;
-  object-position: center;
-  filter: saturate(0.95) brightness(0.88);
-  animation: cinematic-in 2.2s ease both;
 }
 
 .hero__shade {

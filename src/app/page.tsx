@@ -110,9 +110,9 @@ function Logo({ centered = false }: { centered?: boolean }) {
   );
 }
 
-function LuxuryLoader() {
+function LuxuryLoader({ ready = false }: { ready?: boolean }) {
   return (
-    <section className="loader" aria-label="Loading Sky Skrabers">
+    <section className={ready ? "loader loader--ready" : "loader"} aria-label="Loading Sky Skrabers">
       <Image src="/assets/loading-page.png" alt="" fill priority className="loader__image" />
       <div className="loader__veil" />
       <div className="loader__content">
@@ -200,7 +200,7 @@ function Header() {
   );
 }
 
-function EntryTransition() {
+function EntryTransition({ onReady }: { onReady?: () => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
   const copyRef = useRef<HTMLDivElement>(null);
@@ -227,7 +227,16 @@ function EntryTransition() {
     );
 
     let disposed = false;
+    let readyFrames = 0;
+    let readySignaled = false;
     const isTouchViewport = () => window.innerWidth <= 820 || window.matchMedia("(pointer: coarse)").matches;
+
+    const signalReady = () => {
+      if (readySignaled || readyFrames < frameCount) return;
+      readySignaled = true;
+      scheduleFrame(pendingFrameRef.current);
+      onReady?.();
+    };
 
     const resize = () => {
       const ratio = Math.min(window.devicePixelRatio || 1, isTouchViewport() ? 1.35 : 1.5);
@@ -252,7 +261,7 @@ function EntryTransition() {
       return !("complete" in image) || image.complete;
     };
 
-    const drawCover = (image: HTMLImageElement | ImageBitmap, alpha = 1) => {
+    const drawCover = (image: HTMLImageElement | ImageBitmap) => {
       const size = getFrameSize(image);
       if (!size.width || !size.height) return;
       const { width, height } = canvas.getBoundingClientRect();
@@ -263,30 +272,20 @@ function EntryTransition() {
       const y = (height - drawHeight) / 2;
       context.imageSmoothingEnabled = true;
       context.imageSmoothingQuality = isTouchViewport() ? "medium" : "high";
-      context.globalAlpha = alpha;
       context.drawImage(image, x, y, drawWidth, drawHeight);
-      context.globalAlpha = 1;
     };
 
     const drawFrame = (index: number) => {
-      const framePosition = Math.max(0, Math.min(frameCount - 1, index));
-      if (Math.abs(framePosition - currentFrameRef.current) < 0.001) return;
+      const frameIndex = Math.round(Math.max(0, Math.min(frameCount - 1, index)));
+      if (frameIndex === currentFrameRef.current) return;
 
-      const lowerFrame = Math.floor(framePosition);
-      const upperFrame = Math.min(frameCount - 1, lowerFrame + 1);
-      const blend = framePosition - lowerFrame;
-      const lowerImage = framesRef.current[lowerFrame];
-      const upperImage = framesRef.current[upperFrame];
-      if (!isFrameReady(lowerImage)) return;
+      const image = framesRef.current[frameIndex];
+      if (!isFrameReady(image)) return;
 
       const { width, height } = canvas.getBoundingClientRect();
       context.clearRect(0, 0, width, height);
-      currentFrameRef.current = framePosition;
-      drawCover(lowerImage, 1);
-
-      if (blend > 0.01 && isFrameReady(upperImage)) {
-        drawCover(upperImage, blend);
-      }
+      currentFrameRef.current = frameIndex;
+      drawCover(image);
     };
 
     const scheduleFrame = (index: number) => {
@@ -302,7 +301,6 @@ function EntryTransition() {
     framesRef.current = framePaths.map((src, index) => {
       const image = new window.Image();
       image.decoding = "async";
-      image.src = src;
       image.onload = async () => {
         if ("decode" in image) {
           try {
@@ -320,10 +318,13 @@ function EntryTransition() {
           }
         }
 
+        readyFrames += 1;
         if (!disposed && index === pendingFrameRef.current) {
           scheduleFrame(index);
         }
+        if (!disposed) signalReady();
       };
+      image.src = src;
       return image;
     });
 
@@ -354,7 +355,7 @@ function EntryTransition() {
         start: "top top",
         end: () => (isTouchViewport() ? "+=250%" : "+=220%"),
         pin: true,
-        scrub: isTouchViewport() ? 0.24 : 0.18,
+        scrub: true,
         anticipatePin: 1,
         invalidateOnRefresh: true,
         onUpdate: (self) => {
@@ -385,7 +386,7 @@ function EntryTransition() {
       window.removeEventListener("resize", resize);
       ctx.revert();
     };
-  }, []);
+  }, [onReady]);
 
   return (
     <section id="home" ref={sectionRef} className="entry-transition" aria-label="Entering Sky Skrabers">
@@ -969,9 +970,14 @@ function Footer() {
 
 export default function HomePage() {
   const [loading, setLoading] = useState(true);
+  const [heroReady, setHeroReady] = useState(false);
+
+  const handleHeroReady = useCallback(() => {
+    setHeroReady(true);
+  }, []);
 
   useEffect(() => {
-    const timeout = window.setTimeout(() => setLoading(false), 2200);
+    const fallback = window.setTimeout(() => setHeroReady(true), 12000);
     const lenis = new Lenis({ lerp: 0.08, smoothWheel: true });
     const raf = (time: number) => {
       lenis.raf(time);
@@ -979,10 +985,17 @@ export default function HomePage() {
     };
     requestAnimationFrame(raf);
     return () => {
-      window.clearTimeout(timeout);
+      window.clearTimeout(fallback);
       lenis.destroy();
     };
   }, []);
+
+  useEffect(() => {
+    if (!heroReady) return;
+
+    const timeout = window.setTimeout(() => setLoading(false), 850);
+    return () => window.clearTimeout(timeout);
+  }, [heroReady]);
 
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -1009,7 +1022,7 @@ export default function HomePage() {
     () => (
       <>
         <Header />
-        <EntryTransition />
+        <EntryTransition onReady={handleHeroReady} />
         <CompletedProjects />
         <OngoingProjects />
         <About />
@@ -1019,12 +1032,12 @@ export default function HomePage() {
         <Footer />
       </>
     ),
-    [],
+    [handleHeroReady],
   );
 
   return (
     <>
-      {loading && <LuxuryLoader />}
+      {loading && <LuxuryLoader ready={heroReady} />}
       <main>{main}</main>
       <a className="floating-contact" href="#contact-us" aria-label="Contact Sky Skrabers">
         <Sparkles size={18} />
