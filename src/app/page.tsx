@@ -30,6 +30,15 @@ const navTargets = navItems.map((item) => ({
   id: item.toLowerCase().replaceAll(" ", "-"),
 }));
 
+const cardImages = [
+  "/assets/card-images/card-01.avif",
+  "/assets/card-images/card-02.avif",
+  "/assets/card-images/card-03.avif",
+  "/assets/card-images/card-04.avif",
+  "/assets/card-images/card-05.jpg",
+  "/assets/card-images/card-06.jpg",
+] as const;
+
 const projects: GalleryItem[] = [
   {
     name: "Lajpat Nagar",
@@ -37,7 +46,7 @@ const projects: GalleryItem[] = [
     year: "2022",
     configuration: "3 BHK · 3 Floors",
     coordinates: "28.5672° N, 77.2430° E",
-    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1000&auto=format&fit=crop&q=80",
+    image: cardImages[0],
     imagePosition: "50% 55%",
   },
   {
@@ -46,7 +55,7 @@ const projects: GalleryItem[] = [
     year: "2023",
     configuration: "3 BHK · 3 Floors",
     coordinates: "28.5355° N, 77.2410° E",
-    image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1000&auto=format&fit=crop&q=80",
+    image: cardImages[1],
     imagePosition: "50% 56%",
   },
   {
@@ -55,7 +64,7 @@ const projects: GalleryItem[] = [
     year: "2023",
     configuration: "3 BHK · 3 Floors",
     coordinates: "28.5672° N, 77.2290° E",
-    image: "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1000&auto=format&fit=crop&q=80",
+    image: cardImages[2],
     imagePosition: "50% 50%",
   },
   {
@@ -64,7 +73,7 @@ const projects: GalleryItem[] = [
     year: "2024",
     configuration: "3 BHK · 3 Floors",
     coordinates: "28.5494° N, 77.2430° E",
-    image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1000&auto=format&fit=crop&q=80",
+    image: cardImages[3],
     imagePosition: "50% 55%",
   },
   {
@@ -73,7 +82,7 @@ const projects: GalleryItem[] = [
     year: "2024",
     configuration: "3 BHK · 3 Floors",
     coordinates: "28.5687° N, 77.2209° E",
-    image: "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=1000&auto=format&fit=crop&q=80",
+    image: cardImages[4],
     imagePosition: "50% 52%",
   },
   {
@@ -82,7 +91,7 @@ const projects: GalleryItem[] = [
     year: "2025",
     configuration: "3 BHK · 3 Floors",
     coordinates: "28.5603° N, 77.1633° E",
-    image: "https://images.unsplash.com/photo-1600573472592-401b489a3cdc?w=1000&auto=format&fit=crop&q=80",
+    image: cardImages[5],
     imagePosition: "50% 57%",
   },
 ];
@@ -220,16 +229,16 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
     const context = canvas.getContext("2d");
     if (!context) return;
 
-    const frameCount = 60;
-    const framePaths = Array.from(
-      { length: frameCount },
-      (_, index) => `/assets/entry-frames/frame-${String(index).padStart(3, "0")}.webp`,
-    );
-
     let disposed = false;
     let readyFrames = 0;
     let readySignaled = false;
     const isTouchViewport = () => window.innerWidth <= 820 || window.matchMedia("(pointer: coarse)").matches;
+    const frameCount = 72;
+    const frameFolder = isTouchViewport() ? "entry-frames-mobile" : "entry-frames";
+    const framePaths = Array.from(
+      { length: frameCount },
+      (_, index) => `/assets/${frameFolder}/frame-${String(index).padStart(3, "0")}.webp`,
+    );
 
     const signalReady = () => {
       if (readySignaled || readyFrames < frameCount) return;
@@ -353,7 +362,7 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
       ScrollTrigger.create({
         trigger: section,
         start: "top top",
-        end: () => (isTouchViewport() ? "+=250%" : "+=220%"),
+        end: () => (isTouchViewport() ? "+=175%" : "+=155%"),
         pin: true,
         scrub: true,
         anticipatePin: 1,
@@ -362,9 +371,9 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
           const frame = self.progress * (frameCount - 1);
           scheduleFrame(frame);
 
-          const copyAlpha = gsap.utils.clamp(0, 1, 1 - self.progress / 0.28);
-          const hintAlpha = gsap.utils.clamp(0, 1, 1 - self.progress / 0.36);
-          const servicesAlpha = gsap.utils.clamp(0, 1, (self.progress - 0.58) / 0.16);
+          const copyAlpha = gsap.utils.clamp(0, 1, 1 - self.progress / 0.23);
+          const hintAlpha = gsap.utils.clamp(0, 1, 1 - self.progress / 0.3);
+          const servicesAlpha = gsap.utils.clamp(0, 1, (self.progress - 0.48) / 0.14);
 
           gsap.set(copyRef.current, { autoAlpha: copyAlpha, y: -36 * (1 - copyAlpha) });
           gsap.set(hintRef.current, { autoAlpha: hintAlpha, y: -18 * (1 - hintAlpha) });
@@ -801,9 +810,9 @@ function About() {
 
 function VirtualTours() {
   const tours = [
-    ["Lajpat Nagar Residence", "Private 360 walkthrough", "/assets/section-2.png"],
-    ["Greater Kailash Villa", "Cinematic room preview", "/assets/section-3.png"],
-    ["South Extension Floor", "Immersive residence scan", "/assets/section-4.png"],
+    ["Lajpat Nagar Residence", "Private 360 walkthrough", cardImages[0]],
+    ["Greater Kailash Villa", "Cinematic room preview", cardImages[2]],
+    ["South Extension Floor", "Immersive residence scan", cardImages[4]],
   ];
   const handleTourCardMove = (event: MouseEvent<HTMLElement>) => {
     if (!window.matchMedia("(hover: hover) and (min-width: 821px)").matches) {
@@ -883,7 +892,7 @@ function Blogs() {
         {posts.map(([category, title], index) => (
           <article className="blog-card glass-card" key={title}>
             <div className="blog-card__image">
-              <Image src={index === 1 ? "/assets/section-4.png" : "/assets/section-3.png"} alt="" fill />
+              <Image src={cardImages[index + 3]} alt="" fill />
             </div>
             <span>{category}</span>
             <h3>{title}</h3>
