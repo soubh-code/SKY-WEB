@@ -1550,6 +1550,42 @@ h2 {
   gap: 1.5rem;
 }
 
+.blog-page {
+  min-height: 100svh;
+  background:
+    radial-gradient(circle at 70% 8%, rgba(87, 161, 255, 0.12), transparent 34rem),
+    linear-gradient(180deg, #02060d 0%, var(--background) 48%, #07101d 100%);
+}
+
+.blogs--page {
+  min-height: 100svh;
+  padding-top: clamp(8rem, 13vw, 12rem);
+}
+
+.blogs--page .section-heading {
+  margin-inline: auto;
+  text-align: center;
+}
+
+.blogs--page h1 {
+  margin: 0;
+  color: var(--ivory);
+  font-family: var(--font-cormorant), serif;
+  font-size: clamp(3rem, 7vw, 7rem);
+  font-weight: 600;
+  line-height: 0.92;
+}
+
+.blogs--page h1 span {
+  color: var(--gold-light);
+}
+
+.blog-grid--page {
+  width: min(1240px, 100%);
+  margin-inline: auto;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .blog-card {
   overflow: hidden;
   border-radius: 8px;
@@ -1816,6 +1852,25 @@ form button:hover {
 @media (max-width: 820px) {
   .site-header {
     grid-template-columns: 150px 1fr;
+  }
+
+  .blogs--page {
+    padding-top: 7.8rem;
+  }
+
+  .blogs--page .section-heading {
+    margin-bottom: 2.4rem;
+    text-align: left;
+  }
+
+  .blog-grid--page {
+    width: 100%;
+    max-width: 100%;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .blogs--page .blog-card {
+    min-width: 0;
   }
 
   .menu-button {
@@ -2100,6 +2155,10 @@ form button:hover {
 
   .nav {
     top: 72px;
+  }
+
+  .blogs--page h1 {
+    font-size: clamp(3rem, 15vw, 4.5rem);
   }
 
   .hero h1 {

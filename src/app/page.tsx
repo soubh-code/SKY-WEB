@@ -24,11 +24,15 @@ import { FormEvent, MouseEvent, useCallback, useEffect, useMemo, useRef, useStat
 
 gsap.registerPlugin(ScrollTrigger);
 
-const navItems = ["Home", "Our Projects", "About Us", "Virtual Tours", "Blogs", "Contact Us"];
-const navTargets = navItems.map((item) => ({
-  label: item,
-  id: item.toLowerCase().replaceAll(" ", "-"),
-}));
+const navItems = [
+  { label: "Home", id: "home", href: "/#home", section: true },
+  { label: "Our Projects", id: "our-projects", href: "/#our-projects", section: true },
+  { label: "About Us", id: "about-us", href: "/#about-us", section: true },
+  { label: "Virtual Tours", id: "virtual-tours", href: "/#virtual-tours", section: true },
+  { label: "Blogs", id: "blogs", href: "/blogs", section: false },
+  { label: "Contact Us", id: "contact-us", href: "/#contact-us", section: true },
+];
+const navTargets = navItems.filter((item) => item.section);
 
 const cardImages = [
   "/assets/card-images/card-01.avif",
@@ -188,13 +192,13 @@ function Header() {
         <Logo />
       </a>
       <nav className={open ? "nav nav--open" : "nav"} aria-label="Primary navigation">
-        {navTargets.map((item) => (
+        {navItems.map((item) => (
           <a
             key={item.id}
-            href={`#${item.id}`}
+            href={item.href}
             className={activeSection === item.id ? "is-active" : undefined}
             onClick={() => {
-              setActiveSection(item.id);
+              if (item.section) setActiveSection(item.id);
               setOpen(false);
             }}
           >
@@ -662,10 +666,10 @@ function CompletedProjects() {
 
       <motion.div
         className="gallery-shell"
-        initial={{ opacity: 0, y: 140, scale: 0.86, filter: "blur(22px)" }}
+        initial={{ opacity: 0, y: 92, scale: 0.9, filter: "blur(16px)" }}
         whileInView={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-        viewport={{ once: false, amount: 0.34 }}
-        transition={{ duration: 1.55, delay: 0.34, ease: [0.16, 1, 0.3, 1] }}
+        viewport={{ once: false, amount: 0.04 }}
+        transition={{ duration: 1.08, ease: [0.16, 1, 0.3, 1] }}
       >
         <CircularGallery items={projects} rotation={rotation} radius={galleryRadius} activeIndex={active} onItemSelect={goToProject} />
         <button className="gallery-arrow gallery-arrow--left" onClick={previousProject} aria-label="Previous completed project">
@@ -680,8 +684,8 @@ function CompletedProjects() {
         className="project-controls gallery-dots"
         initial={{ opacity: 0, y: 24 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: false, amount: 0.2 }}
-        transition={{ duration: 0.9, delay: 0.85, ease: [0.16, 1, 0.3, 1] }}
+        viewport={{ once: false, amount: 0.04 }}
+        transition={{ duration: 0.75, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
       >
         {projects.map((project, index) => (
           <button
@@ -886,35 +890,6 @@ function VirtualTours() {
   );
 }
 
-function Blogs() {
-  const posts = [
-    ["Architecture", "The Quiet Details That Make a Luxury Floor Feel Expensive"],
-    ["Real Estate", "Why South Delhi Builder Floors Continue to Hold Premium Value"],
-    ["Luxury Living", "Designing Homes Around Arrival, Privacy, and Light"],
-  ];
-
-  return (
-    <section id="blogs" className="blogs reveal-section">
-      <div className="section-heading">
-        <p className="eyebrow">Insights</p>
-        <h2>Measured Thought. Refined Living.</h2>
-      </div>
-      <div className="blog-grid">
-        {posts.map(([category, title], index) => (
-          <article className="blog-card glass-card" key={title}>
-            <div className="blog-card__image">
-              <Image src={cardImages[index + 3]} alt="" fill />
-            </div>
-            <span>{category}</span>
-            <h3>{title}</h3>
-            <p>Notes on construction quality, premium property decisions, and homes designed for a lasting impression.</p>
-          </article>
-        ))}
-      </div>
-    </section>
-  );
-}
-
 function Contact() {
   const [sent, setSent] = useState(false);
   const submit = (event: FormEvent<HTMLFormElement>) => {
@@ -977,8 +952,8 @@ function Footer() {
       <Logo />
       <nav>
         {navItems.map((item) => (
-          <a key={item} href={`#${item.toLowerCase().replaceAll(" ", "-")}`}>
-            {item}
+          <a key={item.id} href={item.href}>
+            {item.label}
           </a>
         ))}
       </nav>
@@ -1047,7 +1022,6 @@ export default function HomePage() {
         <OngoingProjects />
         <About />
         <VirtualTours />
-        <Blogs />
         <Contact />
         <Footer />
       </>
