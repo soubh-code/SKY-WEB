@@ -1668,6 +1668,77 @@ h2 {
   background: #07101d;
 }
 
+.blog-button-section {
+  display: grid;
+  min-height: clamp(210px, 24vw, 310px);
+  place-items: center;
+  padding: clamp(2.3rem, 5vw, 4.5rem) 1rem;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 48%, rgba(212, 168, 90, 0.14), transparent 20rem),
+    linear-gradient(180deg, #07101d 0%, #050b14 52%, var(--background) 100%);
+}
+
+.glow-blog-button {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  min-width: 156px;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  border: 0;
+  border-radius: 14px;
+  background: rgba(2, 6, 13, 0.96);
+  color: var(--ivory);
+  font-size: 0.82rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.24s ease, color 0.24s ease;
+}
+
+.glow-blog-button::before,
+.glow-blog-button::after {
+  position: absolute;
+  inset: -2px;
+  z-index: -1;
+  border-radius: 16px;
+  background: linear-gradient(
+    45deg,
+    var(--gold),
+    var(--gold-light),
+    rgba(87, 161, 255, 0.92),
+    rgba(240, 216, 160, 0.82),
+    var(--gold)
+  );
+  background-size: 360%;
+  content: "";
+  animation: brand-border-flow 12s linear infinite;
+}
+
+.glow-blog-button::after {
+  filter: blur(30px);
+  opacity: 0.5;
+}
+
+.glow-blog-button span,
+.glow-blog-button svg {
+  position: relative;
+  z-index: 1;
+}
+
+.glow-blog-button:hover {
+  color: var(--gold-light);
+  transform: translateY(-3px);
+}
+
+.glow-blog-button:hover::after {
+  opacity: 0.78;
+}
+
 .blog-gateway {
   min-height: 118svh;
   padding: clamp(2rem, 5vw, 4rem) clamp(1.1rem, 4vw, 4rem);
@@ -1791,7 +1862,7 @@ h2 {
 .blog-gateway__cards {
   position: relative;
   display: grid;
-  height: min(360px, 100%);
+  height: min(260px, 100%);
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.9rem;
   align-items: center;
@@ -1799,7 +1870,7 @@ h2 {
 
 .blog-gateway__card {
   position: relative;
-  height: clamp(260px, 30vw, 350px);
+  height: clamp(190px, 22vw, 260px);
   overflow: hidden;
   border: 1px solid rgba(240, 216, 160, 0.28);
   border-radius: 8px;
@@ -1847,7 +1918,7 @@ h2 {
 
 .blog-gateway__card strong {
   color: var(--ivory);
-  font-size: clamp(1rem, 1.2vw, 1.24rem);
+  font-size: clamp(0.82rem, 1vw, 1rem);
   line-height: 1.15;
 }
 
@@ -2106,6 +2177,18 @@ form button:hover {
   }
 }
 
+@keyframes brand-border-flow {
+  0% {
+    background-position: 0 0;
+  }
+  50% {
+    background-position: 360% 0;
+  }
+  100% {
+    background-position: 0 0;
+  }
+}
+
 @keyframes kontext-layer-one {
   from {
     opacity: 0;
@@ -2225,8 +2308,23 @@ form button:hover {
     grid-template-columns: 150px 1fr;
   }
 
+  .blog-page {
+    overflow-x: hidden;
+  }
+
   .blogs--page {
-    padding-top: 4.5rem;
+    padding: 4.5rem 1rem 4.8rem;
+  }
+
+  .blog-button-section {
+    min-height: 190px;
+    padding: 2.5rem 1rem;
+  }
+
+  .glow-blog-button {
+    min-width: 146px;
+    min-height: 46px;
+    font-size: 0.76rem;
   }
 
   .blogs--page .section-heading {
@@ -2245,27 +2343,31 @@ form button:hover {
   }
 
   .blog-gateway {
-    min-height: 106svh;
-    padding-top: 1.5rem;
-    padding-bottom: 1.5rem;
+    min-height: 112svh;
+    padding: 1.5rem 1rem 3.25rem;
   }
 
   .blog-gateway--page {
-    padding-top: 6.5rem;
+    padding-top: 8.7rem;
   }
 
   .container-scroll {
-    min-height: 106svh;
+    min-height: 112svh;
+    padding: 0;
+    align-items: start;
   }
 
   .container-scroll__card {
     height: auto;
-    min-height: 620px;
+    min-height: 0;
+    margin-top: 2.15rem;
   }
 
   .blog-gateway__panel {
     grid-template-columns: 1fr;
-    align-content: center;
+    gap: 1.5rem;
+    align-content: start;
+    padding: 1rem;
   }
 
   .blog-gateway__copy {
@@ -2274,17 +2376,27 @@ form button:hover {
   }
 
   .blog-gateway__meta {
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
   }
 
   .blog-gateway__cards {
-    height: 280px;
-    grid-template-columns: repeat(3, minmax(118px, 1fr));
-    gap: 0.65rem;
+    height: 220px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.45rem;
   }
 
   .blog-gateway__card {
-    height: 240px;
+    height: 220px;
+    min-height: 0;
+    transform: none;
+  }
+
+  .blog-gateway__card:nth-child(1),
+  .blog-gateway__card:nth-child(2),
+  .blog-gateway__card:nth-child(3) {
+    transform: none;
   }
 
   .menu-button {
@@ -2596,34 +2708,91 @@ form button:hover {
 
   .blogs--page h1,
   .blogs--page h2 {
-    font-size: clamp(3rem, 15vw, 4.5rem);
+    font-size: clamp(2.7rem, 13vw, 4rem);
+    line-height: 0.96;
   }
 
   .blog-gateway__heading h1,
   .blog-gateway__heading h2 {
-    font-size: clamp(3rem, 14vw, 4.8rem);
+    font-size: clamp(2.85rem, 13vw, 4.25rem);
+    line-height: 0.96;
+  }
+
+  .blog-gateway--page {
+    padding-top: 8.3rem;
+  }
+
+  .container-scroll {
+    min-height: 116svh;
   }
 
   .container-scroll__card {
-    min-height: 600px;
+    min-height: 0;
+    width: 100%;
+    margin-top: 2.35rem;
+    padding: 0.55rem;
   }
 
   .blog-gateway__cards {
-    height: 250px;
-    grid-template-columns: repeat(3, 124px);
-    justify-content: center;
+    height: 190px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .blog-gateway__card {
-    height: 220px;
+    height: 190px;
+    min-height: 0;
   }
 
   .blog-gateway__card div {
-    inset: auto 0.72rem 0.72rem;
+    inset: auto 0.45rem 0.5rem;
   }
 
   .blog-gateway__card strong {
-    font-size: 0.82rem;
+    font-size: 0.64rem;
+    line-height: 1.12;
+  }
+
+  .blog-gateway__card small {
+    font-size: 0.5rem;
+    letter-spacing: 0.08em;
+  }
+
+  .blog-gateway__copy p {
+    max-width: 100%;
+    font-size: 0.95rem;
+    line-height: 1.65;
+  }
+
+  .blog-gateway__meta {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  .blog-gateway__meta span {
+    padding: 0.5rem 0.65rem;
+    font-size: 0.58rem;
+    letter-spacing: 0.1em;
+  }
+
+  .blog-card span {
+    margin: 1rem 1rem 0.65rem;
+    font-size: 0.68rem;
+  }
+
+  .blog-card h3,
+  .blog-card p {
+    margin-inline: 1rem;
+  }
+
+  .blog-card h3 {
+    font-size: 1.45rem;
+  }
+
+  .blog-card p {
+    margin-bottom: 1.1rem;
+    font-size: 0.94rem;
+    line-height: 1.55;
   }
 
   .hero h1 {

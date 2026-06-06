@@ -1,6 +1,7 @@
 "use client";
 
 import { MouseEvent, ReactNode, useState } from "react";
+import { createPortal } from "react-dom";
 
 type RouteLoadingLinkProps = {
   href: string;
@@ -35,6 +36,26 @@ export function RouteLoadingLink({
   onNavigate,
 }: RouteLoadingLinkProps) {
   const [loading, setLoading] = useState(false);
+  const transition = (
+    <section className="route-kontext" aria-label={`Opening ${pageTitle}`}>
+      <article className="route-kontext__stage" aria-hidden="true">
+        <div className="route-kontext__layer route-kontext__layer--one route-kontext__layer--show">
+          <span />
+        </div>
+        <div className="route-kontext__layer route-kontext__layer--two">
+          <span />
+        </div>
+        <div className="route-kontext__layer route-kontext__layer--three">
+          <span />
+        </div>
+      </article>
+      <div className="route-kontext__content">
+        <LoaderLogo />
+        <p>Crafting Tomorrow...</p>
+        <strong>{pageTitle}</strong>
+      </div>
+    </section>
+  );
 
   const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.currentTarget.target === "_blank") {
@@ -54,26 +75,7 @@ export function RouteLoadingLink({
       <a className={className} href={href} aria-label={ariaLabel} onClick={handleClick}>
         {children}
       </a>
-      {loading && (
-        <section className="route-kontext" aria-label={`Opening ${pageTitle}`}>
-          <article className="route-kontext__stage" aria-hidden="true">
-            <div className="route-kontext__layer route-kontext__layer--one route-kontext__layer--show">
-              <span />
-            </div>
-            <div className="route-kontext__layer route-kontext__layer--two">
-              <span />
-            </div>
-            <div className="route-kontext__layer route-kontext__layer--three">
-              <span />
-            </div>
-          </article>
-          <div className="route-kontext__content">
-            <LoaderLogo />
-            <p>Crafting Tomorrow...</p>
-            <strong>{pageTitle}</strong>
-          </div>
-        </section>
-      )}
+      {loading && typeof document !== "undefined" ? createPortal(transition, document.body) : null}
     </>
   );
 }

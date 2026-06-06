@@ -897,6 +897,17 @@ function VirtualTours() {
   );
 }
 
+function BlogCta() {
+  return (
+    <section className="blog-button-section reveal-section" aria-label="Open Sky Skrabers blogs">
+      <RouteLoadingLink className="glow-blog-button" href="/blogs" pageTitle="Blogs" ariaLabel="Open Sky Skrabers blogs page">
+        <span>Blogs</span>
+        <ArrowRight size={18} />
+      </RouteLoadingLink>
+    </section>
+  );
+}
+
 function Contact() {
   const [sent, setSent] = useState(false);
   const submit = (event: FormEvent<HTMLFormElement>) => {
@@ -1035,6 +1046,7 @@ export default function HomePage() {
         <OngoingProjects />
         <About />
         <VirtualTours />
+        <BlogCta />
         <Contact />
         <Footer />
       </>

@@ -25,9 +25,9 @@ export function ContainerScroll({
     return () => window.removeEventListener("resize", syncViewport);
   }, []);
 
-  const rotate = useTransform(scrollYProgress, [0.08, 0.62], [18, 0]);
-  const scale = useTransform(scrollYProgress, [0.08, 0.62], isMobile ? [0.78, 0.96] : [1.04, 1]);
-  const translate = useTransform(scrollYProgress, [0.08, 0.62], [0, -80]);
+  const rotate = useTransform(scrollYProgress, [0.08, 0.62], isMobile ? [8, 0] : [18, 0]);
+  const scale = useTransform(scrollYProgress, [0.08, 0.62], isMobile ? [0.94, 1] : [1.04, 1]);
+  const translate = useTransform(scrollYProgress, [0.08, 0.62], isMobile ? [0, -34] : [0, -80]);
 
   return (
     <div className="container-scroll" ref={containerRef}>
