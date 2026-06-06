@@ -1,6 +1,8 @@
 "use client";
 
 import { CircularGallery, GalleryItem } from "@/components/ui/circular-gallery";
+import { RouteLoadingLink } from "@/components/RouteLoadingLink";
+import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { motion } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -126,7 +128,6 @@ function Logo({ centered = false }: { centered?: boolean }) {
 function LuxuryLoader({ ready = false }: { ready?: boolean }) {
   return (
     <section className={ready ? "loader loader--ready" : "loader"} aria-label="Loading Sky Skrabers">
-      <Image src="/assets/loading-page.png" alt="" fill priority className="loader__image" />
       <div className="loader__veil" />
       <div className="loader__content">
         <Logo centered />
@@ -192,19 +193,25 @@ function Header() {
         <Logo />
       </a>
       <nav className={open ? "nav nav--open" : "nav"} aria-label="Primary navigation">
-        {navItems.map((item) => (
-          <a
-            key={item.id}
-            href={item.href}
-            className={activeSection === item.id ? "is-active" : undefined}
-            onClick={() => {
-              if (item.section) setActiveSection(item.id);
-              setOpen(false);
-            }}
-          >
-            {item.label}
-          </a>
-        ))}
+        {navItems.map((item) =>
+          item.href === "/blogs" ? (
+            <RouteLoadingLink key={item.id} href={item.href} pageTitle={item.label} onNavigate={() => setOpen(false)}>
+              {item.label}
+            </RouteLoadingLink>
+          ) : (
+            <a
+              key={item.id}
+              href={item.href}
+              className={activeSection === item.id ? "is-active" : undefined}
+              onClick={() => {
+                if (item.section) setActiveSection(item.id);
+                setOpen(false);
+              }}
+            >
+              {item.label}
+            </a>
+          ),
+        )}
       </nav>
       <button className="menu-button" aria-label="Open navigation" onClick={() => setOpen((value) => !value)}>
         <Menu size={22} />
@@ -951,11 +958,17 @@ function Footer() {
     <footer className="footer">
       <Logo />
       <nav>
-        {navItems.map((item) => (
-          <a key={item.id} href={item.href}>
+        {navItems.map((item) =>
+          item.href === "/blogs" ? (
+            <RouteLoadingLink key={item.id} href={item.href} pageTitle={item.label}>
+              {item.label}
+            </RouteLoadingLink>
+          ) : (
+            <a key={item.id} href={item.href}>
             {item.label}
-          </a>
-        ))}
+            </a>
+          ),
+        )}
       </nav>
       <p>Built Spaces. Real Legacies.</p>
       <small>© 2026 Sky Skrabers. All rights reserved.</small>
@@ -1033,9 +1046,7 @@ export default function HomePage() {
     <>
       {loading && <LuxuryLoader ready={heroReady} />}
       <main>{main}</main>
-      <a className="floating-contact" href="#contact-us" aria-label="Contact Sky Skrabers">
-        <Sparkles size={18} />
-      </a>
+      <WhatsAppButton />
     </>
   );
 }
