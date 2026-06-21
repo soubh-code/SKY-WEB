@@ -38,6 +38,7 @@ const navTargets = navItems.filter((item) => item.section);
 const displayPhoneNumber = "+91 99999 97327";
 const skySkrabersAddress = "C 132, Block C, Lajpat Nagar II, Lajpat Nagar, New Delhi, Delhi 110024";
 const mapsEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(skySkrabersAddress)}&output=embed`;
+const HOME_RELOAD_PENDING_KEY = "sky-home-reload-pending";
 
 const cardImages = [
   "/assets/card-images/card-01.avif",
@@ -260,6 +261,10 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
       readySignaled = true;
       scheduleFrame(pendingFrameRef.current);
       onReady?.();
+      requestAnimationFrame(() => {
+        resize();
+        ScrollTrigger.refresh();
+      });
     };
 
     const resize = () => {
@@ -424,12 +429,30 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
       };
     }
 
-    const ctx = gsap.context(() => {
+    let entryTrigger: ScrollTrigger | null = null;
+
+    const updateEntryVisuals = (progress: number) => {
+      const frame = progress * (frameCount - 1);
+      scheduleFrame(frame);
+
+      const copyAlpha = gsap.utils.clamp(0, 1, 1 - progress / 0.23);
+      const hintAlpha = gsap.utils.clamp(0, 1, 1 - progress / 0.3);
+      const servicesAlpha = gsap.utils.clamp(0, 1, (progress - 0.48) / 0.14);
+
+      gsap.set(copyRef.current, { autoAlpha: copyAlpha, y: -36 * (1 - copyAlpha) });
+      gsap.set(hintRef.current, { autoAlpha: hintAlpha, y: -18 * (1 - hintAlpha) });
+      gsap.set(servicesRef.current, { autoAlpha: servicesAlpha, y: 44 * (1 - servicesAlpha) });
+    };
+
+    const createEntryTrigger = () => {
+      entryTrigger?.kill(true);
+      ScrollTrigger.getById("entry-transition-scroll")?.kill(true);
       gsap.set(copyRef.current, { autoAlpha: 1, y: 0 });
       gsap.set(hintRef.current, { autoAlpha: 1, y: 0 });
       gsap.set(servicesRef.current, { autoAlpha: 0, y: 44 });
 
-      ScrollTrigger.create({
+      entryTrigger = ScrollTrigger.create({
+        id: "entry-transition-scroll",
         trigger: section,
         start: "top top",
         end: () => (isTouchViewport() ? "+=175%" : "+=155%"),
@@ -437,23 +460,46 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
         scrub: true,
         anticipatePin: 1,
         invalidateOnRefresh: true,
-        onUpdate: (self) => {
-          const frame = self.progress * (frameCount - 1);
-          scheduleFrame(frame);
-
-          const copyAlpha = gsap.utils.clamp(0, 1, 1 - self.progress / 0.23);
-          const hintAlpha = gsap.utils.clamp(0, 1, 1 - self.progress / 0.3);
-          const servicesAlpha = gsap.utils.clamp(0, 1, (self.progress - 0.48) / 0.14);
-
-          gsap.set(copyRef.current, { autoAlpha: copyAlpha, y: -36 * (1 - copyAlpha) });
-          gsap.set(hintRef.current, { autoAlpha: hintAlpha, y: -18 * (1 - hintAlpha) });
-          gsap.set(servicesRef.current, { autoAlpha: servicesAlpha, y: 44 * (1 - servicesAlpha) });
-        },
+        onUpdate: (self) => updateEntryVisuals(self.progress),
       });
+    };
+
+    const ctx = gsap.context(() => {
+      createEntryTrigger();
     }, section);
+
+    const isHomeLanding = () => window.location.pathname === "/" && (!window.location.hash || window.location.hash === "#home");
+    const wasHistoryNavigation = () => {
+      const navigation = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
+      return navigation?.type === "back_forward";
+    };
+
+    const restoreEntryAnimation = (event?: PageTransitionEvent | PopStateEvent | HashChangeEvent) => {
+      if (document.visibilityState === "hidden" || !isHomeLanding()) return;
+      if (event?.type === "pageshow" && "persisted" in event && !event.persisted && !wasHistoryNavigation()) return;
+
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+        pendingFrameRef.current = 0;
+        currentFrameRef.current = -1;
+        resize();
+        createEntryTrigger();
+        scheduleFrame(0);
+        requestAnimationFrame(() => {
+          entryTrigger?.refresh();
+          entryTrigger?.update();
+          ScrollTrigger.refresh();
+        });
+      });
+    };
+
+    window.addEventListener("pageshow", restoreEntryAnimation);
+    window.addEventListener("popstate", restoreEntryAnimation);
+    window.addEventListener("hashchange", restoreEntryAnimation);
 
     return () => {
       disposed = true;
+      entryTrigger?.kill(true);
       if (drawRafRef.current !== null) {
         window.cancelAnimationFrame(drawRafRef.current);
       }
@@ -464,6 +510,9 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
       });
       avifDecoder?.close?.();
       window.removeEventListener("resize", resize);
+      window.removeEventListener("pageshow", restoreEntryAnimation);
+      window.removeEventListener("popstate", restoreEntryAnimation);
+      window.removeEventListener("hashchange", restoreEntryAnimation);
       ctx.revert();
     };
   }, [onReady]);
@@ -498,9 +547,24 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
 function ServicesPanel() {
   const cardsRef = useRef<HTMLDivElement>(null);
   const cards = [
-    [Home, "Construction", "From concept to completion, we build spaces that stand the test of time."],
-    [Building2, "Buy New Home", "Find your perfect home in our handpicked premium properties."],
-    [WalletCards, "Sell Property", "We help you sell your property quickly and at the best possible value."],
+    {
+      Icon: Home,
+      title: "Construction",
+      copy: "From concept to completion, we build spaces that stand the test of time.",
+      href: "/construction",
+    },
+    {
+      Icon: Building2,
+      title: "Buy New Home",
+      copy: "Find your perfect home in our handpicked premium properties.",
+      href: undefined,
+    },
+    {
+      Icon: WalletCards,
+      title: "Sell Property",
+      copy: "We help you sell your property quickly and at the best possible value.",
+      href: undefined,
+    },
   ] as const;
 
   useEffect(() => {
@@ -536,14 +600,32 @@ function ServicesPanel() {
         </p>
       </div>
       <div className="service-cards" ref={cardsRef}>
-        {cards.map(([Icon, title, copy]) => (
-          <article className="glass-card service-card" data-glow-card tabIndex={0} key={title}>
-            <Icon size={46} />
-            <h3>{title}</h3>
-            <i />
-            <p>{copy}</p>
-          </article>
-        ))}
+        {cards.map(({ Icon, title, copy, href }) => {
+          const card = (
+            <article className="glass-card service-card" data-glow-card tabIndex={href ? -1 : 0}>
+              <Icon size={46} />
+              <h3>{title}</h3>
+              <i />
+              <p>{copy}</p>
+            </article>
+          );
+
+          return href ? (
+            <RouteLoadingLink
+              key={title}
+              className="service-card-link"
+              href={href}
+              pageTitle={title}
+              ariaLabel="Open Sky Skrabers construction page"
+            >
+              {card}
+            </RouteLoadingLink>
+          ) : (
+            <div key={title} className="service-card-link">
+              {card}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -1076,6 +1158,26 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
+    const reloadHomeIfNeeded = () => {
+      if (window.location.pathname !== "/") return;
+      if (window.location.hash && window.location.hash !== "#home") return;
+      if (window.sessionStorage.getItem(HOME_RELOAD_PENDING_KEY) !== "1") return;
+
+      window.sessionStorage.removeItem(HOME_RELOAD_PENDING_KEY);
+      window.location.reload();
+    };
+
+    reloadHomeIfNeeded();
+    window.addEventListener("pageshow", reloadHomeIfNeeded);
+    window.addEventListener("popstate", reloadHomeIfNeeded);
+
+    return () => {
+      window.removeEventListener("pageshow", reloadHomeIfNeeded);
+      window.removeEventListener("popstate", reloadHomeIfNeeded);
+    };
+  }, []);
+
+  useEffect(() => {
     const fallback = window.setTimeout(() => setHeroReady(true), 12000);
     const lenis = new Lenis({ lerp: 0.08, smoothWheel: true });
     const raf = (time: number) => {
@@ -1095,6 +1197,33 @@ export default function HomePage() {
     const timeout = window.setTimeout(() => setLoading(false), 850);
     return () => window.clearTimeout(timeout);
   }, [heroReady]);
+
+  useEffect(() => {
+    const wasHistoryNavigation = () => {
+      const navigation = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
+      return navigation?.type === "back_forward";
+    };
+
+    if (wasHistoryNavigation()) {
+      requestAnimationFrame(() => {
+        setHeroReady(true);
+        setLoading(false);
+        ScrollTrigger.refresh();
+      });
+    }
+
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (!event.persisted && !wasHistoryNavigation()) return;
+      requestAnimationFrame(() => {
+        setHeroReady(true);
+        setLoading(false);
+        ScrollTrigger.refresh();
+      });
+    };
+
+    window.addEventListener("pageshow", handlePageShow);
+    return () => window.removeEventListener("pageshow", handlePageShow);
+  }, []);
 
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
