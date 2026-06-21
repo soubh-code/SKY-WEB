@@ -2046,6 +2046,14 @@ h2 {
   color: var(--body);
 }
 
+.contact-lines a {
+  transition: color 0.25s ease;
+}
+
+.contact-lines a:hover {
+  color: var(--gold-light);
+}
+
 form {
   display: grid;
   gap: 0.9rem;
@@ -2119,6 +2127,21 @@ form button:hover {
   font-size: 0.75rem;
 }
 
+.footer .footer-legal {
+  gap: 0.9rem 1.4rem;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.footer a {
+  transition: color 0.25s ease;
+}
+
+.footer a:hover {
+  color: var(--gold-light);
+}
+
 .footer p {
   margin: 0;
   color: var(--gold-light);
@@ -2126,6 +2149,53 @@ form button:hover {
 
 .footer small {
   color: var(--muted);
+}
+
+.legal-page {
+  min-height: 100dvh;
+  padding: clamp(6rem, 10vw, 8rem) 1rem 4rem;
+  background:
+    radial-gradient(circle at 78% 10%, rgba(87, 161, 255, 0.12), transparent 28rem),
+    linear-gradient(180deg, #02060d, var(--background));
+}
+
+.legal-panel {
+  width: min(920px, 100%);
+  margin: 0 auto;
+  border-radius: 8px;
+  padding: clamp(1.4rem, 4vw, 3rem);
+}
+
+.legal-back {
+  display: inline-flex;
+  margin-bottom: 2rem;
+  color: var(--gold-light);
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.legal-panel h1 {
+  margin: 0 0 1.2rem;
+  font-family: var(--font-cormorant), serif;
+  font-size: clamp(3rem, 8vw, 5.5rem);
+  line-height: 0.95;
+}
+
+.legal-panel h2 {
+  margin: 2rem 0 0.65rem;
+  font-family: var(--font-cormorant), serif;
+  font-size: clamp(1.7rem, 4vw, 2.5rem);
+}
+
+.legal-panel p {
+  max-width: 72ch;
+  color: var(--body);
+  line-height: 1.8;
+}
+
+.legal-panel a:not(.legal-back) {
+  color: var(--gold-light);
 }
 
 .floating-whatsapp {
@@ -2246,7 +2316,7 @@ form button:hover {
   }
 }
 
-@media (max-width: 1080px) {
+@media (max-width: 560px) {
   .site-header {
     grid-template-columns: 170px 1fr 48px;
   }
@@ -2303,7 +2373,43 @@ form button:hover {
   }
 }
 
-@media (max-width: 820px) {
+@media (min-width: 561px) and (max-width: 900px) and (orientation: portrait) {
+  .entry-transition__services {
+    padding-inline: clamp(1.5rem, 4vw, 2.5rem);
+  }
+
+  .entry-transition__services .section-grid {
+    width: min(720px, 100%);
+    grid-template-columns: 1fr;
+    gap: clamp(1.4rem, 3vw, 2.2rem);
+    align-items: center;
+  }
+
+  .entry-transition__services .section-grid > div:first-child {
+    max-width: 620px;
+  }
+
+  .entry-transition__services h2 {
+    font-size: clamp(3.4rem, 8vw, 5.4rem);
+  }
+
+  .entry-transition__services .section-copy {
+    max-width: 58ch;
+  }
+
+  .entry-transition__services .service-cards {
+    width: 100%;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(0.85rem, 2vw, 1.35rem);
+  }
+
+  .entry-transition__services .service-card {
+    min-height: 220px;
+    padding: 1.8rem 1rem;
+  }
+}
+
+@media (max-width: 560px) {
   .site-header {
     grid-template-columns: 150px 1fr;
   }

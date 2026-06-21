@@ -35,6 +35,9 @@ const navItems = [
   { label: "Contact Us", id: "contact-us", href: "/#contact-us", section: true },
 ];
 const navTargets = navItems.filter((item) => item.section);
+const displayPhoneNumber = "+91 99999 97327";
+const skySkrabersAddress = "C 132, Block C, Lajpat Nagar II, Lajpat Nagar, New Delhi, Delhi 110024";
+const mapsEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(skySkrabersAddress)}&output=embed`;
 
 const cardImages = [
   "/assets/card-images/card-01.avif",
@@ -221,12 +224,14 @@ function Header() {
 }
 
 function EntryTransition({ onReady }: { onReady?: () => void }) {
+  type EntryFrame = HTMLImageElement | ImageBitmap | VideoFrame;
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
   const copyRef = useRef<HTMLDivElement>(null);
   const hintRef = useRef<HTMLDivElement>(null);
   const servicesRef = useRef<HTMLDivElement>(null);
-  const framesRef = useRef<(HTMLImageElement | ImageBitmap)[]>([]);
+  const framesRef = useRef<EntryFrame[]>([]);
   const currentFrameRef = useRef(-1);
   const pendingFrameRef = useRef(0);
   const drawRafRef = useRef<number | null>(null);
@@ -243,13 +248,12 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
     let disposed = false;
     let readyFrames = 0;
     let readySignaled = false;
-    const isTouchViewport = () => window.innerWidth <= 820 || window.matchMedia("(pointer: coarse)").matches;
-    const frameCount = 72;
-    const frameFolder = isTouchViewport() ? "entry-frames-mobile" : "entry-frames";
-    const framePaths = Array.from(
-      { length: frameCount },
-      (_, index) => `/assets/${frameFolder}/frame-${String(index).padStart(3, "0")}.webp`,
-    );
+    let frameCount = 72;
+    let avifDecoder: ImageDecoder | null = null;
+    const isTouchViewport = () => window.innerWidth <= 560;
+    const isPhoneViewport = () => window.innerWidth <= 560;
+    const getEntryAnimationSrc = () =>
+      isPhoneViewport() ? "/assets/entry-scroll-phone.avif" : "/assets/entry-scroll-desktop.avif";
 
     const signalReady = () => {
       if (readySignaled || readyFrames < frameCount) return;
@@ -268,20 +272,23 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
       drawFrame(pendingFrameRef.current);
     };
 
-    const getFrameSize = (image: HTMLImageElement | ImageBitmap) => {
+    const getFrameSize = (image: EntryFrame) => {
       if ("naturalWidth" in image) {
         return { width: image.naturalWidth, height: image.naturalHeight };
+      }
+      if ("displayWidth" in image) {
+        return { width: image.displayWidth, height: image.displayHeight };
       }
 
       return { width: image.width, height: image.height };
     };
 
-    const isFrameReady = (image: HTMLImageElement | ImageBitmap | undefined) => {
+    const isFrameReady = (image: EntryFrame | undefined) => {
       if (!image) return false;
       return !("complete" in image) || image.complete;
     };
 
-    const drawCover = (image: HTMLImageElement | ImageBitmap) => {
+    const drawCover = (image: EntryFrame) => {
       const size = getFrameSize(image);
       if (!size.width || !size.height) return;
       const { width, height } = canvas.getBoundingClientRect();
@@ -318,7 +325,7 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
       });
     };
 
-    framesRef.current = framePaths.map((src, index) => {
+    const loadImageFrame = (src: string, index: number) => {
       const image = new window.Image();
       image.decoding = "async";
       image.onload = async () => {
@@ -346,6 +353,58 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
       };
       image.src = src;
       return image;
+    };
+
+    const loadStaticAvifFallback = (src: string) => {
+      frameCount = 1;
+      readyFrames = 0;
+      framesRef.current = [loadImageFrame(src, 0)];
+    };
+
+    const loadAnimatedAvifFrames = async (src: string) => {
+      const decoderConstructor = (window as unknown as { ImageDecoder?: typeof ImageDecoder }).ImageDecoder;
+
+      if (!decoderConstructor) {
+        loadStaticAvifFallback(src);
+        return;
+      }
+
+      const response = await fetch(src);
+      if (!response.ok || disposed) return;
+
+      const blob = await response.blob();
+      const data = await blob.arrayBuffer();
+      const decoder = new decoderConstructor({ data, type: blob.type || "image/avif" });
+      avifDecoder = decoder;
+      await decoder.tracks.ready;
+
+      const decodedFrameCount = decoder.tracks.selectedTrack?.frameCount ?? 0;
+      if (!decodedFrameCount || disposed) {
+        decoder.close?.();
+        avifDecoder = null;
+        loadStaticAvifFallback(src);
+        return;
+      }
+
+      frameCount = decodedFrameCount;
+      readyFrames = 0;
+      framesRef.current = new Array<EntryFrame>(frameCount);
+
+      for (let index = 0; index < frameCount; index += 1) {
+        if (disposed) return;
+        const { image } = await decoder.decode({ frameIndex: index });
+        framesRef.current[index] = image;
+        readyFrames += 1;
+        if (index === pendingFrameRef.current) {
+          scheduleFrame(index);
+        }
+        signalReady();
+      }
+    };
+
+    const entryAnimationSrc = getEntryAnimationSrc();
+    void loadAnimatedAvifFrames(entryAnimationSrc).catch(() => {
+      if (!disposed) loadStaticAvifFallback(entryAnimationSrc);
     });
 
     resize();
@@ -403,6 +462,7 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
           frame.close();
         }
       });
+      avifDecoder?.close?.();
       window.removeEventListener("resize", resize);
       ctx.revert();
     };
@@ -446,7 +506,7 @@ function ServicesPanel() {
   useEffect(() => {
     const container = cardsRef.current;
     if (!container) return;
-    if (window.innerWidth <= 820 || window.matchMedia("(pointer: coarse)").matches) return;
+    if (window.innerWidth <= 560) return;
 
     const syncPointer = (event: PointerEvent) => {
       container.querySelectorAll<HTMLElement>(".service-card").forEach((card) => {
@@ -605,15 +665,10 @@ function CompletedProjects() {
 
   useEffect(() => {
     const syncRadius = () => {
-      setIsTouchViewport(window.innerWidth <= 820 || window.matchMedia("(pointer: coarse)").matches);
+      setIsTouchViewport(window.innerWidth <= 560);
 
       if (window.innerWidth <= 560) {
         setGalleryRadius(218);
-        return;
-      }
-
-      if (window.innerWidth <= 820) {
-        setGalleryRadius(286);
         return;
       }
 
@@ -714,7 +769,7 @@ function OngoingProjects() {
   const activateProject = (index: number) => setActive((current) => (current === index ? current : index));
 
   useEffect(() => {
-    const query = window.matchMedia("(max-width: 820px), (pointer: coarse)");
+    const query = window.matchMedia("(max-width: 560px)");
     const syncMode = () => setClickToExpand(query.matches);
 
     syncMode();
@@ -925,19 +980,34 @@ function Contact() {
             <Building2 size={18} /> Sky Skrabers
           </p>
           <p>
-            <MapPin size={18} /> South Delhi, New Delhi
+            <MapPin size={18} />
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(skySkrabersAddress)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {skySkrabersAddress}
+            </a>
           </p>
           <p>
-            <Phone size={18} /> +91 98710 00000
+            <Phone size={18} /> {displayPhoneNumber}
           </p>
           <p>
             <Mail size={18} /> hello@skyskrabers.com
           </p>
         </div>
         <form onSubmit={submit}>
-          <input aria-label="Name" placeholder="Name" required />
-          <input aria-label="Phone" placeholder="Phone" required />
-          <input aria-label="Email" placeholder="Email" type="email" />
+          <input aria-label="Name" placeholder="Name" autoComplete="name" maxLength={80} required />
+          <input
+            aria-label="Phone"
+            placeholder="Phone"
+            autoComplete="tel"
+            inputMode="tel"
+            maxLength={20}
+            pattern="[0-9+() -]{7,20}"
+            required
+          />
+          <input aria-label="Email" placeholder="Email" type="email" autoComplete="email" maxLength={120} />
           <select aria-label="Requirement" defaultValue="">
             <option value="" disabled>
               Requirement
@@ -947,7 +1017,7 @@ function Contact() {
             <option>Sell Property</option>
             <option>Virtual Tour</option>
           </select>
-          <textarea aria-label="Message" placeholder="Message" rows={4} />
+          <textarea aria-label="Message" placeholder="Message" rows={4} maxLength={800} />
           <button type="submit">
             <Send size={18} /> {sent ? "Request Received" : "Submit"}
           </button>
@@ -955,9 +1025,11 @@ function Contact() {
       </div>
       <div className="map-panel glass-card">
         <iframe
-          title="Sky Skrabers South Delhi location"
-          src="https://www.google.com/maps?q=Greater%20Kailash%20New%20Delhi&output=embed"
+          title="Sky Skrabers Lajpat Nagar II location"
+          src={mapsEmbedUrl}
           loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+          sandbox="allow-scripts allow-same-origin allow-popups"
         />
       </div>
     </section>
@@ -980,6 +1052,14 @@ function Footer() {
             </a>
           ),
         )}
+      </nav>
+      <nav className="footer-legal" aria-label="Legal links">
+        <RouteLoadingLink href="/privacy-policy" pageTitle="Privacy Policy">
+          Privacy Policy
+        </RouteLoadingLink>
+        <RouteLoadingLink href="/terms-and-conditions" pageTitle="Terms and Conditions">
+          Terms & Conditions
+        </RouteLoadingLink>
       </nav>
       <p>Built Spaces. Real Legacies.</p>
       <small>© 2026 Sky Skrabers. All rights reserved.</small>

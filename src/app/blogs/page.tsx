@@ -122,6 +122,10 @@ function BlogFooter() {
           ),
         )}
       </nav>
+      <nav className="footer-legal" aria-label="Legal links">
+        <Link href="/privacy-policy">Privacy Policy</Link>
+        <Link href="/terms-and-conditions">Terms & Conditions</Link>
+      </nav>
       <p>Built Spaces. Real Legacies.</p>
       <small>© 2026 Sky Skrabers. All rights reserved.</small>
     </footer>
