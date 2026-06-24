@@ -40,8 +40,10 @@ const skySkrabersAddress = "Sky Skrabers, C-132, Lajpat Nagar 2, New Delhi, Delh
 const skySkrabersMapQuery = "Sky Skrabers Lajpat Nagar 2";
 const mapsEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(skySkrabersMapQuery)}&output=embed`;
 const HOME_RELOAD_PENDING_KEY = "sky-home-reload-pending";
-const PHONE_ENTRY_FRAME_COUNT = 72;
-const phoneEntryFrameSrc = (index: number) => `/assets/entry-phone-frames/${String(index).padStart(3, "0")}.webp`;
+const PHONE_ENTRY_FRAME_COUNT = 99;
+const PHONE_ENTRY_FRAME_VERSION = "20fps-99";
+const phoneEntryFrameSrc = (index: number) =>
+  `/assets/entry-phone-frames/${String(index).padStart(3, "0")}.webp?v=${PHONE_ENTRY_FRAME_VERSION}`;
 
 const cardImages = [
   "/assets/card-images/card-01.avif",
@@ -427,10 +429,14 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
       }
     };
 
-    const entryAnimationSrc = getEntryAnimationSrc();
-    void loadAnimatedAvifFrames(entryAnimationSrc).catch(() => {
-      if (!disposed) loadStaticAvifFallback(entryAnimationSrc);
-    });
+    if (isPhoneViewport()) {
+      loadPhoneFrameSequenceFallback();
+    } else {
+      const entryAnimationSrc = getEntryAnimationSrc();
+      void loadAnimatedAvifFrames(entryAnimationSrc).catch(() => {
+        if (!disposed) loadStaticAvifFallback(entryAnimationSrc);
+      });
+    }
 
     resize();
     window.addEventListener("resize", resize);
