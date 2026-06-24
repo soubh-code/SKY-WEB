@@ -40,6 +40,8 @@ const skySkrabersAddress = "Sky Skrabers, C-132, Lajpat Nagar 2, New Delhi, Delh
 const skySkrabersMapQuery = "Sky Skrabers Lajpat Nagar 2";
 const mapsEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(skySkrabersMapQuery)}&output=embed`;
 const HOME_RELOAD_PENDING_KEY = "sky-home-reload-pending";
+const PHONE_ENTRY_FRAME_COUNT = 72;
+const phoneEntryFrameSrc = (index: number) => `/assets/entry-phone-frames/${String(index).padStart(3, "0")}.webp`;
 
 const cardImages = [
   "/assets/card-images/card-01.avif",
@@ -335,6 +337,8 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
       const image = new window.Image();
       image.decoding = "async";
       image.onload = async () => {
+        framesRef.current[index] = image;
+
         if ("decode" in image) {
           try {
             await image.decode();
@@ -361,7 +365,22 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
       return image;
     };
 
+    const loadPhoneFrameSequenceFallback = () => {
+      frameCount = PHONE_ENTRY_FRAME_COUNT;
+      readyFrames = 0;
+      framesRef.current = new Array<EntryFrame>(frameCount);
+
+      for (let index = 0; index < frameCount; index += 1) {
+        framesRef.current[index] = loadImageFrame(phoneEntryFrameSrc(index), index);
+      }
+    };
+
     const loadStaticAvifFallback = (src: string) => {
+      if (isPhoneViewport()) {
+        loadPhoneFrameSequenceFallback();
+        return;
+      }
+
       frameCount = 1;
       readyFrames = 0;
       framesRef.current = [loadImageFrame(src, 0)];
