@@ -1444,22 +1444,6 @@ h2 {
   border-radius: 8px;
 }
 
-.about__image img {
-  object-fit: cover;
-}
-
-.stats {
-  display: grid;
-  grid-template-columns: repeat(2, max-content);
-  gap: 0.4rem 1.4rem;
-  margin-top: 2rem;
-  color: var(--muted);
-}
-
-.stats strong {
-  color: var(--gold-light);
-}
-
 .tour {
   background: radial-gradient(circle at 50% 30%, rgba(87, 161, 255, 0.12), transparent 34rem), var(--background);
 }

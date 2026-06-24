@@ -1,6 +1,7 @@
 "use client";
 
 import { RouteLoadingLink } from "@/components/RouteLoadingLink";
+import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { ShaderBackground } from "@/components/ui/shader-background";
 import { ArrowLeftRight, Building2, CheckCircle2, Menu } from "lucide-react";
 import { useState } from "react";
@@ -193,6 +194,7 @@ export function ConstructionContent() {
           </div>
         </section>
       </main>
+      <WhatsAppButton />
     </>
   );
 }

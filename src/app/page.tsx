@@ -36,8 +36,9 @@ const navItems = [
 ];
 const navTargets = navItems.filter((item) => item.section);
 const displayPhoneNumber = "+91 99999 97327";
-const skySkrabersAddress = "C 132, Block C, Lajpat Nagar II, Lajpat Nagar, New Delhi, Delhi 110024";
-const mapsEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(skySkrabersAddress)}&output=embed`;
+const skySkrabersAddress = "Sky Skrabers, C-132, Lajpat Nagar 2, New Delhi, Delhi 110024";
+const skySkrabersMapQuery = "Sky Skrabers Lajpat Nagar 2";
+const mapsEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(skySkrabersMapQuery)}&output=embed`;
 const HOME_RELOAD_PENDING_KEY = "sky-home-reload-pending";
 
 const cardImages = [
@@ -557,7 +558,7 @@ function ServicesPanel() {
       Icon: Building2,
       title: "Buy New Home",
       copy: "Find your perfect home in our handpicked premium properties.",
-      href: undefined,
+      href: "/#ongoing-projects",
     },
     {
       Icon: WalletCards,
@@ -616,7 +617,7 @@ function ServicesPanel() {
               className="service-card-link"
               href={href}
               pageTitle={title}
-              ariaLabel="Open Sky Skrabers construction page"
+              ariaLabel={`Open ${title}`}
             >
               {card}
             </RouteLoadingLink>
@@ -860,7 +861,7 @@ function OngoingProjects() {
   }, []);
 
   return (
-    <section className="ongoing" data-nav-section="our-projects">
+    <section id="ongoing-projects" className="ongoing" data-nav-section="our-projects">
       <Image src="/assets/section-3.png" alt="" fill className="ongoing__tower" />
       <div className="section-overlay section-overlay--heavy" />
       <motion.div
@@ -948,21 +949,13 @@ function About() {
           <span>Built with Precision.</span>
         </h2>
         <p>
-          Sky Skrabers creates premium residences in South Delhi with disciplined construction, sharp architectural
-          detailing, and a quiet belief that trust is built into every finish. From acquisition to delivery, each home is
-          shaped for modern elegance, long-term value, and the rare comfort of knowing everything has been considered.
+          Established in 2011, Sky Skrabers is a Delhi-based real estate enterprise with 100+ landmark residences across
+          South Delhi. For more than 14 years, we have shaped premium homes with disciplined construction, thoughtful
+          detailing, and a wholehearted belief in delivering value, timeless design, and lasting trust.
         </p>
-        <div className="stats">
-          <strong>3 BHK</strong>
-          <span>Builder floors</span>
-          <strong>South Delhi</strong>
-          <span>Focused portfolio</span>
-        </div>
       </div>
       <i className="vertical-rule" />
-      <div className="about__image">
-        <Image src="/assets/section-2.png" alt="Luxury villa master bedroom" fill sizes="(max-width: 820px) 100vw, 42vw" priority={false} />
-      </div>
+      <div className="about__image" aria-hidden="true" />
     </section>
   );
 }
@@ -1064,7 +1057,7 @@ function Contact() {
           <p>
             <MapPin size={18} />
             <a
-              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(skySkrabersAddress)}`}
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(skySkrabersMapQuery)}`}
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -1107,7 +1100,7 @@ function Contact() {
       </div>
       <div className="map-panel glass-card">
         <iframe
-          title="Sky Skrabers Lajpat Nagar II location"
+          title="Sky Skrabers Lajpat Nagar 2 location"
           src={mapsEmbedUrl}
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
@@ -1160,7 +1153,6 @@ export default function HomePage() {
   useEffect(() => {
     const reloadHomeIfNeeded = () => {
       if (window.location.pathname !== "/") return;
-      if (window.location.hash && window.location.hash !== "#home") return;
       if (window.sessionStorage.getItem(HOME_RELOAD_PENDING_KEY) !== "1") return;
 
       window.sessionStorage.removeItem(HOME_RELOAD_PENDING_KEY);

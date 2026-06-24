@@ -21,13 +21,23 @@ function markHomeReloadIfNeeded(href: string) {
     if (target.origin !== window.location.origin) return;
 
     const currentIsHome = window.location.pathname === "/";
-    const targetIsHomeLanding = target.pathname === "/" && (!target.hash || target.hash === "#home");
+    const targetIsHomeLanding = target.pathname === "/";
 
     if ((currentIsHome && !targetIsHomeLanding) || (!currentIsHome && targetIsHomeLanding)) {
       window.sessionStorage.setItem(HOME_RELOAD_PENDING_KEY, "1");
     }
   } catch {
     // If URL parsing fails, navigation should continue without the reload marker.
+  }
+}
+
+function getSamePageHashTarget(href: string) {
+  try {
+    const target = new URL(href, window.location.href);
+    const isSamePage = target.origin === window.location.origin && target.pathname === window.location.pathname;
+    return isSamePage && target.hash ? target.hash : null;
+  } catch {
+    return null;
   }
 }
 
@@ -104,6 +114,18 @@ export function RouteLoadingLink({
     }
 
     onNavigate?.();
+
+    const samePageHash = getSamePageHashTarget(href);
+    if (samePageHash) {
+      event.preventDefault();
+      const target = document.querySelector<HTMLElement>(samePageHash);
+      if (target) {
+        window.history.pushState(null, "", samePageHash);
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+      return;
+    }
+
     markHomeReloadIfNeeded(href);
     setLoading(true);
 
