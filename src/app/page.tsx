@@ -3,7 +3,7 @@
 import { CircularGallery, GalleryItem } from "@/components/ui/circular-gallery";
 import { RouteLoadingLink } from "@/components/RouteLoadingLink";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
@@ -267,10 +267,22 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
     const getEntryAnimationSrc = () =>
       isPhoneViewport() ? "/assets/entry-scroll-phone.avif" : "/assets/entry-scroll-desktop.avif";
 
+    let entryTrigger: ScrollTrigger | null = null;
+
+    const setEntryLayerHints = (active: boolean) => {
+      section.style.willChange = active ? "transform" : "auto";
+      [copyRef.current, hintRef.current, servicesRef.current].forEach((element) => {
+        if (element) element.style.willChange = active ? "transform, opacity" : "auto";
+      });
+    };
+
     const signalReady = () => {
       if (readySignaled || readyFrames < frameCount) return;
       readySignaled = true;
       scheduleFrame(pendingFrameRef.current);
+      if (!reduced) {
+        createEntryTrigger();
+      }
       onReady?.();
       requestAnimationFrame(() => {
         resize();
@@ -285,7 +297,7 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
       canvas.height = Math.round(height * ratio);
       context.setTransform(ratio, 0, 0, ratio, 0, 0);
       currentFrameRef.current = -1;
-      drawFrame(pendingFrameRef.current);
+      scheduleFrame(pendingFrameRef.current);
     };
 
     const getFrameSize = (image: EntryFrame) => {
@@ -449,9 +461,9 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
 
     if (reduced) {
       scheduleFrame(frameCount - 1);
-      gsap.set(copyRef.current, { autoAlpha: 0 });
-      gsap.set(hintRef.current, { autoAlpha: 0 });
-      gsap.set(servicesRef.current, { autoAlpha: 1, y: 0 });
+      gsap.set(copyRef.current, { autoAlpha: 0, force3D: true });
+      gsap.set(hintRef.current, { autoAlpha: 0, force3D: true });
+      gsap.set(servicesRef.current, { autoAlpha: 1, y: 0, force3D: true });
       return () => {
         disposed = true;
         if (drawRafRef.current !== null) {
@@ -461,8 +473,6 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
       };
     }
 
-    let entryTrigger: ScrollTrigger | null = null;
-
     const updateEntryVisuals = (progress: number) => {
       const frame = progress * (frameCount - 1);
       scheduleFrame(frame);
@@ -471,17 +481,18 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
       const hintAlpha = gsap.utils.clamp(0, 1, 1 - progress / 0.3);
       const servicesAlpha = gsap.utils.clamp(0, 1, (progress - 0.48) / 0.14);
 
-      gsap.set(copyRef.current, { autoAlpha: copyAlpha, y: -36 * (1 - copyAlpha) });
-      gsap.set(hintRef.current, { autoAlpha: hintAlpha, y: -18 * (1 - hintAlpha) });
-      gsap.set(servicesRef.current, { autoAlpha: servicesAlpha, y: 44 * (1 - servicesAlpha) });
+      gsap.set(copyRef.current, { autoAlpha: copyAlpha, y: -36 * (1 - copyAlpha), force3D: true });
+      gsap.set(hintRef.current, { autoAlpha: hintAlpha, y: -18 * (1 - hintAlpha), force3D: true });
+      gsap.set(servicesRef.current, { autoAlpha: servicesAlpha, y: 44 * (1 - servicesAlpha), force3D: true });
     };
 
     const createEntryTrigger = () => {
       entryTrigger?.kill(true);
       ScrollTrigger.getById("entry-transition-scroll")?.kill(true);
-      gsap.set(copyRef.current, { autoAlpha: 1, y: 0 });
-      gsap.set(hintRef.current, { autoAlpha: 1, y: 0 });
-      gsap.set(servicesRef.current, { autoAlpha: 0, y: 44 });
+      setEntryLayerHints(true);
+      gsap.set(copyRef.current, { autoAlpha: 1, y: 0, force3D: true });
+      gsap.set(hintRef.current, { autoAlpha: 1, y: 0, force3D: true });
+      gsap.set(servicesRef.current, { autoAlpha: 0, y: 44, force3D: true });
 
       entryTrigger = ScrollTrigger.create({
         id: "entry-transition-scroll",
@@ -492,13 +503,13 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
         scrub: true,
         anticipatePin: 1,
         invalidateOnRefresh: true,
+        onEnter: () => setEntryLayerHints(true),
+        onEnterBack: () => setEntryLayerHints(true),
+        onLeave: () => setEntryLayerHints(false),
+        onLeaveBack: () => setEntryLayerHints(false),
         onUpdate: (self) => updateEntryVisuals(self.progress),
       });
     };
-
-    const ctx = gsap.context(() => {
-      createEntryTrigger();
-    }, section);
 
     const isHomeLanding = () => window.location.pathname === "/" && (!window.location.hash || window.location.hash === "#home");
     const wasHistoryNavigation = () => {
@@ -507,7 +518,7 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
     };
 
     const restoreEntryAnimation = (event?: PageTransitionEvent | PopStateEvent | HashChangeEvent) => {
-      if (document.visibilityState === "hidden" || !isHomeLanding()) return;
+      if (document.visibilityState === "hidden" || !isHomeLanding() || !readySignaled) return;
       if (event?.type === "pageshow" && "persisted" in event && !event.persisted && !wasHistoryNavigation()) return;
 
       requestAnimationFrame(() => {
@@ -531,6 +542,7 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
 
     return () => {
       disposed = true;
+      setEntryLayerHints(false);
       entryTrigger?.kill(true);
       if (drawRafRef.current !== null) {
         window.cancelAnimationFrame(drawRafRef.current);
@@ -545,7 +557,6 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
       window.removeEventListener("pageshow", restoreEntryAnimation);
       window.removeEventListener("popstate", restoreEntryAnimation);
       window.removeEventListener("hashchange", restoreEntryAnimation);
-      ctx.revert();
     };
   }, [onReady]);
 
@@ -665,6 +676,7 @@ function ServicesPanel() {
 
 function CompletedProjects() {
   const sectionRef = useRef<HTMLElement>(null);
+  const prefersReducedMotion = useReducedMotion();
   const [active, setActive] = useState(0);
   const [rotation, setRotation] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -676,8 +688,8 @@ function CompletedProjects() {
   const displayRotationRef = useRef(0);
   const activeRef = useRef(0);
   const lastAutoFrameRef = useRef<number | null>(null);
-  const resumeTimeoutRef = useRef<number | null>(null);
-  const scrollIdleTimeoutRef = useRef<number | null>(null);
+  const resumeTimeoutRef = useRef<gsap.core.Tween | null>(null);
+  const scrollIdleTimeoutRef = useRef<gsap.core.Tween | null>(null);
 
   const getActiveProject = useCallback((nextRotation: number) => {
     const normalized = ((-nextRotation % 360) + 360) % 360;
@@ -699,12 +711,18 @@ function CompletedProjects() {
   const pauseBriefly = useCallback(() => {
     setPaused(true);
     if (resumeTimeoutRef.current) {
-      window.clearTimeout(resumeTimeoutRef.current);
+      resumeTimeoutRef.current.kill();
+      resumeTimeoutRef.current = null;
     }
-    resumeTimeoutRef.current = window.setTimeout(() => setPaused(false), 1200);
+    resumeTimeoutRef.current = gsap.delayedCall(1.2, () => {
+      resumeTimeoutRef.current = null;
+      setPaused(false);
+    });
   }, []);
 
   useEffect(() => {
+    if (prefersReducedMotion) return;
+
     const section = sectionRef.current;
     if (!section) return;
 
@@ -713,6 +731,18 @@ function CompletedProjects() {
         trigger: section,
         start: "top bottom",
         end: "bottom top",
+        onEnter: () => {
+          section.style.willChange = "transform";
+        },
+        onEnterBack: () => {
+          section.style.willChange = "transform";
+        },
+        onLeave: () => {
+          section.style.willChange = "auto";
+        },
+        onLeaveBack: () => {
+          section.style.willChange = "auto";
+        },
         onUpdate: (self) => {
           const deltaProgress = self.progress - previousScrollProgressRef.current;
           previousScrollProgressRef.current = self.progress;
@@ -721,9 +751,13 @@ function CompletedProjects() {
             if (isTouchViewport) {
               setPaused(true);
               if (scrollIdleTimeoutRef.current) {
-                window.clearTimeout(scrollIdleTimeoutRef.current);
+                scrollIdleTimeoutRef.current.kill();
+                scrollIdleTimeoutRef.current = null;
               }
-              scrollIdleTimeoutRef.current = window.setTimeout(() => setPaused(false), 650);
+              scrollIdleTimeoutRef.current = gsap.delayedCall(0.65, () => {
+                scrollIdleTimeoutRef.current = null;
+                setPaused(false);
+              });
             }
 
             rotateBy(deltaProgress * -360);
@@ -733,14 +767,18 @@ function CompletedProjects() {
     }, section);
 
     return () => {
+      section.style.willChange = "auto";
       ctx.revert();
       if (scrollIdleTimeoutRef.current) {
-        window.clearTimeout(scrollIdleTimeoutRef.current);
+        scrollIdleTimeoutRef.current.kill();
+        scrollIdleTimeoutRef.current = null;
       }
     };
-  }, [isTouchViewport, rotateBy]);
+  }, [isTouchViewport, prefersReducedMotion, rotateBy]);
 
   useEffect(() => {
+    if (prefersReducedMotion) return;
+
     let frameId = 0;
     const degreesPerMs = anglePerProject / 3000;
 
@@ -772,10 +810,11 @@ function CompletedProjects() {
       window.cancelAnimationFrame(frameId);
       lastAutoFrameRef.current = null;
       if (resumeTimeoutRef.current) {
-        window.clearTimeout(resumeTimeoutRef.current);
+        resumeTimeoutRef.current.kill();
+        resumeTimeoutRef.current = null;
       }
     };
-  }, [anglePerProject, getActiveProject, isTouchViewport, paused]);
+  }, [anglePerProject, getActiveProject, isTouchViewport, paused, prefersReducedMotion]);
 
   useEffect(() => {
     const syncRadius = () => {
@@ -827,10 +866,11 @@ function CompletedProjects() {
       <div className="section-overlay projects__overlay" />
       <motion.div
         className="gallery-heading"
-        initial={{ opacity: 0, y: 90, filter: "blur(18px)" }}
-        whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+        initial={prefersReducedMotion ? false : { opacity: 0, y: 90 }}
+        whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: false, amount: 0.45 }}
-        transition={{ duration: 1.35, ease: [0.16, 1, 0.3, 1] }}
+        transition={prefersReducedMotion ? { duration: 0 } : { duration: 1.35, ease: [0.16, 1, 0.3, 1] }}
+        style={{ willChange: "transform, opacity" }}
       >
         <p className="eyebrow">Our Completed Projects</p>
         <h2>
@@ -842,10 +882,11 @@ function CompletedProjects() {
 
       <motion.div
         className="gallery-shell"
-        initial={{ opacity: 0, y: 92, scale: 0.9, filter: "blur(16px)" }}
-        whileInView={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+        initial={prefersReducedMotion ? false : { opacity: 0, y: 92, scale: 0.9 }}
+        whileInView={{ opacity: 1, y: 0, scale: 1 }}
         viewport={{ once: false, amount: 0.04 }}
-        transition={{ duration: 1.08, ease: [0.16, 1, 0.3, 1] }}
+        transition={prefersReducedMotion ? { duration: 0 } : { duration: 1.08, ease: [0.16, 1, 0.3, 1] }}
+        style={{ willChange: "transform, opacity" }}
       >
         <CircularGallery items={projects} rotation={rotation} radius={galleryRadius} activeIndex={active} onItemSelect={goToProject} />
         <button className="gallery-arrow gallery-arrow--left" onClick={previousProject} aria-label="Previous completed project">
@@ -858,10 +899,11 @@ function CompletedProjects() {
 
       <motion.div
         className="project-controls gallery-dots"
-        initial={{ opacity: 0, y: 24 }}
+        initial={prefersReducedMotion ? false : { opacity: 0, y: 24 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: false, amount: 0.04 }}
-        transition={{ duration: 0.75, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+        transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.75, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+        style={{ willChange: "transform, opacity" }}
       >
         {projects.map((project, index) => (
           <button
@@ -877,6 +919,7 @@ function CompletedProjects() {
 }
 
 function OngoingProjects() {
+  const prefersReducedMotion = useReducedMotion();
   const [active, setActive] = useState(2);
   const [clickToExpand, setClickToExpand] = useState(false);
   const icons = [Home, Building2, Sparkles, Waves, MapPin, WalletCards];
@@ -897,10 +940,11 @@ function OngoingProjects() {
       <div className="section-overlay section-overlay--heavy" />
       <motion.div
         className="section-heading"
-        initial={{ opacity: 0, y: 76, filter: "blur(16px)" }}
-        whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+        initial={prefersReducedMotion ? false : { opacity: 0, y: 76 }}
+        whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: false, amount: 0.45 }}
-        transition={{ duration: 1.15, ease: [0.16, 1, 0.3, 1] }}
+        transition={prefersReducedMotion ? { duration: 0 } : { duration: 1.15, ease: [0.16, 1, 0.3, 1] }}
+        style={{ willChange: "transform, opacity" }}
       >
         <p className="eyebrow">Our Ongoing Projects</p>
         <h2>
@@ -914,10 +958,15 @@ function OngoingProjects() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: false, amount: 0.28 }}
-        variants={{
-          hidden: {},
-          visible: { transition: { staggerChildren: 0.16, delayChildren: 0.18 } },
-        }}
+        variants={
+          prefersReducedMotion
+            ? { hidden: {}, visible: {} }
+            : {
+                hidden: {},
+                visible: { transition: { staggerChildren: 0.16, delayChildren: 0.18 } },
+              }
+        }
+        style={{ willChange: "transform, opacity" }}
       >
         {ongoing.map((project, index) => (
           <motion.button
@@ -929,11 +978,19 @@ function OngoingProjects() {
             onClick={() => activateProject(index)}
             onFocus={() => activateProject(index)}
             aria-pressed={active === index}
-            variants={{
-              hidden: { opacity: 0, x: -32, scale: 0.97 },
-              visible: { opacity: 1, x: 0, scale: 1 },
-            }}
-            transition={{ duration: 0.64, ease: [0.22, 1, 0.36, 1] }}
+            variants={
+              prefersReducedMotion
+                ? {
+                    hidden: { opacity: 1, x: 0, scale: 1 },
+                    visible: { opacity: 1, x: 0, scale: 1 },
+                  }
+                : {
+                    hidden: { opacity: 0, x: -32, scale: 0.97 },
+                    visible: { opacity: 1, x: 0, scale: 1 },
+                  }
+            }
+            transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.64, ease: [0.22, 1, 0.36, 1] }}
+            style={{ willChange: "transform, opacity" }}
           >
             <span
               className="ongoing-card__image"
@@ -1201,15 +1258,17 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    const fallback = window.setTimeout(() => setHeroReady(true), 12000);
+    const fallback = gsap.delayedCall(12, () => setHeroReady(true));
     const lenis = new Lenis({ lerp: 0.08, smoothWheel: true });
-    const raf = (time: number) => {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    };
-    requestAnimationFrame(raf);
+    lenis.on("scroll", ScrollTrigger.update);
+    const updateLenis = (time: number) => lenis.raf(time * 1000);
+    gsap.ticker.add(updateLenis);
+    gsap.ticker.lagSmoothing(0);
+
     return () => {
-      window.clearTimeout(fallback);
+      fallback.kill();
+      lenis.off("scroll", ScrollTrigger.update);
+      gsap.ticker.remove(updateLenis);
       lenis.destroy();
     };
   }, []);
@@ -1217,8 +1276,10 @@ export default function HomePage() {
   useEffect(() => {
     if (!heroReady) return;
 
-    const timeout = window.setTimeout(() => setLoading(false), 850);
-    return () => window.clearTimeout(timeout);
+    const timeout = gsap.delayedCall(0.85, () => setLoading(false));
+    return () => {
+      timeout.kill();
+    };
   }, [heroReady]);
 
   useEffect(() => {
@@ -1253,14 +1314,19 @@ export default function HomePage() {
     if (reduced) return;
 
     const ctx = gsap.context(() => {
-      gsap.from(".site-header", { y: -26, autoAlpha: 0, duration: 1.1, ease: "power3.out" });
+      gsap.from(".site-header", { y: -26, autoAlpha: 0, duration: 1.1, ease: "power3.out", force3D: true });
       gsap.utils.toArray<HTMLElement>(".reveal-section").forEach((section) => {
-        gsap.from(section.querySelectorAll("h2, .eyebrow, .section-copy, .glass-card, .ongoing-card"), {
+        const targets = section.querySelectorAll<HTMLElement>("h2, .eyebrow, .section-copy, .glass-card, .ongoing-card");
+
+        gsap.from(targets, {
           y: 38,
           autoAlpha: 0,
+          force3D: true,
           stagger: 0.08,
           duration: 1,
           ease: "power3.out",
+          onStart: () => gsap.set(targets, { willChange: "transform, opacity" }),
+          onComplete: () => gsap.set(targets, { willChange: "auto" }),
           scrollTrigger: { trigger: section, start: "top 75%" },
         });
       });

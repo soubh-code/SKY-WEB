@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, MotionValue, useScroll, useTransform } from "framer-motion";
+import { motion, MotionValue, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { ReactNode, useEffect, useRef, useState } from "react";
 
 export function ContainerScroll({
@@ -11,6 +11,7 @@ export function ContainerScroll({
   children: ReactNode;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const prefersReducedMotion = useReducedMotion();
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start end", "end start"],
@@ -32,8 +33,10 @@ export function ContainerScroll({
   return (
     <div className="container-scroll" ref={containerRef}>
       <div className="container-scroll__inner">
-        <Header translate={translate}>{titleComponent}</Header>
-        <Card rotate={rotate} scale={scale}>
+        <Header translate={translate} prefersReducedMotion={prefersReducedMotion}>
+          {titleComponent}
+        </Header>
+        <Card rotate={rotate} scale={scale} prefersReducedMotion={prefersReducedMotion}>
           {children}
         </Card>
       </div>
@@ -41,9 +44,20 @@ export function ContainerScroll({
   );
 }
 
-function Header({ translate, children }: { translate: MotionValue<number>; children: ReactNode }) {
+function Header({
+  translate,
+  prefersReducedMotion,
+  children,
+}: {
+  translate: MotionValue<number>;
+  prefersReducedMotion: boolean | null;
+  children: ReactNode;
+}) {
   return (
-    <motion.div className="container-scroll__header" style={{ y: translate }}>
+    <motion.div
+      className="container-scroll__header"
+      style={{ y: prefersReducedMotion ? 0 : translate, willChange: "transform, opacity" }}
+    >
       {children}
     </motion.div>
   );
@@ -52,18 +66,21 @@ function Header({ translate, children }: { translate: MotionValue<number>; child
 function Card({
   rotate,
   scale,
+  prefersReducedMotion,
   children,
 }: {
   rotate: MotionValue<number>;
   scale: MotionValue<number>;
+  prefersReducedMotion: boolean | null;
   children: ReactNode;
 }) {
   return (
     <motion.div
       className="container-scroll__card"
       style={{
-        rotateX: rotate,
-        scale,
+        rotateX: prefersReducedMotion ? 0 : rotate,
+        scale: prefersReducedMotion ? 1 : scale,
+        willChange: "transform, opacity",
       }}
     >
       <div className="container-scroll__screen">{children}</div>

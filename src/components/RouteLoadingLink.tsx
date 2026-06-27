@@ -3,6 +3,7 @@
 import { MouseEvent, ReactNode, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
+import gsap from "gsap";
 
 type RouteLoadingLinkProps = {
   href: string;
@@ -65,14 +66,14 @@ export function RouteLoadingLink({
   onNavigate,
 }: RouteLoadingLinkProps) {
   const [loading, setLoading] = useState(false);
-  const navigationTimeoutRef = useRef<number | null>(null);
+  const navigationTimeoutRef = useRef<gsap.core.Tween | null>(null);
 
   useEffect(() => {
     const resetLoading = () => {
       setLoading(false);
       document.querySelectorAll(".route-kontext").forEach((node) => node.remove());
       if (navigationTimeoutRef.current !== null) {
-        window.clearTimeout(navigationTimeoutRef.current);
+        navigationTimeoutRef.current.kill();
         navigationTimeoutRef.current = null;
       }
     };
@@ -130,14 +131,15 @@ export function RouteLoadingLink({
     setLoading(true);
 
     if (navigationTimeoutRef.current !== null) {
-      window.clearTimeout(navigationTimeoutRef.current);
+      navigationTimeoutRef.current.kill();
+      navigationTimeoutRef.current = null;
     }
 
-    navigationTimeoutRef.current = window.setTimeout(() => {
+    navigationTimeoutRef.current = gsap.delayedCall(1.4, () => {
       navigationTimeoutRef.current = null;
       setLoading(false);
       document.querySelectorAll(".route-kontext").forEach((node) => node.remove());
-    }, 1400);
+    });
   };
 
   return (
