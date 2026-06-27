@@ -1289,7 +1289,7 @@ h2 {
 
 .ongoing-card {
   position: relative;
-  flex: 0 0 11%;
+  flex: 0 0 8.8%;
   min-width: 70px;
   overflow: hidden;
   border: 0;
@@ -2519,6 +2519,214 @@ form button:hover {
   line-height: 1.7;
 }
 
+.sell-property-page {
+  padding-bottom: clamp(5rem, 8vw, 7rem);
+}
+
+.sell-property-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.42fr);
+  align-items: end;
+  gap: clamp(2rem, 5vw, 4rem);
+}
+
+.sell-property-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.sell-property-actions > span {
+  color: var(--gold-light);
+  font-size: 0.76rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.sell-property-whatsapp {
+  display: inline-flex;
+  min-height: 52px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.68rem;
+  border: 1px solid rgba(240, 216, 160, 0.72);
+  border-radius: 999px;
+  background:
+    linear-gradient(135deg, rgba(15, 172, 86, 0.28), rgba(240, 216, 160, 0.1)),
+    rgba(5, 11, 20, 0.7);
+  color: var(--ivory);
+  padding: 0.95rem 1.35rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  text-transform: uppercase;
+  box-shadow: 0 0 30px rgba(15, 172, 86, 0.24), 0 18px 50px rgba(0, 0, 0, 0.28);
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  touch-action: manipulation;
+}
+
+.sell-property-whatsapp:hover,
+.sell-property-whatsapp:focus-visible {
+  transform: translateY(-3px);
+  border-color: rgba(240, 216, 160, 0.95);
+  box-shadow: 0 0 42px rgba(15, 172, 86, 0.38), 0 22px 56px rgba(0, 0, 0, 0.34);
+  outline: none;
+}
+
+.sell-property-panel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  padding: clamp(1.3rem, 3vw, 2rem);
+}
+
+.sell-property-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 80% 18%, rgba(15, 172, 86, 0.18), transparent 16rem),
+    linear-gradient(135deg, rgba(240, 216, 160, 0.12), transparent 48%);
+  pointer-events: none;
+}
+
+.sell-property-panel > * {
+  position: relative;
+}
+
+.sell-property-panel > span {
+  display: inline-block;
+  margin-bottom: 1.2rem;
+  color: var(--gold);
+  font-family: var(--font-cormorant), serif;
+  font-size: clamp(2.4rem, 5vw, 4.2rem);
+  line-height: 1;
+}
+
+.sell-property-panel h2 {
+  margin: 0;
+  color: var(--ivory);
+  font-size: clamp(2rem, 3.2vw, 3.1rem);
+  line-height: 0.98;
+}
+
+.sell-property-panel p {
+  margin: 1.25rem 0 0;
+  color: var(--body);
+  line-height: 1.75;
+}
+
+.sell-property-flow {
+  position: relative;
+  z-index: 1;
+  width: min(1240px, 100%);
+  margin: 0 auto;
+  padding-top: clamp(1rem, 4vw, 3rem);
+}
+
+.sell-property-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(1rem, 2vw, 1.35rem);
+  margin-top: 2rem;
+}
+
+.sell-step-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  padding: clamp(1.1rem, 2.4vw, 1.6rem);
+}
+
+.sell-step-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(15, 172, 86, 0.11), transparent 46%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.sell-step-card:hover::before {
+  opacity: 1;
+}
+
+.sell-step-card > * {
+  position: relative;
+}
+
+.sell-step-card span {
+  color: var(--gold);
+  font-family: var(--font-cormorant), serif;
+  font-size: 2rem;
+}
+
+.sell-step-card svg {
+  display: block;
+  margin: 1rem 0 1.1rem;
+  color: rgba(240, 216, 160, 0.68);
+}
+
+.sell-step-card h3 {
+  margin: 0 0 0.65rem;
+  color: var(--ivory);
+  font-size: clamp(1.28rem, 2vw, 1.8rem);
+}
+
+.sell-step-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.sell-property-cta {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: min(1240px, 100%);
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  margin: clamp(4rem, 8vw, 6.5rem) auto 0;
+  border-radius: 8px;
+  padding: clamp(1.35rem, 4vw, 3rem);
+}
+
+.sell-property-cta h2 {
+  margin: 0;
+  font-size: clamp(2.25rem, 4.4vw, 4.35rem);
+  line-height: 1;
+}
+
+.sell-property-cta p:not(.eyebrow) {
+  max-width: 720px;
+  margin: 1rem 0 0;
+  color: var(--body);
+  line-height: 1.75;
+}
+
+.sell-property-whatsapp--compact {
+  white-space: nowrap;
+}
+
+@media (max-width: 980px) {
+  .sell-property-hero,
+  .sell-property-cta {
+    grid-template-columns: 1fr;
+  }
+
+  .sell-property-panel {
+    max-width: 640px;
+  }
+
+  .sell-property-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 .floating-whatsapp {
   position: fixed;
   right: 1.2rem;
@@ -3017,7 +3225,7 @@ form button:hover {
   .ongoing-card {
     min-width: 45px;
     min-height: 0;
-    flex-basis: 10%;
+    flex-basis: 8%;
   }
 
   .ongoing-card.is-active {
@@ -3308,17 +3516,34 @@ form button:hover {
 
   .construction-story,
   .before-after-grid,
-  .process-grid {
+  .process-grid,
+  .sell-property-grid {
     grid-template-columns: 1fr;
   }
 
   .construction-story h2,
-  .construction-process h2 {
+  .construction-process h2,
+  .sell-property-cta h2 {
     font-size: clamp(2.25rem, 10vw, 3.7rem);
   }
 
   .construction-hero h1 {
     font-size: clamp(3.05rem, 14vw, 4.8rem);
+  }
+
+  .sell-property-actions,
+  .sell-property-whatsapp,
+  .sell-property-whatsapp--compact {
+    width: 100%;
+  }
+
+  .sell-property-actions > span {
+    width: 100%;
+    text-align: center;
+  }
+
+  .sell-property-panel h2 {
+    font-size: clamp(2rem, 10vw, 3rem);
   }
 
   .image-slot {
@@ -3460,7 +3685,7 @@ form button:hover {
 
   .ongoing-card {
     min-width: 34px;
-    flex-basis: 8.5%;
+    flex-basis: 6.8%;
     touch-action: manipulation;
   }
 

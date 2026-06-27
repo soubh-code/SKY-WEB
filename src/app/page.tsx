@@ -112,11 +112,17 @@ const projects: GalleryItem[] = [
 ];
 
 const ongoing = [
-  { name: "Lajpat Nagar - 1", image: projects[0].image, imagePosition: projects[0].imagePosition, coords: "28.5660° N, 77.2440° E" },
-  { name: "Lajpat Nagar - 2", image: projects[1].image, imagePosition: projects[1].imagePosition, coords: "28.5684° N, 77.2398° E" },
-  { name: "Greater Kailash", image: projects[3].image, imagePosition: projects[3].imagePosition, coords: "28.5494° N, 77.2430° E" },
-  { name: "South Extension", image: projects[4].image, imagePosition: projects[4].imagePosition, coords: "28.5687° N, 77.2209° E" },
-  { name: "Defence Colony", image: projects[2].image, imagePosition: projects[2].imagePosition, coords: "28.5736° N, 77.2326° E" },
+  { name: "Lajpat Nagar 1/2", image: projects[0].image, imagePosition: projects[0].imagePosition, coords: "Lajpat Nagar 1/2" },
+  { name: "Lajpat Nagar 3/4", image: projects[1].image, imagePosition: projects[1].imagePosition, coords: "Lajpat Nagar 3/4" },
+  {
+    name: "South Extension Part 1/2",
+    image: projects[4].image,
+    imagePosition: projects[4].imagePosition,
+    coords: "South Extension Part 1/2",
+  },
+  { name: "East Of Kailash", image: projects[3].image, imagePosition: projects[3].imagePosition, coords: "East Of Kailash" },
+  { name: "Defence Colony", image: projects[2].image, imagePosition: projects[2].imagePosition, coords: "Defence Colony" },
+  { name: "Hauz Khas", image: projects[5].image, imagePosition: projects[5].imagePosition, coords: "Hauz Khas" },
 ];
 
 function Logo({ centered = false }: { centered?: boolean }) {
@@ -589,7 +595,7 @@ function ServicesPanel() {
       Icon: WalletCards,
       title: "Sell Property",
       copy: "We help you sell your property quickly and at the best possible value.",
-      href: undefined,
+      href: "/sell-property",
     },
   ] as const;
 
@@ -810,7 +816,7 @@ function CompletedProjects() {
       className="projects projects--gallery"
     >
       <Image
-        src="/assets/section-3-background.png"
+        src="/assets/section-3-background.avif"
         alt=""
         fill
         className="atmosphere projects__background"
@@ -873,7 +879,7 @@ function CompletedProjects() {
 function OngoingProjects() {
   const [active, setActive] = useState(2);
   const [clickToExpand, setClickToExpand] = useState(false);
-  const icons = [Home, Building2, Sparkles, Waves, MapPin];
+  const icons = [Home, Building2, Sparkles, Waves, MapPin, WalletCards];
   const activateProject = (index: number) => setActive((current) => (current === index ? current : index));
 
   useEffect(() => {
@@ -887,7 +893,7 @@ function OngoingProjects() {
 
   return (
     <section id="ongoing-projects" className="ongoing" data-nav-section="our-projects">
-      <Image src="/assets/section-3.png" alt="" fill className="ongoing__tower" />
+      <Image src="/assets/section-3-background.avif" alt="" fill className="ongoing__tower" />
       <div className="section-overlay section-overlay--heavy" />
       <motion.div
         className="section-heading"
