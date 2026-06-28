@@ -26,7 +26,7 @@ export default function LajpatNagarThreeFourProjectPage() {
         { title: "A-160, Dayanand Colony, Lajpat Nagar-4" },
         { title: "G-16, Lajpat Nagar-3." },
       ]}
-      whatsappText="Hello Sky Skrabers, I want details for the Lajpat Nagar 3/4 project."
+      whatsappText="I want to know more about Lajpat Nagar 3 and 4 ongoing projects."
     />
   );
 }

@@ -23,7 +23,7 @@ export default function EastOfKailashProjectPage() {
       projectName="East Of Kailash"
       addressLabel="East Of Kailash"
       addresses={[{ title: "G-52 East Of Kailash." }, { title: "no.-1,Sant nagar, East of Kailash" }]}
-      whatsappText="Hello Sky Skrabers, I want details for the East Of Kailash project."
+      whatsappText="I want to know more about East Of Kailash ongoing projects."
     />
   );
 }

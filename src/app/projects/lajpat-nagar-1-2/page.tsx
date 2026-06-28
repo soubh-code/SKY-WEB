@@ -29,7 +29,7 @@ export default function LajpatNagarProjectPage() {
         { title: "A-217, Lajpat Nagar-1" },
         { title: "E-102, Lajpat Nagar-1" },
       ]}
-      whatsappText="Hello Sky Skrabers, I want details for the Lajpat Nagar 1/2 project."
+      whatsappText="I want to know more about Lajpat Nagar 1 and 2 ongoing projects."
     />
   );
 }

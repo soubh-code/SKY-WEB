@@ -23,7 +23,7 @@ export default function SouthExtensionProjectPage() {
       projectName="South Extension Part 1/2"
       addressLabel="South Extension"
       addresses={[{ title: "G-16, South Extension, Part-2." }]}
-      whatsappText="Hello Sky Skrabers, I want details for the South Extension Part 1/2 project."
+      whatsappText="I want to know more about South Extension Part 1 and 2 ongoing projects."
     />
   );
 }

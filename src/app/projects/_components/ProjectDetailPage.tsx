@@ -7,6 +7,8 @@ import { ArrowUpRight, Camera, MessageCircle, Send } from "lucide-react";
 import type { MouseEvent } from "react";
 import styles from "../lajpat-nagar-1-2/project-page.module.css";
 
+const HOME_RELOAD_PENDING_KEY = "sky-home-reload-pending";
+
 export type ProjectAddress = {
   title: string;
   tags?: string[];
@@ -38,11 +40,18 @@ export function ProjectDetailPage({
     document.getElementById("visit")?.scrollIntoView({ behavior: "smooth", block: "center" });
     window.history.replaceState(null, "", "#visit");
   };
+  const markHomeReloadPending = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.currentTarget.target === "_blank") {
+      return;
+    }
+
+    window.sessionStorage.setItem(HOME_RELOAD_PENDING_KEY, "1");
+  };
 
   return (
     <main className={styles.page}>
       <header className={styles.navbar}>
-        <Link className={styles.logo} href="/#home" aria-label="Sky Skrabers home">
+        <Link className={styles.logo} href="/#home" aria-label="Sky Skrabers home" onClick={markHomeReloadPending}>
           <SkyLogo className={styles.projectLogo} priority />
         </Link>
         <nav className={styles.navPill} aria-label="Project navigation">
@@ -124,7 +133,7 @@ export function ProjectDetailPage({
           </a>
         </nav>
       </footer>
-      <WhatsAppButton />
+      <WhatsAppButton href={whatsappUrl} />
     </main>
   );
 }

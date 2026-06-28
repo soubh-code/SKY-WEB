@@ -23,7 +23,7 @@ export default function HauzKhasProjectPage() {
       projectName="Hauz Khas"
       addressLabel="Hauz Khas"
       addresses={[{ title: "B1-3, Hauz Khas." }]}
-      whatsappText="Hello Sky Skrabers, I want details for the Hauz Khas project."
+      whatsappText="I want to know more about HAUZKHAS ongoing projects."
     />
   );
 }

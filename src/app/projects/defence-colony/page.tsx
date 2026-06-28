@@ -23,7 +23,7 @@ export default function DefenceColonyProjectPage() {
       projectName="Defence Colony"
       addressLabel="Defence Colony"
       addresses={[{ title: "23, Defence Colony" }]}
-      whatsappText="Hello Sky Skrabers, I want details for the Defence Colony project."
+      whatsappText="I want to know more about Defence Colony ongoing projects."
     />
   );
 }
