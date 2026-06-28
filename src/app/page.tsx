@@ -545,16 +545,20 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
       if (event?.type === "pageshow" && "persisted" in event && !event.persisted && !wasHistoryNavigation()) return;
 
       requestAnimationFrame(() => {
-        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-        pendingFrameRef.current = 0;
-        currentFrameRef.current = -1;
-        resize();
-        createEntryTrigger();
-        scheduleFrame(0);
         requestAnimationFrame(() => {
-          entryTrigger?.refresh();
-          entryTrigger?.update();
-          ScrollTrigger.refresh();
+          window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+          pendingFrameRef.current = 0;
+          currentFrameRef.current = -1;
+          requestAnimationFrame(() => {
+            resize();
+            createEntryTrigger();
+            scheduleFrame(0);
+            requestAnimationFrame(() => {
+              entryTrigger?.refresh();
+              entryTrigger?.update();
+              ScrollTrigger.refresh();
+            });
+          });
         });
       });
     };
@@ -645,10 +649,20 @@ function ServicesPanel() {
     if (window.innerWidth <= 560) return;
 
     const syncPointer = (event: PointerEvent) => {
-      container.querySelectorAll<HTMLElement>(".service-card").forEach((card) => {
+      const positions = Array.from(container.querySelectorAll<HTMLElement>(".service-card"), (card) => {
         const rect = card.getBoundingClientRect();
-        card.style.setProperty("--x", `${event.clientX - rect.left}px`);
-        card.style.setProperty("--y", `${event.clientY - rect.top}px`);
+        return {
+          card,
+          x: event.clientX - rect.left,
+          y: event.clientY - rect.top,
+        };
+      });
+
+      window.requestAnimationFrame(() => {
+        positions.forEach(({ card, x, y }) => {
+          card.style.setProperty("--x", `${x}px`);
+          card.style.setProperty("--y", `${y}px`);
+        });
       });
     };
 

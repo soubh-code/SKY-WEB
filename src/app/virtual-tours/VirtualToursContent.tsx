@@ -6,7 +6,7 @@ import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { ShaderBackground } from "@/components/ui/shader-background";
 import { Menu, Sparkles } from "lucide-react";
 import Image from "next/image";
-import { type MouseEvent, useState } from "react";
+import { type MouseEvent, useRef, useState } from "react";
 
 const navItems = [
   { label: "Home", href: "/#home" },
@@ -58,6 +58,13 @@ function VirtualToursHeader() {
 }
 
 export function VirtualToursContent() {
+  const tourFrameRef = useRef<number | null>(null);
+  const tourPointerRef = useRef<{
+    card: HTMLElement;
+    rotateX: number;
+    rotateY: number;
+  } | null>(null);
+
   const handleTourCardMove = (event: MouseEvent<HTMLElement>) => {
     if (!window.matchMedia("(hover: hover) and (min-width: 821px)").matches) {
       return;
@@ -70,13 +77,26 @@ export function VirtualToursContent() {
     const rotateX = ((y - rect.height / 2) / (rect.height / 2)) * -7;
     const rotateY = ((x - rect.width / 2) / (rect.width / 2)) * 7;
 
-    card.style.setProperty("--tour-rotate-x", `${rotateX.toFixed(2)}deg`);
-    card.style.setProperty("--tour-rotate-y", `${rotateY.toFixed(2)}deg`);
+    tourPointerRef.current = { card, rotateX, rotateY };
+    if (tourFrameRef.current !== null) return;
+
+    tourFrameRef.current = window.requestAnimationFrame(() => {
+      tourFrameRef.current = null;
+      const next = tourPointerRef.current;
+      if (!next) return;
+
+      next.card.style.setProperty("--tour-rotate-x", `${next.rotateX.toFixed(2)}deg`);
+      next.card.style.setProperty("--tour-rotate-y", `${next.rotateY.toFixed(2)}deg`);
+    });
   };
 
   const handleTourCardLeave = (event: MouseEvent<HTMLElement>) => {
-    event.currentTarget.style.setProperty("--tour-rotate-x", "0deg");
-    event.currentTarget.style.setProperty("--tour-rotate-y", "0deg");
+    const card = event.currentTarget;
+    tourPointerRef.current = null;
+    window.requestAnimationFrame(() => {
+      card.style.setProperty("--tour-rotate-x", "0deg");
+      card.style.setProperty("--tour-rotate-y", "0deg");
+    });
   };
 
   return (

@@ -2,6 +2,9 @@
   "name": "sky-skrabers-site",
   "version": "0.1.0",
   "private": true,
+  "_securityNotes": {
+    "http-proxy-middleware": "High severity npm audit advisory is currently left unfixed intentionally. It is a transitive devDependency through netlify-cli and does not affect the production website bundle."
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
