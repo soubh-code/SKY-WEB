@@ -2,6 +2,7 @@
 
 import { CircularGallery, GalleryItem } from "@/components/ui/circular-gallery";
 import { RouteLoadingLink } from "@/components/RouteLoadingLink";
+import { SkyLogo } from "@/components/SkyLogo";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { motion, useReducedMotion } from "framer-motion";
 import gsap from "gsap";
@@ -11,6 +12,7 @@ import {
   ArrowLeft,
   ArrowRight,
   Building2,
+  Handshake,
   Home,
   Mail,
   MapPin,
@@ -22,7 +24,8 @@ import {
   WalletCards,
 } from "lucide-react";
 import Image from "next/image";
-import { FormEvent, MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -30,7 +33,7 @@ const navItems = [
   { label: "Home", id: "home", href: "/#home", section: true },
   { label: "Our Projects", id: "our-projects", href: "/#our-projects", section: true },
   { label: "About Us", id: "about-us", href: "/#about-us", section: true },
-  { label: "Virtual Tours", id: "virtual-tours", href: "/#virtual-tours", section: true },
+  { label: "Virtual Tours", id: "virtual-tours", href: "/virtual-tours", section: false },
   { label: "Blogs", id: "blogs", href: "/blogs", section: false },
   { label: "Contact Us", id: "contact-us", href: "/#contact-us", section: true },
 ];
@@ -112,32 +115,52 @@ const projects: GalleryItem[] = [
 ];
 
 const ongoing = [
-  { name: "Lajpat Nagar 1/2", image: projects[0].image, imagePosition: projects[0].imagePosition, coords: "Lajpat Nagar 1/2" },
-  { name: "Lajpat Nagar 3/4", image: projects[1].image, imagePosition: projects[1].imagePosition, coords: "Lajpat Nagar 3/4" },
+  {
+    name: "Lajpat Nagar 1/2",
+    image: projects[0].image,
+    imagePosition: projects[0].imagePosition,
+    coords: "Lajpat Nagar 1/2",
+    slug: "lajpat-nagar-1-2",
+  },
+  {
+    name: "Lajpat Nagar 3/4",
+    image: projects[1].image,
+    imagePosition: projects[1].imagePosition,
+    coords: "Lajpat Nagar 3/4",
+    slug: "lajpat-nagar-3-4",
+  },
   {
     name: "South Extension Part 1/2",
     image: projects[4].image,
     imagePosition: projects[4].imagePosition,
     coords: "South Extension Part 1/2",
+    slug: "south-extension-1-2",
   },
-  { name: "East Of Kailash", image: projects[3].image, imagePosition: projects[3].imagePosition, coords: "East Of Kailash" },
-  { name: "Defence Colony", image: projects[2].image, imagePosition: projects[2].imagePosition, coords: "Defence Colony" },
-  { name: "Hauz Khas", image: projects[5].image, imagePosition: projects[5].imagePosition, coords: "Hauz Khas" },
+  {
+    name: "East Of Kailash",
+    image: projects[3].image,
+    imagePosition: projects[3].imagePosition,
+    coords: "East Of Kailash",
+    slug: "east-of-kailash",
+  },
+  {
+    name: "Defence Colony",
+    image: projects[2].image,
+    imagePosition: projects[2].imagePosition,
+    coords: "Defence Colony",
+    slug: "defence-colony",
+  },
+  {
+    name: "Hauz Khas",
+    image: projects[5].image,
+    imagePosition: projects[5].imagePosition,
+    coords: "Hauz Khas",
+    slug: "hauz-khas",
+  },
 ];
 
 function Logo({ centered = false }: { centered?: boolean }) {
-  return (
-    <div className={centered ? "brand-logo brand-logo--center" : "brand-logo"}>
-      <span className="logo-mark" aria-hidden="true">
-        <i />
-        <i />
-        <i />
-        <i />
-      </span>
-      <span className="logo-line" />
-      <span className="logo-text">Sky Skrabers</span>
-    </div>
-  );
+  return <SkyLogo centered={centered} priority />;
 }
 
 function LuxuryLoader({ ready = false }: { ready?: boolean }) {
@@ -608,6 +631,12 @@ function ServicesPanel() {
       copy: "We help you sell your property quickly and at the best possible value.",
       href: "/sell-property",
     },
+    {
+      Icon: Handshake,
+      title: "Collaboration",
+      copy: "Partner with us to plan, build, or unlock the right value for your property.",
+      href: "/#contact-us",
+    },
   ] as const;
 
   useEffect(() => {
@@ -919,15 +948,29 @@ function CompletedProjects() {
 }
 
 function OngoingProjects() {
+  const router = useRouter();
   const prefersReducedMotion = useReducedMotion();
   const [active, setActive] = useState(2);
   const [clickToExpand, setClickToExpand] = useState(false);
+  const [armedProject, setArmedProject] = useState<number | null>(null);
   const icons = [Home, Building2, Sparkles, Waves, MapPin, WalletCards];
   const activateProject = (index: number) => setActive((current) => (current === index ? current : index));
+  const handleProjectClick = (index: number) => {
+    if (clickToExpand && (active !== index || armedProject !== index)) {
+      activateProject(index);
+      setArmedProject(index);
+      return;
+    }
+
+    router.push(`/projects/${ongoing[index].slug}`);
+  };
 
   useEffect(() => {
     const query = window.matchMedia("(max-width: 560px)");
-    const syncMode = () => setClickToExpand(query.matches);
+    const syncMode = () => {
+      setClickToExpand(query.matches);
+      setArmedProject(null);
+    };
 
     syncMode();
     query.addEventListener("change", syncMode);
@@ -975,8 +1018,15 @@ function OngoingProjects() {
             onPointerEnter={(event) => {
               if (!clickToExpand && event.pointerType !== "touch") activateProject(index);
             }}
-            onClick={() => activateProject(index)}
-            onFocus={() => activateProject(index)}
+            onClick={() => handleProjectClick(index)}
+            onFocus={() => {
+              if (!clickToExpand) activateProject(index);
+            }}
+            aria-label={
+              clickToExpand && (active !== index || armedProject !== index)
+                ? `Expand ${project.name} project card`
+                : `Open ${project.name} project page`
+            }
             aria-pressed={active === index}
             variants={
               prefersReducedMotion
@@ -996,6 +1046,7 @@ function OngoingProjects() {
               className="ongoing-card__image"
               style={{ backgroundImage: `linear-gradient(90deg, rgba(5, 11, 20, 0.08), rgba(5, 11, 20, 0.58)), url("${project.image}")`, backgroundPosition: project.imagePosition }}
             />
+            <span className="ongoing-card__details-cta">Click to view details</span>
             <span className="ongoing-card__label">
               <span className="ongoing-card__icon">
                 {(() => {
@@ -1012,12 +1063,10 @@ function OngoingProjects() {
                 <MapPin size={17} /> New Delhi
               </em>
               <i />
-              <b>Expected Completion</b>
-              <span>2026</span>
-              <b>Configuration</b>
-              <span>3 BHK · 3 Floors</span>
-              <b>Project Location</b>
-              <span>{project.coords}</span>
+              <span className="ongoing-card__meta-row">
+                <b>Expected Completion</b>
+                <span>2026</span>
+              </span>
             </span>
           </motion.button>
         ))}
@@ -1048,69 +1097,18 @@ function About() {
   );
 }
 
-function VirtualTours() {
-  const tours = [
-    ["Lajpat Nagar Residence", "Private 360 walkthrough", cardImages[0]],
-    ["Greater Kailash Villa", "Cinematic room preview", cardImages[2]],
-    ["South Extension Floor", "Immersive residence scan", cardImages[4]],
-  ];
-  const handleTourCardMove = (event: MouseEvent<HTMLElement>) => {
-    if (!window.matchMedia("(hover: hover) and (min-width: 821px)").matches) {
-      return;
-    }
-
-    const card = event.currentTarget;
-    const rect = card.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-    const rotateX = ((y - rect.height / 2) / (rect.height / 2)) * -7;
-    const rotateY = ((x - rect.width / 2) / (rect.width / 2)) * 7;
-
-    card.style.setProperty("--tour-rotate-x", `${rotateX.toFixed(2)}deg`);
-    card.style.setProperty("--tour-rotate-y", `${rotateY.toFixed(2)}deg`);
-  };
-  const handleTourCardLeave = (event: MouseEvent<HTMLElement>) => {
-    event.currentTarget.style.setProperty("--tour-rotate-x", "0deg");
-    event.currentTarget.style.setProperty("--tour-rotate-y", "0deg");
-  };
-
+function VirtualToursCta() {
   return (
-    <section id="virtual-tours" className="tour reveal-section">
-      <div className="section-heading">
-        <p className="eyebrow">Virtual Tours</p>
-        <h2>Explore Before You Arrive.</h2>
-      </div>
-      <div className="tour-card-grid">
-        {tours.map(([title, description, image]) => (
-          <article
-            className="tour-card"
-            key={title}
-            onMouseMove={handleTourCardMove}
-            onMouseLeave={handleTourCardLeave}
-          >
-            <Image src={image} alt="" fill sizes="(max-width: 820px) 100vw, 33vw" />
-            <span className="tour-card__shade" />
-            <div className="tour-card__glass">
-              <div>
-                <h3>{title}</h3>
-                <small>{description}</small>
-              </div>
-              <Sparkles aria-hidden="true" size={18} />
-            </div>
-            <div className="tour-card__content">
-              <small>{description}</small>
-              <h3>{title}</h3>
-              <strong>Unavailable</strong>
-            </div>
-            <div className="tour-card__dots" aria-hidden="true">
-              <span />
-              <span />
-              <span />
-              <span />
-            </div>
-          </article>
-        ))}
-      </div>
+    <section className="blog-button-section reveal-section" aria-label="Open Sky Skrabers virtual tours">
+      <RouteLoadingLink
+        className="glow-blog-button"
+        href="/virtual-tours"
+        pageTitle="Virtual Tours"
+        ariaLabel="Open Sky Skrabers virtual tours page"
+      >
+        <span>Virtual Tours</span>
+        <ArrowRight size={18} />
+      </RouteLoadingLink>
     </section>
   );
 }
@@ -1343,7 +1341,7 @@ export default function HomePage() {
         <CompletedProjects />
         <OngoingProjects />
         <About />
-        <VirtualTours />
+        <VirtualToursCta />
         <BlogCta />
         <Contact />
         <Footer />

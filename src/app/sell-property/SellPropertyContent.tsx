@@ -1,6 +1,7 @@
 "use client";
 
 import { RouteLoadingLink } from "@/components/RouteLoadingLink";
+import { SkyLogo } from "@/components/SkyLogo";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { ShaderBackground } from "@/components/ui/shader-background";
 import { CalendarCheck2, Home, Menu, MessageCircle, TrendingUp, UserRoundCheck } from "lucide-react";
@@ -13,7 +14,7 @@ const navItems = [
   { label: "Home", href: "/#home" },
   { label: "Our Projects", href: "/#our-projects" },
   { label: "About Us", href: "/#about-us" },
-  { label: "Virtual Tours", href: "/#virtual-tours" },
+  { label: "Virtual Tours", href: "/virtual-tours" },
   { label: "Blogs", href: "/blogs" },
   { label: "Contact Us", href: "/#contact-us" },
 ];
@@ -44,18 +45,7 @@ const steps = [
 const getPageTitle = (href: string, label: string) => (href === "/blogs" ? "Blogs" : label);
 
 function Logo() {
-  return (
-    <div className="brand-logo">
-      <span className="logo-mark" aria-hidden="true">
-        <i />
-        <i />
-        <i />
-        <i />
-      </span>
-      <span className="logo-line" />
-      <span className="logo-text">Sky Skrabers</span>
-    </div>
-  );
+  return <SkyLogo priority />;
 }
 
 function SellPropertyHeader() {

@@ -4,6 +4,7 @@ import { MouseEvent, ReactNode, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import gsap from "gsap";
+import { SkyLogo } from "./SkyLogo";
 
 type RouteLoadingLinkProps = {
   href: string;
@@ -43,18 +44,7 @@ function getSamePageHashTarget(href: string) {
 }
 
 function LoaderLogo() {
-  return (
-    <div className="brand-logo brand-logo--centered">
-      <span className="logo-mark" aria-hidden="true">
-        <i />
-        <i />
-        <i />
-        <i />
-      </span>
-      <span className="logo-line" />
-      <span className="logo-text">Sky Skrabers</span>
-    </div>
-  );
+  return <SkyLogo centered priority />;
 }
 
 export function RouteLoadingLink({
@@ -67,6 +57,7 @@ export function RouteLoadingLink({
 }: RouteLoadingLinkProps) {
   const [loading, setLoading] = useState(false);
   const navigationTimeoutRef = useRef<gsap.core.Tween | null>(null);
+  const safetyTimeoutRef = useRef<gsap.core.Tween | null>(null);
 
   useEffect(() => {
     const resetLoading = () => {
@@ -75,6 +66,10 @@ export function RouteLoadingLink({
       if (navigationTimeoutRef.current !== null) {
         navigationTimeoutRef.current.kill();
         navigationTimeoutRef.current = null;
+      }
+      if (safetyTimeoutRef.current !== null) {
+        safetyTimeoutRef.current.kill();
+        safetyTimeoutRef.current = null;
       }
     };
 
@@ -127,6 +122,26 @@ export function RouteLoadingLink({
       return;
     }
 
+    let targetUrl: URL;
+    try {
+      targetUrl = new URL(href, window.location.href);
+    } catch {
+      return;
+    }
+
+    if (targetUrl.origin !== window.location.origin) {
+      return;
+    }
+
+    const destination = `${targetUrl.pathname}${targetUrl.search}${targetUrl.hash}`;
+    const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+
+    if (destination === current) {
+      event.preventDefault();
+      return;
+    }
+
+    event.preventDefault();
     markHomeReloadIfNeeded(href);
     setLoading(true);
 
@@ -134,11 +149,19 @@ export function RouteLoadingLink({
       navigationTimeoutRef.current.kill();
       navigationTimeoutRef.current = null;
     }
+    if (safetyTimeoutRef.current !== null) {
+      safetyTimeoutRef.current.kill();
+      safetyTimeoutRef.current = null;
+    }
 
-    navigationTimeoutRef.current = gsap.delayedCall(1.4, () => {
+    navigationTimeoutRef.current = gsap.delayedCall(0.95, () => {
       navigationTimeoutRef.current = null;
-      setLoading(false);
-      document.querySelectorAll(".route-kontext").forEach((node) => node.remove());
+      window.location.assign(destination);
+      safetyTimeoutRef.current = gsap.delayedCall(2.4, () => {
+        safetyTimeoutRef.current = null;
+        setLoading(false);
+        document.querySelectorAll(".route-kontext").forEach((node) => node.remove());
+      });
     });
   };
 

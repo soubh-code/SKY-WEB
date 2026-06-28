@@ -1,6 +1,7 @@
 "use client";
 
 import { RouteLoadingLink } from "@/components/RouteLoadingLink";
+import { SkyLogo } from "@/components/SkyLogo";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { ShaderBackground } from "@/components/ui/shader-background";
 import { ArrowLeftRight, Building2, CheckCircle2, Menu } from "lucide-react";
@@ -10,7 +11,7 @@ const navItems = [
   { label: "Home", href: "/#home" },
   { label: "Our Projects", href: "/#our-projects" },
   { label: "About Us", href: "/#about-us" },
-  { label: "Virtual Tours", href: "/#virtual-tours" },
+  { label: "Virtual Tours", href: "/virtual-tours" },
   { label: "Blogs", href: "/blogs" },
   { label: "Contact Us", href: "/#contact-us" },
 ];
@@ -47,18 +48,7 @@ const milestones = [
 ];
 
 function Logo() {
-  return (
-    <div className="brand-logo">
-      <span className="logo-mark" aria-hidden="true">
-        <i />
-        <i />
-        <i />
-        <i />
-      </span>
-      <span className="logo-line" />
-      <span className="logo-text">Sky Skrabers</span>
-    </div>
-  );
+  return <SkyLogo priority />;
 }
 
 function ConstructionHeader() {
