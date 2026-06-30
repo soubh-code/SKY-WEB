@@ -45,8 +45,12 @@ const mapsEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(skySkra
 const HOME_RELOAD_PENDING_KEY = "sky-home-reload-pending";
 const PHONE_ENTRY_FRAME_COUNT = 99;
 const PHONE_ENTRY_FRAME_VERSION = "20fps-99";
+const ANDROID_ENTRY_FRAME_COUNT = 92;
+const ANDROID_ENTRY_FRAME_VERSION = "android-webp-92";
 const phoneEntryFrameSrc = (index: number) =>
   `/assets/entry-phone-frames/${String(index).padStart(3, "0")}.webp?v=${PHONE_ENTRY_FRAME_VERSION}`;
+const androidEntryFrameSrc = (index: number) =>
+  `/assets/entry-android-frames/${String(index).padStart(3, "0")}.webp?v=${ANDROID_ENTRY_FRAME_VERSION}`;
 
 const cardImages = [
   "/assets/card-images/card-01.avif",
@@ -287,6 +291,10 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
     let avifDecoder: ImageDecoder | null = null;
     const isTouchViewport = () => window.innerWidth <= 560;
     const isPhoneViewport = () => window.innerWidth <= 560;
+    const isAndroidPhoneViewport = () => {
+      const userAgent = window.navigator.userAgent.toLowerCase();
+      return isPhoneViewport() && userAgent.includes("android");
+    };
     const getEntryAnimationSrc = () =>
       isPhoneViewport() ? "/assets/entry-scroll-phone.avif" : "/assets/entry-scroll-desktop.avif";
 
@@ -408,17 +416,30 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
       return image;
     };
 
-    const loadPhoneFrameSequenceFallback = () => {
-      frameCount = PHONE_ENTRY_FRAME_COUNT;
+    const loadFrameSequence = (count: number, srcForIndex: (index: number) => string) => {
+      frameCount = count;
       readyFrames = 0;
       framesRef.current = new Array<EntryFrame>(frameCount);
 
       for (let index = 0; index < frameCount; index += 1) {
-        framesRef.current[index] = loadImageFrame(phoneEntryFrameSrc(index), index);
+        framesRef.current[index] = loadImageFrame(srcForIndex(index), index);
       }
     };
 
+    const loadPhoneFrameSequenceFallback = () => {
+      loadFrameSequence(PHONE_ENTRY_FRAME_COUNT, phoneEntryFrameSrc);
+    };
+
+    const loadAndroidFrameSequence = () => {
+      loadFrameSequence(ANDROID_ENTRY_FRAME_COUNT, androidEntryFrameSrc);
+    };
+
     const loadStaticAvifFallback = (src: string) => {
+      if (isAndroidPhoneViewport()) {
+        loadAndroidFrameSequence();
+        return;
+      }
+
       if (isPhoneViewport()) {
         loadPhoneFrameSequenceFallback();
         return;
@@ -470,7 +491,9 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
       }
     };
 
-    if (isPhoneViewport()) {
+    if (isAndroidPhoneViewport()) {
+      loadAndroidFrameSequence();
+    } else if (isPhoneViewport()) {
       loadPhoneFrameSequenceFallback();
     } else {
       const entryAnimationSrc = getEntryAnimationSrc();
