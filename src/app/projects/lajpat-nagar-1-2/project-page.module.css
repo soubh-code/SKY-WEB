@@ -270,6 +270,38 @@
   letter-spacing: 0.12em;
 }
 
+.addressDetails {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(118px, 1fr));
+  gap: 0.42rem;
+  margin: 0.55rem 0 0;
+}
+
+.addressDetails div {
+  min-width: 0;
+  padding: 0.5rem 0.58rem;
+  border: 1px solid rgba(240, 216, 160, 0.18);
+  background: rgba(5, 11, 20, 0.32);
+}
+
+.addressDetails dt {
+  margin: 0 0 0.2rem;
+  color: var(--project-gold);
+  font-size: 0.54rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.addressDetails dd {
+  margin: 0;
+  color: var(--project-body);
+  font-size: clamp(0.72rem, 0.78vw, 0.86rem);
+  font-weight: 650;
+  line-height: 1.18;
+}
+
 .serviceArrow {
   justify-self: end;
   width: 42px;
@@ -536,6 +568,26 @@
     padding: 0 7px;
     font-size: 0.5rem;
     letter-spacing: 0.1em;
+  }
+
+  .addressDetails {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.34rem;
+    margin-top: 0.45rem;
+  }
+
+  .addressDetails div {
+    padding: 0.42rem 0.46rem;
+  }
+
+  .addressDetails dt {
+    font-size: 0.48rem;
+    letter-spacing: 0.1em;
+  }
+
+  .addressDetails dd {
+    font-size: 0.66rem;
+    line-height: 1.14;
   }
 
   .serviceArrow {

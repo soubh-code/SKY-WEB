@@ -3,6 +3,7 @@
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { RouteLoadingLink } from "@/components/RouteLoadingLink";
 import { SkyLogo } from "@/components/SkyLogo";
+import { InstagramLink } from "@/components/InstagramLink";
 import type { BlogPost } from "./blog-data";
 import { ArrowUpRight, BookOpenText, Menu } from "lucide-react";
 import Link from "next/link";
@@ -72,6 +73,9 @@ function BlogFooter() {
       <nav className="footer-legal" aria-label="Legal links">
         <Link href="/privacy-policy">Privacy Policy</Link>
         <Link href="/terms-and-conditions">Terms & Conditions</Link>
+      </nav>
+      <nav className="footer-legal" aria-label="Social links">
+        <InstagramLink>Instagram</InstagramLink>
       </nav>
       <p>Built Spaces. Real Legacies.</p>
       <small>© 2026 Sky Skrabers. All rights reserved.</small>

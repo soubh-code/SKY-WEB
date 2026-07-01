@@ -22,7 +22,18 @@ export default function DefenceColonyProjectPage() {
       titleLines={["DEFENCE", "COLONY"]}
       projectName="Defence Colony"
       addressLabel="Defence Colony"
-      addresses={[{ title: "23, Defence Colony" }]}
+      addresses={[
+        {
+          title: "23, Defence Colony",
+          details: [
+            { label: "Area", value: "225 sqyrd" },
+            { label: "Opening", value: "Corner 3 side open" },
+            { label: "Structure", value: "4 Floors + Basement, Stilt Parking" },
+            { label: "Config", value: "3BHK" },
+            { label: "Completion", value: "By the end of Mar-27" },
+          ],
+        },
+      ]}
       whatsappText="I want to know more about Defence Colony ongoing projects."
     />
   );

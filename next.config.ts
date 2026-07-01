@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const isDev = process.env.NODE_ENV !== "production";
-const scriptSrc = isDev ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'" : "script-src 'self' 'unsafe-inline'";
+const scriptSrc = isDev
+  ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com"
+  : "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com";
 
 const securityHeaders = [
   {
@@ -30,9 +32,9 @@ const securityHeaders = [
       "default-src 'self'",
       scriptSrc,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "img-src 'self' data: blob: https://*.google.com https://*.googleusercontent.com https://*.gstatic.com",
+      "img-src 'self' data: blob: https://*.google.com https://*.googleusercontent.com https://*.gstatic.com https://www.google-analytics.com https://www.googletagmanager.com",
       "font-src 'self' https://fonts.gstatic.com",
-      "connect-src 'self'",
+      "connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com",
       "frame-src https://www.google.com",
       "base-uri 'self'",
       "form-action 'self'",
@@ -53,6 +55,20 @@ const nextConfig: NextConfig = {
       {
         source: "/:path*",
         headers: securityHeaders,
+      },
+    ];
+  },
+  async redirects() {
+    return [
+      {
+        source: "/projects/lajpat-nagar-1-2-4",
+        destination: "/projects/lajpat-nagar-1-2",
+        permanent: true,
+      },
+      {
+        source: "/projects/lajpat-nagar-3",
+        destination: "/projects/lajpat-nagar-3-4",
+        permanent: true,
       },
     ];
   },

@@ -1,6 +1,7 @@
 "use client";
 
 import { CircularGallery, GalleryItem } from "@/components/ui/circular-gallery";
+import { InstagramLink } from "@/components/InstagramLink";
 import { RouteLoadingLink } from "@/components/RouteLoadingLink";
 import { SkyLogo } from "@/components/SkyLogo";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
@@ -18,14 +19,13 @@ import {
   MapPin,
   Menu,
   Phone,
-  Send,
   Sparkles,
   Waves,
   WalletCards,
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -33,11 +33,11 @@ const navItems = [
   { label: "Home", id: "home", href: "/#home", section: true },
   { label: "Our Projects", id: "our-projects", href: "/#our-projects", section: true },
   { label: "About Us", id: "about-us", href: "/#about-us", section: true },
-  { label: "Virtual Tours", id: "virtual-tours", href: "/virtual-tours", section: false },
-  { label: "Blogs", id: "blogs", href: "/blogs", section: false },
+  { label: "Virtual Tours", id: "virtual-tours", href: "/virtual-tours", section: false, trackOnHome: true },
+  { label: "Blogs", id: "blogs", href: "/blogs", section: false, trackOnHome: true },
   { label: "Contact Us", id: "contact-us", href: "/#contact-us", section: true },
 ];
-const navTargets = navItems.filter((item) => item.section);
+const navTargets = navItems.filter((item) => item.section || item.trackOnHome);
 const displayPhoneNumber = "+91 99999 97327";
 const skySkrabersAddress = "Sky Skrabers, C-132, Lajpat Nagar 2, New Delhi, Delhi 110024";
 const skySkrabersMapQuery = "Sky Skrabers Lajpat Nagar 2";
@@ -63,18 +63,18 @@ const cardImages = [
 
 const projects: GalleryItem[] = [
   {
-    name: "Lajpat Nagar",
+    name: "Lajpat Nagar 1/2/4",
     location: "New Delhi",
-    year: "2022",
+    year: "2026",
     configuration: "3 BHK · 3 Floors",
     coordinates: "28.5672° N, 77.2430° E",
     image: cardImages[0],
     imagePosition: "50% 55%",
   },
   {
-    name: "South Delhi",
+    name: "Lajpat Nagar 3",
     location: "New Delhi",
-    year: "2023",
+    year: "2025",
     configuration: "3 BHK · 3 Floors",
     coordinates: "28.5355° N, 77.2410° E",
     image: cardImages[1],
@@ -83,32 +83,32 @@ const projects: GalleryItem[] = [
   {
     name: "Defence Colony",
     location: "New Delhi",
-    year: "2023",
+    year: "2025",
     configuration: "3 BHK · 3 Floors",
     coordinates: "28.5672° N, 77.2290° E",
     image: cardImages[2],
     imagePosition: "50% 50%",
   },
   {
-    name: "Greater Kailash",
+    name: "East Of Kailash",
     location: "New Delhi",
-    year: "2024",
+    year: "2025",
     configuration: "3 BHK · 3 Floors",
     coordinates: "28.5494° N, 77.2430° E",
     image: cardImages[3],
     imagePosition: "50% 55%",
   },
   {
-    name: "South Extension",
+    name: "South Extension Part 1/2",
     location: "New Delhi",
-    year: "2024",
+    year: "2025",
     configuration: "3 BHK · 3 Floors",
     coordinates: "28.5687° N, 77.2209° E",
     image: cardImages[4],
     imagePosition: "50% 52%",
   },
   {
-    name: "Vasant Vihar",
+    name: "Hauz Khas",
     location: "New Delhi",
     year: "2025",
     configuration: "3 BHK · 3 Floors",
@@ -120,17 +120,17 @@ const projects: GalleryItem[] = [
 
 const ongoing = [
   {
-    name: "Lajpat Nagar 1/2",
+    name: "Lajpat Nagar 1/2/4",
     image: projects[0].image,
     imagePosition: projects[0].imagePosition,
-    coords: "Lajpat Nagar 1/2",
+    coords: "Lajpat Nagar 1/2/4",
     slug: "lajpat-nagar-1-2",
   },
   {
-    name: "Lajpat Nagar 3/4",
+    name: "Lajpat Nagar 3",
     image: projects[1].image,
     imagePosition: projects[1].imagePosition,
-    coords: "Lajpat Nagar 3/4",
+    coords: "Lajpat Nagar 3",
     slug: "lajpat-nagar-3-4",
   },
   {
@@ -237,7 +237,13 @@ function Header() {
       <nav className={open ? "nav nav--open" : "nav"} aria-label="Primary navigation">
         {navItems.map((item) =>
           item.href === "/blogs" ? (
-            <RouteLoadingLink key={item.id} href={item.href} pageTitle={item.label} onNavigate={() => setOpen(false)}>
+            <RouteLoadingLink
+              key={item.id}
+              className={activeSection === item.id ? "is-active" : undefined}
+              href={item.href}
+              pageTitle={item.label}
+              onNavigate={() => setOpen(false)}
+            >
               {item.label}
             </RouteLoadingLink>
           ) : (
@@ -1100,10 +1106,6 @@ function OngoingProjects() {
                 <MapPin size={17} /> New Delhi
               </em>
               <i />
-              <span className="ongoing-card__meta-row">
-                <b>Expected Completion</b>
-                <span>2026</span>
-              </span>
             </span>
           </motion.button>
         ))}
@@ -1136,7 +1138,11 @@ function About() {
 
 function VirtualToursCta() {
   return (
-    <section className="blog-button-section reveal-section" aria-label="Open Sky Skrabers virtual tours">
+    <section
+      id="virtual-tours"
+      className="blog-button-section reveal-section"
+      aria-label="Open Sky Skrabers virtual tours"
+    >
       <RouteLoadingLink
         className="glow-blog-button"
         href="/virtual-tours"
@@ -1152,7 +1158,7 @@ function VirtualToursCta() {
 
 function BlogCta() {
   return (
-    <section className="blog-button-section reveal-section" aria-label="Open Sky Skrabers blogs">
+    <section id="blogs" className="blog-button-section reveal-section" aria-label="Open Sky Skrabers blogs">
       <RouteLoadingLink className="glow-blog-button" href="/blogs" pageTitle="Blogs" ariaLabel="Open Sky Skrabers blogs page">
         <span>Blogs</span>
         <ArrowRight size={18} />
@@ -1162,12 +1168,6 @@ function BlogCta() {
 }
 
 function Contact() {
-  const [sent, setSent] = useState(false);
-  const submit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setSent(true);
-  };
-
   return (
     <section id="contact-us" className="contact reveal-section">
       <div className="contact-panel glass-card">
@@ -1193,33 +1193,14 @@ function Contact() {
           <p>
             <Mail size={18} /> hello@skyskrabers.com
           </p>
+          <p>
+            <InstagramLink className="contact-instagram-link">@sky.skrabers</InstagramLink>
+          </p>
+          <p>
+            <Mail size={18} />
+            <a href="mailto:help@skyskrabers.in?subject=Report%20a%20bug">Report a bug @help.skyskrabers.in</a>
+          </p>
         </div>
-        <form onSubmit={submit}>
-          <input aria-label="Name" placeholder="Name" autoComplete="name" maxLength={80} required />
-          <input
-            aria-label="Phone"
-            placeholder="Phone"
-            autoComplete="tel"
-            inputMode="tel"
-            maxLength={20}
-            pattern="[0-9+() -]{7,20}"
-            required
-          />
-          <input aria-label="Email" placeholder="Email" type="email" autoComplete="email" maxLength={120} />
-          <select aria-label="Requirement" defaultValue="">
-            <option value="" disabled>
-              Requirement
-            </option>
-            <option>Construction</option>
-            <option>Buy New Home</option>
-            <option>Sell Property</option>
-            <option>Virtual Tour</option>
-          </select>
-          <textarea aria-label="Message" placeholder="Message" rows={4} maxLength={800} />
-          <button type="submit">
-            <Send size={18} /> {sent ? "Request Received" : "Submit"}
-          </button>
-        </form>
       </div>
       <div className="map-panel glass-card">
         <iframe
@@ -1258,6 +1239,9 @@ function Footer() {
         <RouteLoadingLink href="/terms-and-conditions" pageTitle="Terms and Conditions">
           Terms & Conditions
         </RouteLoadingLink>
+      </nav>
+      <nav className="footer-legal" aria-label="Social links">
+        <InstagramLink>Instagram</InstagramLink>
       </nav>
       <p>Built Spaces. Real Legacies.</p>
       <small>© 2026 Sky Skrabers. All rights reserved.</small>

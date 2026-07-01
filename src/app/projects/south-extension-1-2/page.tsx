@@ -22,7 +22,17 @@ export default function SouthExtensionProjectPage() {
       titleLines={["SOUTH", "EXTENSION 1/2"]}
       projectName="South Extension Part 1/2"
       addressLabel="South Extension"
-      addresses={[{ title: "G-16, South Extension, Part-2." }]}
+      addresses={[
+        {
+          title: "G-16, South Extension, Part-2.",
+          details: [
+            { label: "Area", value: "600 sqyrd" },
+            { label: "Structure", value: "4 Floors + Basement, Stilt Parking" },
+            { label: "Config", value: "5BHK" },
+            { label: "Completion", value: "By the end of May-27" },
+          ],
+        },
+      ]}
       whatsappText="I want to know more about South Extension Part 1 and 2 ongoing projects."
     />
   );

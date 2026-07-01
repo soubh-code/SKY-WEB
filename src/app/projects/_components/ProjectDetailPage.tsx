@@ -1,9 +1,10 @@
 "use client";
 
 import { WhatsAppButton } from "@/components/WhatsAppButton";
+import { InstagramLink } from "@/components/InstagramLink";
 import { SkyLogo } from "@/components/SkyLogo";
 import Link from "next/link";
-import { ArrowUpRight, Camera, MessageCircle, Send } from "lucide-react";
+import { ArrowUpRight, MessageCircle, Send } from "lucide-react";
 import type { MouseEvent } from "react";
 import styles from "../lajpat-nagar-1-2/project-page.module.css";
 
@@ -12,6 +13,10 @@ const HOME_RELOAD_PENDING_KEY = "sky-home-reload-pending";
 export type ProjectAddress = {
   title: string;
   tags?: string[];
+  details?: {
+    label: string;
+    value: string;
+  }[];
 };
 
 export type ProjectDetailPageProps = {
@@ -66,9 +71,7 @@ export function ProjectDetailPage({
           </a>
         </nav>
         <div className={styles.socials} aria-label="Social links">
-          <a href="https://www.instagram.com/skyskrabers/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-            <Camera size={18} />
-          </a>
+          <InstagramLink iconOnly />
           <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
             <Send size={18} />
           </a>
@@ -107,6 +110,16 @@ export function ProjectDetailPage({
                     <span key={tag}>{tag}</span>
                   ))}
                 </div>
+                {item.details ? (
+                  <dl className={styles.addressDetails}>
+                    {item.details.map((detail) => (
+                      <div key={detail.label}>
+                        <dt>{detail.label}</dt>
+                        <dd>{detail.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                ) : null}
               </div>
               <ArrowUpRight className={styles.serviceArrow} size={70} strokeWidth={2.1} aria-hidden="true" />
             </article>
@@ -128,6 +141,7 @@ export function ProjectDetailPage({
         <nav aria-label="Footer links">
           <Link href="/#home">Home</Link>
           <Link href="/#contact-us">Contact</Link>
+          <InstagramLink>Instagram</InstagramLink>
           <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
             WhatsApp
           </a>

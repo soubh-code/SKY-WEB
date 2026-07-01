@@ -22,7 +22,17 @@ export default function HauzKhasProjectPage() {
       titleLines={["HAUZ", "KHAS"]}
       projectName="Hauz Khas"
       addressLabel="Hauz Khas"
-      addresses={[{ title: "B1-3, Hauz Khas." }]}
+      addresses={[
+        {
+          title: "B1-3, Hauz Khas.",
+          details: [
+            { label: "Area", value: "325 sqyrd" },
+            { label: "Structure", value: "4 Floors + Basement, Stilt Parking" },
+            { label: "Config", value: "4BHK" },
+            { label: "Completion", value: "By the end of Mar-27" },
+          ],
+        },
+      ]}
       whatsappText="I want to know more about HAUZKHAS ongoing projects."
     />
   );
