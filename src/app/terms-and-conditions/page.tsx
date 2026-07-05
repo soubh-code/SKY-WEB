@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { business } from "@/lib/business";
 
 export default function TermsAndConditionsPage() {
   return (
@@ -30,8 +31,8 @@ export default function TermsAndConditionsPage() {
         </p>
         <h2>Contact</h2>
         <p>
-          For questions about these terms, contact Sky Skrabers at <a href="tel:+919999997327">+91 99999 97327</a> or{" "}
-          <a href="mailto:hello@skyskrabers.com">hello@skyskrabers.com</a>.
+          For questions about these terms, contact Sky Skrabers at <a href={business.phoneHref}>{business.phoneDisplay}</a> or{" "}
+          <a href={`mailto:${business.email}`}>{business.email}</a>.
         </p>
       </section>
     </main>

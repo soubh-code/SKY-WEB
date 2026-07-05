@@ -14,6 +14,7 @@ export type BlogPost = {
   title: string;
   excerpt: string;
   date: string;
+  updatedDate?: string;
   displayDate: string;
   readTime: string;
   description: string;

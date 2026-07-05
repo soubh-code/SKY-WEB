@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import Script from "next/script";
+import { GoogleAnalytics } from "@/components/GoogleAnalytics";
+import { business, googleSearchConsoleMetaCode, siteUrl } from "@/lib/business";
 import { Cormorant_Garamond, Inter } from "next/font/google";
 import "./globals.css";
 
@@ -14,16 +15,15 @@ const cormorant = Cormorant_Garamond({
   weight: ["500", "600", "700"],
 });
 
-const siteUrl = "https://skyskrabers.in";
-const googleAnalyticsId = process.env.NEXT_PUBLIC_GA_ID;
-const googleSiteVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION;
-
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: "Sky Skrabers | Built Spaces. Real Legacies.",
+  title: {
+    default: "Sky Skrabers | South Delhi Real Estate Developer",
+    template: "%s | Sky Skrabers",
+  },
   description:
-    "A cinematic luxury real-estate experience for Sky Skrabers, premium residences and builder floors in South Delhi.",
-  applicationName: "Sky Skrabers",
+    "Sky Skrabers is a South Delhi real estate developer and property services company for buying homes, selling property, collaborations, investments, and property development.",
+  applicationName: business.name,
   alternates: {
     canonical: "/",
   },
@@ -32,18 +32,29 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   manifest: "/manifest.webmanifest",
+  keywords: [
+    "Sky Skrabers",
+    "South Delhi real estate developer",
+    "builder floors South Delhi",
+    "buy house South Delhi",
+    "sell property South Delhi",
+    "property development South Delhi",
+    "Lajpat Nagar real estate",
+    "Defence Colony luxury homes",
+    "Greater Kailash builder floors",
+  ],
   openGraph: {
-    title: "Sky Skrabers | Built Spaces. Real Legacies.",
+    title: "Sky Skrabers | South Delhi Real Estate Developer",
     description:
-      "Premium South Delhi real estate, construction, collaborations, and ongoing projects by Sky Skrabers.",
+      "Premium South Delhi real estate, construction, collaborations, buying support, selling guidance, and ongoing projects by Sky Skrabers.",
     url: siteUrl,
-    siteName: "Sky Skrabers",
+    siteName: business.name,
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Sky Skrabers - Built Spaces. Real Legacies.",
+        alt: "Sky Skrabers South Delhi real estate developer",
       },
     ],
     locale: "en_IN",
@@ -51,18 +62,14 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Sky Skrabers | Built Spaces. Real Legacies.",
+    title: "Sky Skrabers | South Delhi Real Estate Developer",
     description:
-      "Premium South Delhi real estate, construction, collaborations, and ongoing projects by Sky Skrabers.",
+      "Premium South Delhi real estate, construction, collaborations, buying support, selling guidance, and ongoing projects by Sky Skrabers.",
     images: ["/og-image.png"],
   },
-  ...(googleSiteVerification
-    ? {
-        verification: {
-          google: googleSiteVerification,
-        },
-      }
-    : {}),
+  verification: {
+    google: googleSearchConsoleMetaCode,
+  },
 };
 
 const businessSchema = {
@@ -71,43 +78,45 @@ const businessSchema = {
     {
       "@type": ["Organization", "RealEstateAgent"],
       "@id": `${siteUrl}/#organization`,
-      name: "Sky Skrabers",
+      name: business.name,
       url: siteUrl,
       logo: `${siteUrl}/assets/brand-logo-white.png`,
       image: `${siteUrl}/assets/brand-logo-white.png`,
-      description:
-        "Sky Skrabers is a Delhi-based real estate enterprise focused on premium residences, builder floors, construction, property selling support, collaborations, and ongoing projects across South Delhi.",
+      description: business.description,
       foundingDate: "2011",
-      telephone: "+91 99999 97327",
-      email: "hello@skyskrabers.com",
-      sameAs: ["https://www.instagram.com/sky.skrabers/"],
+      telephone: business.phoneSchema,
+      email: business.email,
+      sameAs: [business.instagram],
       address: {
         "@type": "PostalAddress",
-        streetAddress: "C-132, Lajpat Nagar 2",
-        addressLocality: "New Delhi",
-        addressRegion: "Delhi",
-        postalCode: "110024",
-        addressCountry: "IN",
+        streetAddress: business.streetAddress,
+        addressLocality: business.locality,
+        addressRegion: business.region,
+        postalCode: business.postalCode,
+        addressCountry: business.country,
       },
-      areaServed: [
-        "South Delhi",
-        "Lajpat Nagar",
-        "South Extension",
-        "East Of Kailash",
-        "Defence Colony",
-        "Hauz Khas",
-      ],
+      areaServed: business.serviceAreas.map((area) => ({
+        "@type": "Place",
+        name: area,
+      })),
       contactPoint: [
         {
           "@type": "ContactPoint",
-          telephone: "+91 99999 97327",
+          telephone: business.phoneSchema,
           contactType: "customer service",
           areaServed: "IN",
           availableLanguage: ["en", "hi"],
         },
         {
           "@type": "ContactPoint",
-          email: "help@skyskrabers.in",
+          telephone: business.whatsappSchema,
+          contactType: "WhatsApp enquiries",
+          areaServed: "IN",
+          availableLanguage: ["en", "hi"],
+        },
+        {
+          "@type": "ContactPoint",
+          email: business.email,
           contactType: "technical support",
           areaServed: "IN",
           availableLanguage: ["en", "hi"],
@@ -116,46 +125,23 @@ const businessSchema = {
       hasOfferCatalog: {
         "@type": "OfferCatalog",
         name: "Sky Skrabers Services",
-        itemListElement: [
-          {
-            "@type": "Offer",
-            itemOffered: {
-              "@type": "Service",
-              name: "Construction",
-              serviceType: "Real estate construction and property transformation",
+        itemListElement: business.services.map((service) => ({
+          "@type": "Offer",
+          itemOffered: {
+            "@type": "Service",
+            name: service,
+            provider: {
+              "@id": `${siteUrl}/#organization`,
             },
+            areaServed: business.serviceAreas,
           },
-          {
-            "@type": "Offer",
-            itemOffered: {
-              "@type": "Service",
-              name: "Buy New Home",
-              serviceType: "Premium South Delhi residence discovery",
-            },
-          },
-          {
-            "@type": "Offer",
-            itemOffered: {
-              "@type": "Service",
-              name: "Sell Property",
-              serviceType: "Property selling and valuation support",
-            },
-          },
-          {
-            "@type": "Offer",
-            itemOffered: {
-              "@type": "Service",
-              name: "Collaboration",
-              serviceType: "Real estate collaboration and redevelopment planning",
-            },
-          },
-        ],
+        })),
       },
     },
     {
       "@type": "WebSite",
       "@id": `${siteUrl}/#website`,
-      name: "Sky Skrabers",
+      name: business.name,
       url: siteUrl,
       publisher: {
         "@id": `${siteUrl}/#organization`,
@@ -174,19 +160,7 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${cormorant.variable}`}>
       <body>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(businessSchema) }} />
-        {googleAnalyticsId ? (
-          <>
-            <Script src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`} strategy="afterInteractive" />
-            <Script id="google-analytics" strategy="afterInteractive">
-              {`
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', '${googleAnalyticsId}');
-              `}
-            </Script>
-          </>
-        ) : null}
+        <GoogleAnalytics />
         {children}
       </body>
     </html>

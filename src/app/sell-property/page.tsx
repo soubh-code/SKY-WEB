@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { SellPropertyContent } from "./SellPropertyContent";
 
 export const metadata: Metadata = {
-  title: "Sell Property in South Delhi | Sky Skrabers",
+  title: "Sell Property in South Delhi",
   description:
     "Sell your property with Sky Skrabers. Message us on WhatsApp, connect with our team, arrange a property visit, and understand the best possible value.",
   alternates: {

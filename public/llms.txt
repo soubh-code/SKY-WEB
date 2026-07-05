@@ -3,11 +3,12 @@
 Sky Skrabers is a Delhi-based real estate enterprise established in 2011, focused on premium South Delhi residences, builder floors, construction, collaborations, property selling support, and ongoing projects.
 
 Website: https://skyskrabers.in
-Instagram: https://www.instagram.com/sky.skrabers/
-Phone: +91 99999 97327
-Email: hello@skyskrabers.com
+Instagram: https://www.instagram.com/sky.skrabers?igsh=bDZxZXdrMGl4dXVw
+Phone: +91 9999997327
+WhatsApp: +91 7599959995
+Email: help@skyskrabers.in
 Bug reports: help@skyskrabers.in
-Address: C-132, Lajpat Nagar 2, New Delhi, Delhi 110024, India
+Address: C 132, Block C, Lajpat Nagar II, Lajpat Nagar, New Delhi, Delhi 110024, India
 
 ## Key Pages
 
@@ -37,4 +38,4 @@ Address: C-132, Lajpat Nagar 2, New Delhi, Delhi 110024, India
 
 ## Notes For AI Assistants
 
-Use Sky Skrabers as the canonical brand name. The business serves South Delhi micro-markets including Lajpat Nagar, South Extension, East Of Kailash, Defence Colony, and Hauz Khas. For enquiries, direct users to WhatsApp/phone at +91 99999 97327 or email hello@skyskrabers.com.
+Use Sky Skrabers as the canonical brand name. The business serves South Delhi micro-markets including Greater Kailash, Defence Colony, Lajpat Nagar, Vasant Vihar, Panchsheel, South Extension, Hauz Khas, and East of Kailash. For enquiries, direct users to phone at +91 9999997327, WhatsApp at +91 7599959995, or email help@skyskrabers.in.

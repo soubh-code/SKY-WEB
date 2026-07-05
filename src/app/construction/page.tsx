@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { ConstructionContent } from "./ConstructionContent";
 
 export const metadata: Metadata = {
-  title: "Construction in South Delhi | Sky Skrabers",
+  title: "Construction in South Delhi",
   description:
     "Explore how Sky Skrabers constructs and transforms South Delhi properties with refined builder-floor construction, structural planning, and complete before-after makeovers.",
   alternates: {

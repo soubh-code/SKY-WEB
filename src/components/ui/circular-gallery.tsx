@@ -64,6 +64,7 @@ export interface GalleryItem {
   configuration: string;
   coordinates: string;
   image: string;
+  imageAlt?: string;
   imagePosition?: string;
 }
 
@@ -120,6 +121,8 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                 key={item.name}
                 className={cn("circular-gallery__item", isActive && "is-active")}
                 aria-label={`Show ${item.name}`}
+                data-analytics-event="property_card_click"
+                data-analytics-label={`${item.name} completed project gallery card`}
                 onClick={() => onItemSelect?.(index)}
                 style={
                   {
@@ -132,7 +135,11 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
               >
                 <span className="circular-gallery__image-wrap">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={item.image} alt={`${item.name} project`} style={{ objectPosition: item.imagePosition || "center" }} />
+                  <img
+                    src={item.image}
+                    alt={item.imageAlt ?? `${item.name} premium South Delhi project by Sky Skrabers`}
+                    style={{ objectPosition: item.imagePosition || "center" }}
+                  />
                 </span>
                 <span className="circular-gallery__shade" />
                 <span className="circular-gallery__content">

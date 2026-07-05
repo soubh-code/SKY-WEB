@@ -24,9 +24,24 @@ const getPageTitle = (href: string, label: string) => {
 };
 
 const tours = [
-  ["Lajpat Nagar Residence", "Private 360 walkthrough", "/assets/card-images/card-01.avif"],
-  ["Greater Kailash Villa", "Cinematic room preview", "/assets/card-images/card-04.avif"],
-  ["South Extension Floor", "Immersive residence scan", "/assets/card-images/card-05.jpg"],
+  [
+    "Lajpat Nagar Residence",
+    "Private 360 walkthrough",
+    "/assets/card-images/card-01.avif",
+    "Luxury builder floor in Lajpat Nagar South Delhi by Sky Skrabers",
+  ],
+  [
+    "Greater Kailash Villa",
+    "Cinematic room preview",
+    "/assets/card-images/card-04.avif",
+    "Luxury residential facade in Greater Kailash South Delhi by Sky Skrabers",
+  ],
+  [
+    "South Extension Floor",
+    "Immersive residence scan",
+    "/assets/card-images/card-05.jpg",
+    "Premium builder floor in South Extension South Delhi by Sky Skrabers",
+  ],
 ] as const;
 
 function VirtualToursHeader() {
@@ -110,7 +125,7 @@ export function VirtualToursContent() {
             <h1>Explore Before You Arrive.</h1>
           </div>
           <div className="tour-card-grid">
-            {tours.map(([title, description, image]) => (
+            {tours.map(([title, description, image, imageAlt]) => (
               <button
                 className="tour-card"
                 key={title}
@@ -118,8 +133,10 @@ export function VirtualToursContent() {
                 onMouseMove={handleTourCardMove}
                 onMouseLeave={handleTourCardLeave}
                 aria-label={`${title}: ${description}`}
+                data-analytics-event="property_card_click"
+                data-analytics-label={`${title} virtual tour card`}
               >
-                <Image src={image} alt="" fill sizes="(max-width: 820px) 100vw, 33vw" />
+                <Image src={image} alt={imageAlt} fill sizes="(max-width: 820px) 100vw, 33vw" />
                 <span className="tour-card__button">
                   <span>
                     <span className="tour-card__title">{title}</span>

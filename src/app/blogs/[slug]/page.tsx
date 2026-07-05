@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { RouteLoadingLink } from "@/components/RouteLoadingLink";
+import { siteUrl } from "@/lib/business";
 import { BlogShell } from "../BlogClient";
 import { blogPosts, getBlogPost } from "../blog-data";
 
@@ -22,14 +23,32 @@ export async function generateMetadata({ params }: BlogArticlePageProps): Promis
 
   if (!post) {
     return {
-      title: "Blog Not Found | Sky Skrabers",
+      title: "Blog Not Found",
     };
   }
 
   return {
-    title: `${post.title} | Sky Skrabers`,
+    title: post.title,
     description: post.description,
     keywords: post.keywords,
+    alternates: {
+      canonical: `/blogs/${post.slug}`,
+    },
+    openGraph: {
+      title: `${post.title} | Sky Skrabers`,
+      description: post.description,
+      url: `/blogs/${post.slug}`,
+      siteName: "Sky Skrabers",
+      type: "article",
+      publishedTime: post.date,
+      modifiedTime: post.updatedDate ?? post.date,
+      authors: ["Sky Skrabers"],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${post.title} | Sky Skrabers`,
+      description: post.description,
+    },
   };
 }
 
@@ -44,18 +63,27 @@ export default async function BlogArticlePage({ params }: BlogArticlePageProps) 
   const articleSchema = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
+    "@id": `${siteUrl}/blogs/${post.slug}#article`,
+    mainEntityOfPage: `${siteUrl}/blogs/${post.slug}`,
     headline: post.title,
     description: post.description,
     datePublished: post.date,
+    dateModified: post.updatedDate ?? post.date,
     author: {
       "@type": "Organization",
       name: "Sky Skrabers",
+      url: siteUrl,
     },
     publisher: {
       "@type": "Organization",
       name: "Sky Skrabers",
+      logo: {
+        "@type": "ImageObject",
+        url: `${siteUrl}/assets/brand-logo-white.png`,
+      },
     },
     keywords: post.keywords.join(", "),
+    url: `${siteUrl}/blogs/${post.slug}`,
   };
 
   return (

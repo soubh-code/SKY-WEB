@@ -4,11 +4,12 @@ import { RouteLoadingLink } from "@/components/RouteLoadingLink";
 import { SkyLogo } from "@/components/SkyLogo";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { ShaderBackground } from "@/components/ui/shader-background";
+import { business } from "@/lib/business";
 import { CalendarCheck2, Home, Menu, MessageCircle, TrendingUp, UserRoundCheck } from "lucide-react";
 import { useState } from "react";
 
 const whatsappSellUrl =
-  "https://wa.me/919999997327?text=Hello%20Sky%20Skrabers%2C%20I%20want%20to%20sell%20my%20property.%20Please%20connect%20with%20me.";
+  `https://wa.me/${business.whatsappSchema.replace("+", "")}?text=Hello%20Sky%20Skrabers%2C%20I%20want%20to%20sell%20my%20property.%20Please%20connect%20with%20me.`;
 
 const navItems = [
   { label: "Home", href: "/#home" },
@@ -99,7 +100,14 @@ export function SellPropertyContent() {
               with you, visits your property, and helps you understand the best possible value.
             </p>
             <div className="sell-property-actions">
-              <a className="sell-property-whatsapp" href={whatsappSellUrl} target="_blank" rel="noopener noreferrer">
+              <a
+                className="sell-property-whatsapp"
+                href={whatsappSellUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-analytics-event="whatsapp_click"
+                data-analytics-label="Sell property hero WhatsApp"
+              >
                 <MessageCircle size={21} />
                 Start On WhatsApp
               </a>
@@ -143,7 +151,14 @@ export function SellPropertyContent() {
               the next step.
             </p>
           </div>
-          <a className="sell-property-whatsapp sell-property-whatsapp--compact" href={whatsappSellUrl} target="_blank" rel="noopener noreferrer">
+          <a
+            className="sell-property-whatsapp sell-property-whatsapp--compact"
+            href={whatsappSellUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-analytics-event="generate_lead"
+            data-analytics-label="Sell property book a visit"
+          >
             <CalendarCheck2 size={20} />
             Book A Visit
           </a>

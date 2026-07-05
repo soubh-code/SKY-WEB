@@ -5,6 +5,7 @@ import { SkyLogo } from "@/components/SkyLogo";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { ShaderBackground } from "@/components/ui/shader-background";
 import { ArrowLeftRight, Building2, CheckCircle2, Menu } from "lucide-react";
+import Image from "next/image";
 import { useState } from "react";
 
 const navItems = [
@@ -23,21 +24,37 @@ const transformationSlots = [
     title: "Facade Transformation",
     before: "Original elevation",
     after: "Refined street presence",
+    beforeImage: "/assets/construction/facade-renewal-before.webp",
+    afterImage: "/assets/construction/facade-renewal-after.webp",
+    beforeAlt: "Original South Delhi residential facade before transformation by Sky Skrabers",
+    afterAlt: "Modern South Delhi residential facade after transformation by Sky Skrabers",
   },
   {
     title: "Interior Planning",
     before: "Closed, dated rooms",
     after: "Open, functional living",
+    beforeImage: "/assets/construction/interior-before.webp",
+    afterImage: "/assets/construction/interior-after.webp",
+    beforeAlt: "Interior living space before planning upgrade by Sky Skrabers",
+    afterAlt: "Refined South Delhi interior living room after planning upgrade by Sky Skrabers",
   },
   {
     title: "Builder Floor Upgrade",
     before: "Basic builder finish",
     after: "Premium material language",
+    beforeImage: "/assets/construction/builder-floor-before.webp",
+    afterImage: "/assets/construction/builder-floor-after.webp",
+    beforeAlt: "Builder floor construction stage in South Delhi by Sky Skrabers",
+    afterAlt: "Premium builder floor facade after upgrade by Sky Skrabers",
   },
   {
     title: "Complete Property Renewal",
     before: "Ageing South Delhi home",
     after: "Modern residence handover",
+    beforeImage: "/assets/construction/property-renewal-before.webp",
+    afterImage: "/assets/construction/property-renewal-after.webp",
+    beforeAlt: "Ageing South Delhi home before complete property renewal by Sky Skrabers",
+    afterAlt: "Modern South Delhi residence after complete property renewal by Sky Skrabers",
   },
 ];
 
@@ -141,6 +158,8 @@ export function ConstructionContent() {
           <div className="before-after-grid">
             {transformationSlots.map((slot) => {
               const showingAfter = Boolean(revealedCards[slot.title]);
+              const imageSrc = showingAfter ? slot.afterImage : slot.beforeImage;
+              const imageAlt = showingAfter ? slot.afterAlt : slot.beforeAlt;
 
               return (
                 <button
@@ -154,8 +173,22 @@ export function ConstructionContent() {
                     <ArrowLeftRight size={15} />
                     {showingAfter ? "Click to see before" : "Click to see after"}
                   </span>
-                  <div className="image-slot image-slot--interactive" aria-label={`${slot.title} ${showingAfter ? "after" : "before"} image placeholder`}>
-                    <span>{showingAfter ? "After Image" : "Before Image"}</span>
+                  <div
+                    className={
+                      imageSrc ? "image-slot image-slot--interactive image-slot--has-image" : "image-slot image-slot--interactive"
+                    }
+                    aria-label={`${slot.title} ${showingAfter ? "after" : "before"} image${imageSrc ? "" : " placeholder"}`}
+                  >
+                    {imageSrc ? (
+                      <Image
+                        src={imageSrc}
+                        alt={imageAlt}
+                        fill
+                        sizes="(max-width: 760px) 100vw, (max-width: 1200px) 50vw, 560px"
+                        className="image-slot__media"
+                        style={{ objectFit: "cover", objectPosition: "center" }}
+                      />
+                    ) : null}
                     <strong>{showingAfter ? slot.after : slot.before}</strong>
                   </div>
                   <h3>{slot.title}</h3>

@@ -1,10 +1,13 @@
 import type { MetadataRoute } from "next";
+import { siteUrl } from "@/lib/business";
 import { blogPosts } from "./blogs/blog-data";
-
-const siteUrl = "https://skyskrabers.in";
 
 const staticRoutes = [
   "",
+  "/#about-us",
+  "/#our-projects",
+  "/#ongoing-projects",
+  "/#contact-us",
   "/construction",
   "/sell-property",
   "/virtual-tours",

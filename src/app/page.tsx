@@ -5,6 +5,7 @@ import { InstagramLink } from "@/components/InstagramLink";
 import { RouteLoadingLink } from "@/components/RouteLoadingLink";
 import { SkyLogo } from "@/components/SkyLogo";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
+import { business } from "@/lib/business";
 import { motion, useReducedMotion } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -38,9 +39,9 @@ const navItems = [
   { label: "Contact Us", id: "contact-us", href: "/#contact-us", section: true },
 ];
 const navTargets = navItems.filter((item) => item.section || item.trackOnHome);
-const displayPhoneNumber = "+91 99999 97327";
-const skySkrabersAddress = "Sky Skrabers, C-132, Lajpat Nagar 2, New Delhi, Delhi 110024";
-const skySkrabersMapQuery = "Sky Skrabers Lajpat Nagar 2";
+const displayPhoneNumber = business.phoneDisplay;
+const skySkrabersAddress = `${business.name}, ${business.address}`;
+const skySkrabersMapQuery = business.mapQuery;
 const mapsEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(skySkrabersMapQuery)}&output=embed`;
 const HOME_RELOAD_PENDING_KEY = "sky-home-reload-pending";
 const PHONE_ENTRY_FRAME_COUNT = 99;
@@ -69,6 +70,7 @@ const projects: GalleryItem[] = [
     configuration: "3 BHK · 3 Floors",
     coordinates: "28.5672° N, 77.2430° E",
     image: cardImages[0],
+    imageAlt: "Luxury builder floor in Lajpat Nagar South Delhi by Sky Skrabers",
     imagePosition: "50% 55%",
   },
   {
@@ -78,6 +80,7 @@ const projects: GalleryItem[] = [
     configuration: "3 BHK · 3 Floors",
     coordinates: "28.5355° N, 77.2410° E",
     image: cardImages[1],
+    imageAlt: "Premium residence in Lajpat Nagar 3 New Delhi by Sky Skrabers",
     imagePosition: "50% 56%",
   },
   {
@@ -87,6 +90,7 @@ const projects: GalleryItem[] = [
     configuration: "3 BHK · 3 Floors",
     coordinates: "28.5672° N, 77.2290° E",
     image: cardImages[2],
+    imageAlt: "Luxury home project in Defence Colony South Delhi by Sky Skrabers",
     imagePosition: "50% 50%",
   },
   {
@@ -96,6 +100,7 @@ const projects: GalleryItem[] = [
     configuration: "3 BHK · 3 Floors",
     coordinates: "28.5494° N, 77.2430° E",
     image: cardImages[3],
+    imageAlt: "Modern South Delhi residential facade in East of Kailash by Sky Skrabers",
     imagePosition: "50% 55%",
   },
   {
@@ -105,6 +110,7 @@ const projects: GalleryItem[] = [
     configuration: "3 BHK · 3 Floors",
     coordinates: "28.5687° N, 77.2209° E",
     image: cardImages[4],
+    imageAlt: "South Extension builder floor project in South Delhi by Sky Skrabers",
     imagePosition: "50% 52%",
   },
   {
@@ -114,6 +120,7 @@ const projects: GalleryItem[] = [
     configuration: "3 BHK · 3 Floors",
     coordinates: "28.5603° N, 77.1633° E",
     image: cardImages[5],
+    imageAlt: "Hauz Khas premium residential project by Sky Skrabers",
     imagePosition: "50% 57%",
   },
 ];
@@ -928,7 +935,7 @@ function CompletedProjects() {
     >
       <Image
         src="/assets/section-3-background.avif"
-        alt=""
+        alt="Completed South Delhi residential project background by Sky Skrabers"
         fill
         className="atmosphere projects__background"
         quality={100}
@@ -1022,7 +1029,12 @@ function OngoingProjects() {
 
   return (
     <section id="ongoing-projects" className="ongoing" data-nav-section="our-projects">
-      <Image src="/assets/section-3-background.avif" alt="" fill className="ongoing__tower" />
+      <Image
+        src="/assets/section-3-background.avif"
+        alt="Ongoing South Delhi residential project backdrop by Sky Skrabers"
+        fill
+        className="ongoing__tower"
+      />
       <div className="section-overlay section-overlay--heavy" />
       <motion.div
         className="section-heading"
@@ -1062,6 +1074,8 @@ function OngoingProjects() {
               if (!clickToExpand && event.pointerType !== "touch") activateProject(index);
             }}
             onClick={() => handleProjectClick(index)}
+            data-analytics-event="property_card_click"
+            data-analytics-label={`${project.name} ongoing project card`}
             onFocus={() => {
               if (!clickToExpand) activateProject(index);
             }}
@@ -1188,13 +1202,21 @@ function Contact() {
             </a>
           </p>
           <p>
-            <Phone size={18} /> {displayPhoneNumber}
+            <Phone size={18} />
+            <a href={business.phoneHref}>{displayPhoneNumber}</a>
           </p>
           <p>
-            <Mail size={18} /> hello@skyskrabers.com
+            <Phone size={18} />
+            <a href={business.whatsappHref} target="_blank" rel="noopener noreferrer">
+              WhatsApp {business.whatsappDisplay}
+            </a>
           </p>
           <p>
-            <InstagramLink className="contact-instagram-link">@sky.skrabers</InstagramLink>
+            <Mail size={18} />
+            <a href={`mailto:${business.email}`}>{business.email}</a>
+          </p>
+          <p>
+            <InstagramLink className="contact-instagram-link">{business.instagramHandle}</InstagramLink>
           </p>
           <p>
             <Mail size={18} />
@@ -1204,7 +1226,7 @@ function Contact() {
       </div>
       <div className="map-panel glass-card">
         <iframe
-          title="Sky Skrabers Lajpat Nagar 2 location"
+          title="Sky Skrabers Lajpat Nagar II location"
           src={mapsEmbedUrl}
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"

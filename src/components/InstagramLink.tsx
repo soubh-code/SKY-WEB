@@ -1,8 +1,9 @@
 "use client";
 
 import type { MouseEvent, ReactNode } from "react";
+import { business } from "@/lib/business";
 
-export const instagramWebUrl = "https://www.instagram.com/sky.skrabers/";
+export const instagramWebUrl = business.instagram;
 const instagramAppUrl = "instagram://user?username=sky.skrabers";
 
 type InstagramIconProps = {

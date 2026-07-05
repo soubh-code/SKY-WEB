@@ -2,7 +2,7 @@ import { ProjectDetailPage } from "@/app/projects/_components/ProjectDetailPage"
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Lajpat Nagar 1/2/4 Project | Sky Skrabers",
+  title: "Lajpat Nagar 1/2/4 Project",
   description: "Explore the Lajpat Nagar 1/2/4 ongoing residences by Sky Skrabers in South Delhi.",
   alternates: {
     canonical: "/projects/lajpat-nagar-1-2",

@@ -1,6 +1,5 @@
 import type { MetadataRoute } from "next";
-
-const siteUrl = "https://skyskrabers.in";
+import { siteUrl } from "@/lib/business";
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -8,6 +7,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
+        disallow: ["/api/", "/admin/", "/private/", "/drafts/", "/thank-you-test/"],
       },
     ],
     sitemap: `${siteUrl}/sitemap.xml`,

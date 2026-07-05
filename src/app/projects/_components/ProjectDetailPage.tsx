@@ -3,6 +3,7 @@
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { InstagramLink } from "@/components/InstagramLink";
 import { SkyLogo } from "@/components/SkyLogo";
+import { business } from "@/lib/business";
 import Link from "next/link";
 import { ArrowUpRight, MessageCircle, Send } from "lucide-react";
 import type { MouseEvent } from "react";
@@ -34,7 +35,7 @@ export function ProjectDetailPage({
   addresses,
   whatsappText,
 }: ProjectDetailPageProps) {
-  const whatsappUrl = `https://wa.me/919999997327?text=${encodeURIComponent(whatsappText)}`;
+  const whatsappUrl = `https://wa.me/${business.whatsappSchema.replace("+", "")}?text=${encodeURIComponent(whatsappText)}`;
   const scrollToProjects = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
     document.getElementById("details")?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -66,13 +67,20 @@ export function ProjectDetailPage({
           <a href="#visit" onClick={scrollToVisit}>
             Details
           </a>
-          <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+          <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" data-analytics-event="project_enquiry_click" data-analytics-label={`${projectName} visit link`}>
             Visit
           </a>
         </nav>
         <div className={styles.socials} aria-label="Social links">
           <InstagramLink iconOnly />
-          <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="WhatsApp"
+            data-analytics-event="whatsapp_click"
+            data-analytics-label={`${projectName} navbar WhatsApp`}
+          >
             <Send size={18} />
           </a>
         </div>
@@ -130,7 +138,14 @@ export function ProjectDetailPage({
       <section id="visit" className={styles.ctaSection}>
         <p>Private project conversation</p>
         <h2>Book A {addressLabel} Visit.</h2>
-        <a className={styles.ctaButton} href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+        <a
+          className={styles.ctaButton}
+          href={whatsappUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-analytics-event="project_enquiry_click"
+          data-analytics-label={`${projectName} WhatsApp enquiry`}
+        >
           <MessageCircle size={26} />
           WhatsApp Sky Skrabers
         </a>
@@ -142,7 +157,7 @@ export function ProjectDetailPage({
           <Link href="/#home">Home</Link>
           <Link href="/#contact-us">Contact</Link>
           <InstagramLink>Instagram</InstagramLink>
-          <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+          <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" data-analytics-event="whatsapp_click" data-analytics-label={`${projectName} footer WhatsApp`}>
             WhatsApp
           </a>
         </nav>
