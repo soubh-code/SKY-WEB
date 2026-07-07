@@ -11,6 +11,7 @@ const staticRoutes = [
   "/construction",
   "/sell-property",
   "/virtual-tours",
+  "/gallery",
   "/blogs",
   "/privacy-policy",
   "/terms-and-conditions",

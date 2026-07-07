@@ -2744,6 +2744,79 @@ form button:hover {
   line-height: 1.7;
 }
 
+.gallery-page {
+  position: relative;
+  min-height: 100svh;
+  overflow: hidden;
+  padding: clamp(7rem, 9vw, 8.5rem) 0 clamp(4rem, 7vw, 6rem);
+}
+
+.gallery-hero {
+  position: relative;
+  z-index: 1;
+  width: min(1120px, calc(100% - 2rem));
+  margin: 0 auto clamp(2.5rem, 5vw, 4.5rem);
+}
+
+.gallery-hero h1 {
+  max-width: 980px;
+  margin: 0;
+  font-size: clamp(4rem, 10vw, 9.8rem);
+  line-height: 0.82;
+  letter-spacing: -0.02em;
+}
+
+.gallery-hero h1 span {
+  color: var(--gold);
+}
+
+.gallery-marquee {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: clamp(1.25rem, 2.6vw, 2.2rem);
+  width: 100%;
+  padding-block: 0.4rem;
+}
+
+.gallery-rail {
+  width: 100%;
+  overflow: hidden;
+}
+
+.gallery-rail__track {
+  display: flex;
+  width: max-content;
+  gap: clamp(1rem, 2.2vw, 1.8rem);
+  padding-inline: clamp(1rem, 2.4vw, 2rem);
+  animation: gallery-scroll-left 38s linear infinite;
+  will-change: transform;
+}
+
+.gallery-rail--reverse .gallery-rail__track {
+  animation-name: gallery-scroll-right;
+  transform: translate3d(-50%, 0, 0);
+}
+
+.gallery-frame {
+  position: relative;
+  flex: 0 0 clamp(260px, 34vw, 520px);
+  aspect-ratio: 16 / 9.6;
+  overflow: hidden;
+  border: 1px solid rgba(240, 216, 160, 0.24);
+  border-radius: 8px;
+  background: rgba(5, 11, 20, 0.82);
+}
+
+.gallery-frame img {
+  object-fit: cover;
+  transition: transform 0.45s ease;
+}
+
+.gallery-frame:hover img {
+  transform: scale(1.045);
+}
+
 .sell-property-page {
   padding-bottom: clamp(5rem, 8vw, 7rem);
 }
@@ -3003,6 +3076,24 @@ form button:hover {
 .analytics-thank-you--visible {
   opacity: 1;
   transform: translate3d(0, 0, 0);
+}
+
+@keyframes gallery-scroll-left {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes gallery-scroll-right {
+  from {
+    transform: translate3d(-50%, 0, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
 }
 
 @keyframes loader-exit {
@@ -4048,6 +4139,22 @@ form button:hover {
     line-height: 0.96;
   }
 
+  .gallery-page {
+    padding-top: 6.25rem;
+  }
+
+  .gallery-hero {
+    margin-bottom: 2rem;
+  }
+
+  .gallery-hero h1 {
+    font-size: clamp(3rem, 14vw, 5.4rem);
+  }
+
+  .gallery-frame {
+    flex-basis: min(76vw, 340px);
+  }
+
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -4058,5 +4165,10 @@ form button:hover {
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .gallery-rail__track,
+  .gallery-rail--reverse .gallery-rail__track {
+    transform: none;
   }
 }

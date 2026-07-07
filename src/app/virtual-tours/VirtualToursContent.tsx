@@ -15,6 +15,7 @@ const navItems = [
   { label: "Virtual Tours", href: "/virtual-tours" },
   { label: "Blogs", href: "/blogs" },
   { label: "Contact Us", href: "/#contact-us" },
+  { label: "Gallery", href: "/gallery" },
 ];
 
 const getPageTitle = (href: string, label: string) => {
@@ -141,7 +142,7 @@ export function VirtualToursContent() {
                   <span>
                     <span className="tour-card__title">{title}</span>
                     <small>{description}</small>
-                    <span className="tour-card__status">Unavailable</span>
+                    <span className="tour-card__status">Coming Soon</span>
                   </span>
                   <Sparkles aria-hidden="true" size={18} />
                 </span>

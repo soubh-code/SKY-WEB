@@ -18,6 +18,7 @@ const navItems = [
   { label: "Virtual Tours", href: "/virtual-tours" },
   { label: "Blogs", href: "/blogs" },
   { label: "Contact Us", href: "/#contact-us" },
+  { label: "Gallery", href: "/gallery" },
 ];
 
 const steps = [

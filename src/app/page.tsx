@@ -37,6 +37,7 @@ const navItems = [
   { label: "Virtual Tours", id: "virtual-tours", href: "/virtual-tours", section: false, trackOnHome: true },
   { label: "Blogs", id: "blogs", href: "/blogs", section: false, trackOnHome: true },
   { label: "Contact Us", id: "contact-us", href: "/#contact-us", section: true },
+  { label: "Gallery", id: "gallery", href: "/gallery", section: false },
 ];
 const navTargets = navItems.filter((item) => item.section || item.trackOnHome);
 const displayPhoneNumber = business.phoneDisplay;
@@ -243,7 +244,7 @@ function Header() {
       </a>
       <nav className={open ? "nav nav--open" : "nav"} aria-label="Primary navigation">
         {navItems.map((item) =>
-          item.href === "/blogs" ? (
+          !item.section ? (
             <RouteLoadingLink
               key={item.id}
               className={activeSection === item.id ? "is-active" : undefined}
@@ -1243,7 +1244,7 @@ function Footer() {
       <Logo />
       <nav>
         {navItems.map((item) =>
-          item.href === "/blogs" ? (
+          !item.section ? (
             <RouteLoadingLink key={item.id} href={item.href} pageTitle={item.label}>
               {item.label}
             </RouteLoadingLink>

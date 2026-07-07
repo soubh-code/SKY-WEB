@@ -16,6 +16,7 @@ Address: C 132, Block C, Lajpat Nagar II, Lajpat Nagar, New Delhi, Delhi 110024,
 - Construction: https://skyskrabers.in/construction
 - Sell Property: https://skyskrabers.in/sell-property
 - Virtual Tours: https://skyskrabers.in/virtual-tours
+- Gallery: https://skyskrabers.in/gallery
 - Blogs: https://skyskrabers.in/blogs
 - Privacy Policy: https://skyskrabers.in/privacy-policy
 - Terms and Conditions: https://skyskrabers.in/terms-and-conditions
