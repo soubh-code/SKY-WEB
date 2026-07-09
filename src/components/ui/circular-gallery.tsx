@@ -59,12 +59,14 @@ const getMobileTransform = (relativeAngle: number, radius: number, isActive: boo
 
 export interface GalleryItem {
   name: string;
+  slug?: string;
   location: string;
   year: string;
   configuration: string;
-  coordinates: string;
+  propertyCount?: number;
   image: string;
   imageAlt?: string;
+  imageFit?: "cover" | "contain";
   imagePosition?: string;
 }
 
@@ -138,15 +140,19 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                   <img
                     src={item.image}
                     alt={item.imageAlt ?? `${item.name} premium South Delhi project by Sky Skrabers`}
-                    style={{ objectPosition: item.imagePosition || "center" }}
+                    style={{ objectFit: item.imageFit || "cover", objectPosition: item.imagePosition || "center" }}
                   />
                 </span>
                 <span className="circular-gallery__shade" />
                 <span className="circular-gallery__content">
                   <strong>{item.name}</strong>
                   <em>{item.location}</em>
+                  {typeof item.propertyCount === "number" ? (
+                    <span>
+                      {item.propertyCount} {item.propertyCount === 1 ? "property" : "properties"}
+                    </span>
+                  ) : null}
                   <span>{item.year} · {item.configuration}</span>
-                  <span>{item.coordinates}</span>
                 </span>
               </button>
             );

@@ -26,10 +26,9 @@ export default function HauzKhasProjectPage() {
         {
           title: "B1-3, Hauz Khas.",
           details: [
-            { label: "Area", value: "325 sqyrd" },
-            { label: "Structure", value: "4 Floors + Basement, Stilt Parking" },
-            { label: "Config", value: "4BHK" },
-            { label: "Completion", value: "By the end of Mar-27" },
+            { label: "Area", value: "300 sqyrd" },
+            { label: "Availability", value: "Ground floor & 1st floor" },
+            { label: "Status", value: "Booking open" },
           ],
         },
       ]}

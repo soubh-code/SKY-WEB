@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { siteUrl } from "@/lib/business";
 import { blogPosts } from "./blogs/blog-data";
+import { completedProjects } from "./completed-projects/completed-project-data";
 
 const staticRoutes = [
   "",
@@ -21,6 +22,7 @@ const staticRoutes = [
   "/projects/east-of-kailash",
   "/projects/defence-colony",
   "/projects/hauz-khas",
+  "/projects/kalkaji",
 ] as const;
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -39,5 +41,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.64,
   })) satisfies MetadataRoute.Sitemap;
 
-  return [...staticPages, ...blogPages];
+  const completedProjectPages = completedProjects.map((project) => ({
+    url: `${siteUrl}/completed-projects/${project.slug}`,
+    lastModified: now,
+    changeFrequency: "monthly",
+    priority: 0.64,
+  })) satisfies MetadataRoute.Sitemap;
+
+  return [...staticPages, ...blogPages, ...completedProjectPages];
 }

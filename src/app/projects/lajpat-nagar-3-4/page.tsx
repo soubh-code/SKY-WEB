@@ -24,12 +24,13 @@ export default function LajpatNagarThreeFourProjectPage() {
       addressLabel="Lajpat Nagar"
       addresses={[
         {
-          title: "G-16, Lajpat Nagar-3.",
+          title: "B-15, Lajpat Nagar-3",
           details: [
-            { label: "Area", value: "200 sqmt" },
-            { label: "Structure", value: "4 Floors + Basement, Stilt Parking" },
+            { label: "Area", value: "190 sqyrd" },
             { label: "Config", value: "3BHK" },
-            { label: "Completion", value: "By the end of Sep-26" },
+            { label: "Availability", value: "3rd floor with terrace" },
+            { label: "Special", value: "Lift, 1 car separate parking, glass room on terrace" },
+            { label: "Status", value: "Ready to move, renovated floor" },
           ],
         },
       ]}

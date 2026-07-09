@@ -29,6 +29,17 @@ Address: C 132, Block C, Lajpat Nagar II, Lajpat Nagar, New Delhi, Delhi 110024,
 - East Of Kailash: https://skyskrabers.in/projects/east-of-kailash
 - Defence Colony: https://skyskrabers.in/projects/defence-colony
 - Hauz Khas: https://skyskrabers.in/projects/hauz-khas
+- Kalkaji: https://skyskrabers.in/projects/kalkaji
+
+## Completed Project Pages
+
+- Lajpat Nagar 1/2: https://skyskrabers.in/completed-projects/lajpat-nagar-1-2
+- Nehru Enclave: https://skyskrabers.in/completed-projects/nehru-enclave
+- Noida Sector 31: https://skyskrabers.in/completed-projects/noida-sector-31
+- Ramesh Nagar: https://skyskrabers.in/completed-projects/ramesh-nagar
+- Kalkaji: https://skyskrabers.in/completed-projects/kalkaji
+- Hauz Khas: https://skyskrabers.in/completed-projects/hauz-khas
+- Defence Colony: https://skyskrabers.in/completed-projects/defence-colony
 
 ## Services
 

@@ -42,11 +42,6 @@ const galleryItems = [
     alt: "Premium white kitchen and hallway detail by Sky Skrabers",
   },
   {
-    src: "/assets/gallery/sky-gallery-04.webp",
-    title: "Sky Skrabers gallery image 4",
-    alt: "Luxury bathroom vanity detail in a Sky Skrabers South Delhi home",
-  },
-  {
     src: "/assets/gallery/sky-gallery-05.webp",
     title: "Sky Skrabers gallery image 5",
     alt: "Refined bedroom wall paneling in a Sky Skrabers residential project",
@@ -82,44 +77,9 @@ const galleryItems = [
     alt: "Premium white modular kitchen by Sky Skrabers",
   },
   {
-    src: "/assets/gallery/sky-gallery-12.webp",
-    title: "Sky Skrabers gallery image 12",
-    alt: "Clean bathroom and vanity design in a Sky Skrabers home",
-  },
-  {
-    src: "/assets/gallery/sky-gallery-13.webp",
-    title: "Sky Skrabers gallery image 13",
-    alt: "Marble bathroom shower enclosure in a Sky Skrabers residence",
-  },
-  {
     src: "/assets/gallery/sky-gallery-14.webp",
     title: "Sky Skrabers gallery image 14",
     alt: "Bright bedroom interior with white wall paneling by Sky Skrabers",
-  },
-  {
-    src: "/assets/gallery/sky-gallery-15.webp",
-    title: "Sky Skrabers gallery image 15",
-    alt: "Premium marble bathroom by Sky Skrabers",
-  },
-  {
-    src: "/assets/gallery/sky-gallery-16.webp",
-    title: "Sky Skrabers gallery image 16",
-    alt: "Modern shower and bathroom niche detail in a Sky Skrabers home",
-  },
-  {
-    src: "/assets/gallery/sky-gallery-17.webp",
-    title: "Sky Skrabers gallery image 17",
-    alt: "Luxury vanity and mirror detail by Sky Skrabers",
-  },
-  {
-    src: "/assets/gallery/sky-gallery-18.webp",
-    title: "Sky Skrabers gallery image 18",
-    alt: "Clean wardrobe shutter detail in a Sky Skrabers South Delhi residence",
-  },
-  {
-    src: "/assets/gallery/sky-gallery-19.webp",
-    title: "Sky Skrabers gallery image 19",
-    alt: "Premium arched wardrobe design by Sky Skrabers",
   },
   {
     src: "/assets/gallery/sky-gallery-20.webp",
@@ -138,8 +98,8 @@ const galleryItems = [
   },
 ] as const;
 
-const topRow = galleryItems.slice(0, 11);
-const bottomRow = galleryItems.slice(11);
+const topRow = galleryItems.slice(0, 7);
+const bottomRow = galleryItems.slice(7);
 
 function GalleryHeader() {
   const [open, setOpen] = useState(false);

@@ -6,6 +6,7 @@ import { RouteLoadingLink } from "@/components/RouteLoadingLink";
 import { SkyLogo } from "@/components/SkyLogo";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { business } from "@/lib/business";
+import { getCompletedProjectPropertyCount } from "./completed-projects/completed-project-data";
 import { motion, useReducedMotion } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -61,113 +62,145 @@ const cardImages = [
   "/assets/card-images/card-04.avif",
   "/assets/card-images/card-05.jpg",
   "/assets/card-images/card-06.jpg",
+  "/assets/card-images/kalkaji.webp",
 ] as const;
 
 const projects: GalleryItem[] = [
   {
-    name: "Lajpat Nagar 1/2/4",
+    name: "Lajpat Nagar 1/2",
+    slug: "lajpat-nagar-1-2",
     location: "New Delhi",
     year: "2026",
-    configuration: "3 BHK · 3 Floors",
-    coordinates: "28.5672° N, 77.2430° E",
+    configuration: "Outright · Commercial",
+    propertyCount: getCompletedProjectPropertyCount("lajpat-nagar-1-2"),
     image: cardImages[0],
-    imageAlt: "Luxury builder floor in Lajpat Nagar South Delhi by Sky Skrabers",
+    imageAlt: "Lajpat Nagar property portfolio by Sky Skrabers",
     imagePosition: "50% 55%",
   },
   {
-    name: "Lajpat Nagar 3",
+    name: "Nehru Enclave",
+    slug: "nehru-enclave",
     location: "New Delhi",
-    year: "2025",
-    configuration: "3 BHK · 3 Floors",
-    coordinates: "28.5355° N, 77.2410° E",
+    year: "2026",
+    configuration: "Outright Plot",
+    propertyCount: getCompletedProjectPropertyCount("nehru-enclave"),
     image: cardImages[1],
-    imageAlt: "Premium residence in Lajpat Nagar 3 New Delhi by Sky Skrabers",
+    imageAlt: "Nehru Enclave outright property portfolio by Sky Skrabers",
     imagePosition: "50% 56%",
   },
   {
-    name: "Defence Colony",
-    location: "New Delhi",
-    year: "2025",
-    configuration: "3 BHK · 3 Floors",
-    coordinates: "28.5672° N, 77.2290° E",
+    name: "Noida Sector 31",
+    slug: "noida-sector-31",
+    location: "Delhi NCR",
+    year: "2026",
+    configuration: "Outright Kothi",
+    propertyCount: getCompletedProjectPropertyCount("noida-sector-31"),
     image: cardImages[2],
-    imageAlt: "Luxury home project in Defence Colony South Delhi by Sky Skrabers",
+    imageAlt: "Noida Sector 31 outright property portfolio by Sky Skrabers",
     imagePosition: "50% 50%",
   },
   {
-    name: "East Of Kailash",
+    name: "Ramesh Nagar",
+    slug: "ramesh-nagar",
     location: "New Delhi",
-    year: "2025",
-    configuration: "3 BHK · 3 Floors",
-    coordinates: "28.5494° N, 77.2430° E",
+    year: "2026",
+    configuration: "Outright Plots",
+    propertyCount: getCompletedProjectPropertyCount("ramesh-nagar"),
     image: cardImages[3],
-    imageAlt: "Modern South Delhi residential facade in East of Kailash by Sky Skrabers",
+    imageAlt: "Ramesh Nagar residential plot portfolio by Sky Skrabers",
     imagePosition: "50% 55%",
   },
   {
-    name: "South Extension Part 1/2",
+    name: "Kalkaji",
+    slug: "kalkaji",
     location: "New Delhi",
-    year: "2025",
-    configuration: "3 BHK · 3 Floors",
-    coordinates: "28.5687° N, 77.2209° E",
-    image: cardImages[4],
-    imageAlt: "South Extension builder floor project in South Delhi by Sky Skrabers",
-    imagePosition: "50% 52%",
+    year: "2026",
+    configuration: "Outright · Commercial",
+    propertyCount: getCompletedProjectPropertyCount("kalkaji"),
+    image: cardImages[6],
+    imageAlt: "Kalkaji property portfolio by Sky Skrabers",
+    imagePosition: "50% 50%",
   },
   {
     name: "Hauz Khas",
+    slug: "hauz-khas",
     location: "New Delhi",
-    year: "2025",
-    configuration: "3 BHK · 3 Floors",
-    coordinates: "28.5603° N, 77.1633° E",
+    year: "2026",
+    configuration: "Commercial Shop",
+    propertyCount: getCompletedProjectPropertyCount("hauz-khas"),
     image: cardImages[5],
-    imageAlt: "Hauz Khas premium residential project by Sky Skrabers",
+    imageAlt: "Hauz Khas commercial property portfolio by Sky Skrabers",
     imagePosition: "50% 57%",
+  },
+  {
+    name: "Defence Colony",
+    slug: "defence-colony",
+    location: "New Delhi",
+    year: "2026",
+    configuration: "Commercial Floor",
+    propertyCount: getCompletedProjectPropertyCount("defence-colony"),
+    image: cardImages[2],
+    imageAlt: "Defence Colony commercial property portfolio by Sky Skrabers",
+    imagePosition: "50% 50%",
   },
 ];
 
 const ongoing = [
   {
     name: "Lajpat Nagar 1/2/4",
-    image: projects[0].image,
-    imagePosition: projects[0].imagePosition,
+    image: cardImages[0],
+    imagePosition: "50% 55%",
     coords: "Lajpat Nagar 1/2/4",
     slug: "lajpat-nagar-1-2",
+    propertyCount: 10,
   },
   {
     name: "Lajpat Nagar 3",
-    image: projects[1].image,
-    imagePosition: projects[1].imagePosition,
+    image: cardImages[1],
+    imagePosition: "50% 56%",
     coords: "Lajpat Nagar 3",
     slug: "lajpat-nagar-3-4",
+    propertyCount: 1,
   },
   {
     name: "South Extension Part 1/2",
-    image: projects[4].image,
-    imagePosition: projects[4].imagePosition,
+    image: cardImages[4],
+    imagePosition: "50% 52%",
     coords: "South Extension Part 1/2",
     slug: "south-extension-1-2",
+    propertyCount: 1,
   },
   {
     name: "East Of Kailash",
-    image: projects[3].image,
-    imagePosition: projects[3].imagePosition,
+    image: cardImages[3],
+    imagePosition: "50% 55%",
     coords: "East Of Kailash",
     slug: "east-of-kailash",
+    propertyCount: 2,
   },
   {
     name: "Defence Colony",
-    image: projects[2].image,
-    imagePosition: projects[2].imagePosition,
+    image: cardImages[2],
+    imagePosition: "50% 50%",
     coords: "Defence Colony",
     slug: "defence-colony",
+    propertyCount: 1,
   },
   {
     name: "Hauz Khas",
-    image: projects[5].image,
-    imagePosition: projects[5].imagePosition,
+    image: cardImages[5],
+    imagePosition: "50% 57%",
     coords: "Hauz Khas",
     slug: "hauz-khas",
+    propertyCount: 1,
+  },
+  {
+    name: "Kalkaji",
+    image: cardImages[6],
+    imagePosition: "50% 50%",
+    coords: "Kalkaji",
+    slug: "kalkaji",
+    propertyCount: 3,
   },
 ];
 
@@ -755,6 +788,7 @@ function ServicesPanel() {
 }
 
 function CompletedProjects() {
+  const router = useRouter();
   const sectionRef = useRef<HTMLElement>(null);
   const prefersReducedMotion = useReducedMotion();
   const [active, setActive] = useState(0);
@@ -913,10 +947,19 @@ function CompletedProjects() {
     return () => window.removeEventListener("resize", syncRadius);
   }, []);
 
-  const goToProject = (index: number) => {
+  const selectProject = (index: number) => {
     pauseBriefly();
     const forwardSteps = (index - active + projects.length) % projects.length;
     rotateBy(-forwardSteps * anglePerProject);
+  };
+
+  const openOrSelectProject = (index: number) => {
+    if (index === active && projects[index].slug) {
+      router.push(`/completed-projects/${projects[index].slug}`);
+      return;
+    }
+
+    selectProject(index);
   };
 
   const nextProject = () => {
@@ -968,7 +1011,7 @@ function CompletedProjects() {
         transition={prefersReducedMotion ? { duration: 0 } : { duration: 1.08, ease: [0.16, 1, 0.3, 1] }}
         style={{ willChange: "transform, opacity" }}
       >
-        <CircularGallery items={projects} rotation={rotation} radius={galleryRadius} activeIndex={active} onItemSelect={goToProject} />
+        <CircularGallery items={projects} rotation={rotation} radius={galleryRadius} activeIndex={active} onItemSelect={openOrSelectProject} />
         <button className="gallery-arrow gallery-arrow--left" onClick={previousProject} aria-label="Previous completed project">
           <ArrowLeft size={22} />
         </button>
@@ -989,7 +1032,7 @@ function CompletedProjects() {
           <button
             key={project.name}
             className={active === index ? "dot is-active" : "dot"}
-            onClick={() => goToProject(index)}
+            onClick={() => selectProject(index)}
             aria-label={`Show ${project.name}`}
           />
         ))}
@@ -1004,8 +1047,8 @@ function OngoingProjects() {
   const [active, setActive] = useState(2);
   const [clickToExpand, setClickToExpand] = useState(false);
   const [armedProject, setArmedProject] = useState<number | null>(null);
-  const icons = [Home, Building2, Sparkles, Waves, MapPin, WalletCards];
-  const activateProject = (index: number) => setActive((current) => (current === index ? current : index));
+  const icons = [Home, Building2, Sparkles, Waves, MapPin, WalletCards, MapPin];
+  const activateProject = (index: number) => setActive(index);
   const handleProjectClick = (index: number) => {
     if (clickToExpand && (active !== index || armedProject !== index)) {
       activateProject(index);
@@ -1102,7 +1145,12 @@ function OngoingProjects() {
           >
             <span
               className="ongoing-card__image"
-              style={{ backgroundImage: `linear-gradient(90deg, rgba(5, 11, 20, 0.08), rgba(5, 11, 20, 0.58)), url("${project.image}")`, backgroundPosition: project.imagePosition }}
+              style={{
+                backgroundImage: `linear-gradient(90deg, rgba(5, 11, 20, 0.08), rgba(5, 11, 20, 0.58)), url("${project.image}")`,
+                backgroundPosition: project.imagePosition,
+                backgroundRepeat: "no-repeat",
+                backgroundSize: "cover",
+              }}
             />
             <span className="ongoing-card__details-cta">Click to view details</span>
             <span className="ongoing-card__label">
@@ -1120,6 +1168,9 @@ function OngoingProjects() {
               <em>
                 <MapPin size={17} /> New Delhi
               </em>
+              <span className="ongoing-card__property-count">
+                {project.propertyCount} {project.propertyCount === 1 ? "property" : "properties"} available
+              </span>
               <i />
             </span>
           </motion.button>
@@ -1207,9 +1258,12 @@ function Contact() {
             <a href={business.phoneHref}>{displayPhoneNumber}</a>
           </p>
           <p>
-            <Phone size={18} />
+            <svg className="contact-whatsapp-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M20.2 11.8a8.2 8.2 0 0 1-12.1 7.2L4 20l1.1-4A8.2 8.2 0 1 1 20.2 11.8Z" />
+              <path d="M9.1 8.2c.2-.5.5-.6.9-.6h.5c.2 0 .4.1.5.4l.7 1.6c.1.3.1.5-.1.7l-.5.6c.5 1 1.3 1.8 2.3 2.3l.6-.5c.2-.2.5-.2.7-.1l1.6.7c.3.1.4.3.4.5v.5c0 .4-.1.7-.6.9-.4.2-.9.3-1.4.2-2.7-.4-5.8-3.5-6.2-6.2-.1-.5 0-1 .2-1.4Z" />
+            </svg>
             <a href={business.whatsappHref} target="_blank" rel="noopener noreferrer">
-              WhatsApp {business.whatsappDisplay}
+              {business.whatsappDisplay}
             </a>
           </p>
           <p>
@@ -1221,7 +1275,7 @@ function Contact() {
           </p>
           <p>
             <Mail size={18} />
-            <a href="mailto:help@skyskrabers.in?subject=Report%20a%20bug">Report a bug @help.skyskrabers.in</a>
+            <a href="mailto:help@skyskrabers.in?subject=Report%20a%20bug">Report a bug help@skyskrabers.in</a>
           </p>
         </div>
       </div>

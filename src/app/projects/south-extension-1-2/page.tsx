@@ -27,9 +27,10 @@ export default function SouthExtensionProjectPage() {
           title: "G-16, South Extension, Part-2.",
           details: [
             { label: "Area", value: "600 sqyrd" },
-            { label: "Structure", value: "4 Floors + Basement, Stilt Parking" },
-            { label: "Config", value: "5BHK" },
-            { label: "Completion", value: "By the end of May-27" },
+            { label: "Config", value: "4BHK" },
+            { label: "Units", value: "Dual unit, front & back" },
+            { label: "Availability", value: "All floors available" },
+            { label: "Status", value: "Booking open" },
           ],
         },
       ]}

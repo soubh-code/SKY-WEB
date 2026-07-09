@@ -20,22 +20,44 @@ export type ProjectAddress = {
   }[];
 };
 
+export type ProjectAddressGroup = {
+  title: string;
+  addresses: ProjectAddress[];
+};
+
 export type ProjectDetailPageProps = {
   titleLines: string[];
   projectName: string;
   addressLabel: string;
-  addresses: ProjectAddress[];
+  addresses?: ProjectAddress[];
+  addressGroups?: ProjectAddressGroup[];
   whatsappText: string;
+  linkAddressCellsToWhatsapp?: boolean;
+  kicker?: string;
+  projectStatusLabel?: string;
+  secondaryMarqueeText?: string;
+  defaultTags?: string[];
+  ctaHeading?: string;
 };
 
 export function ProjectDetailPage({
   titleLines,
   projectName,
   addressLabel,
-  addresses,
+  addresses = [],
+  addressGroups,
   whatsappText,
+  linkAddressCellsToWhatsapp = true,
+  kicker = "Ongoing Project / South Delhi",
+  projectStatusLabel = "Ongoing Project",
+  secondaryMarqueeText = "Prime Address • South Delhi • Site Visit Ready •",
+  defaultTags = ["Residence", "Ongoing", "South Delhi"],
+  ctaHeading,
 }: ProjectDetailPageProps) {
   const whatsappUrl = `https://wa.me/${business.whatsappSchema.replace("+", "")}?text=${encodeURIComponent(whatsappText)}`;
+  const getPropertyWhatsappUrl = (propertyName: string) =>
+    `https://wa.me/${business.whatsappSchema.replace("+", "")}?text=${encodeURIComponent(`i am interested in knowing more about ${propertyName}`)}`;
+  const groupedAddresses = addressGroups ?? [{ title: "", addresses }];
   const scrollToProjects = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
     document.getElementById("details")?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -87,7 +109,7 @@ export function ProjectDetailPage({
       </header>
 
       <section className={styles.hero} aria-labelledby="project-title">
-        <p className={styles.kicker}>Ongoing Project / South Delhi</p>
+        <p className={styles.kicker}>{kicker}</p>
         <h1 id="project-title">
           {titleLines.map((line, index) => (
             index === 0 ? line : <span key={line}>{line}</span>
@@ -97,47 +119,75 @@ export function ProjectDetailPage({
 
       <section className={styles.marqueeSection} aria-label="Project highlights">
         <div className={styles.marqueeTrack}>
-          <span>{projectName} • Sky Skrabers • Ongoing Project •</span>
-          <span>{projectName} • Sky Skrabers • Ongoing Project •</span>
+          <span>{projectName} • Sky Skrabers • {projectStatusLabel} •</span>
+          <span>{projectName} • Sky Skrabers • {projectStatusLabel} •</span>
         </div>
         <div className={`${styles.marqueeTrack} ${styles.marqueeReverse}`}>
-          <span>Prime Address • South Delhi • Site Visit Ready •</span>
-          <span>Prime Address • South Delhi • Site Visit Ready •</span>
+          <span>{secondaryMarqueeText}</span>
+          <span>{secondaryMarqueeText}</span>
         </div>
       </section>
 
       <section id="details" className={styles.serviceList} aria-label={`${addressLabel} project addresses`}>
         <div>
-          {addresses.map((item, index) => (
-            <article className={styles.serviceItem} key={item.title}>
-              <span className={styles.serviceIndex}>{String(index + 1).padStart(2, "0")}</span>
-              <div className={styles.serviceBody}>
-                <h3>{item.title}</h3>
-                <div className={styles.tags}>
-                  {(item.tags ?? ["Residence", "Ongoing", "South Delhi"]).map((tag) => (
-                    <span key={tag}>{tag}</span>
-                  ))}
-                </div>
-                {item.details ? (
-                  <dl className={styles.addressDetails}>
-                    {item.details.map((detail) => (
-                      <div key={detail.label}>
-                        <dt>{detail.label}</dt>
-                        <dd>{detail.value}</dd>
+          {groupedAddresses.map((group) => (
+            <div className={styles.addressGroup} key={group.title || "project-addresses"}>
+              {group.title ? <h2 className={styles.addressGroupTitle}>{group.title}</h2> : null}
+              {group.addresses.length === 0 ? (
+                <p className={styles.addressGroupEmpty}>Sold out</p>
+              ) : null}
+              {group.addresses.map((item, index) => {
+                const content = (
+                  <>
+                    <span className={styles.serviceIndex}>{String(index + 1).padStart(2, "0")}</span>
+                    <div className={styles.serviceBody}>
+                      <h3>{item.title}</h3>
+                      <div className={styles.tags}>
+                        {(item.tags ?? defaultTags).map((tag) => (
+                          <span key={tag}>{tag}</span>
+                        ))}
                       </div>
-                    ))}
-                  </dl>
-                ) : null}
-              </div>
-              <ArrowUpRight className={styles.serviceArrow} size={70} strokeWidth={2.1} aria-hidden="true" />
-            </article>
+                      {item.details ? (
+                        <dl className={styles.addressDetails}>
+                          {item.details.map((detail) => (
+                            <div key={detail.label}>
+                              <dt>{detail.label}</dt>
+                              <dd>{detail.value}</dd>
+                            </div>
+                          ))}
+                        </dl>
+                      ) : null}
+                    </div>
+                    <ArrowUpRight className={styles.serviceArrow} size={70} strokeWidth={2.1} aria-hidden="true" />
+                  </>
+                );
+
+                return linkAddressCellsToWhatsapp ? (
+                  <a
+                    className={styles.serviceItem}
+                    href={getPropertyWhatsappUrl(item.title)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    key={item.title}
+                    data-analytics-event="project_enquiry_click"
+                    data-analytics-label={`${item.title} address cell`}
+                  >
+                    {content}
+                  </a>
+                ) : (
+                  <article className={styles.serviceItem} key={item.title}>
+                    {content}
+                  </article>
+                );
+              })}
+            </div>
           ))}
         </div>
       </section>
 
       <section id="visit" className={styles.ctaSection}>
         <p>Private project conversation</p>
-        <h2>Book A {addressLabel} Visit.</h2>
+        <h2>{ctaHeading ?? `Book A ${addressLabel} Visit.`}</h2>
         <a
           className={styles.ctaButton}
           href={whatsappUrl}

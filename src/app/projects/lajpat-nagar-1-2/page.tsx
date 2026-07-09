@@ -24,60 +24,93 @@ export default function LajpatNagarProjectPage() {
       addressLabel="Lajpat Nagar"
       addresses={[
         {
+          title: "217, Vinoba Puri",
+          details: [
+            { label: "Area", value: "400 sqyrd" },
+            { label: "Units", value: "Dual unit, right & left" },
+            { label: "Special", value: "Park facing property" },
+            { label: "Availability", value: "All floors available" },
+            { label: "Status", value: "Booking open" },
+          ],
+        },
+        {
+          title: "B-45/A, Lajpat Nagar-2",
+          details: [
+            { label: "Area", value: "135 sqyrd" },
+            { label: "Config", value: "3BHK" },
+            { label: "Availability", value: "1st floor, 2nd floor, bacha flat 1BHK" },
+            { label: "Status", value: "Possession soon" },
+          ],
+        },
+        {
           title: "G-9, Lajpat Nagar-1",
           details: [
             { label: "Area", value: "100 sqyrd" },
-            { label: "Opening", value: "Corner 3 side open" },
-            { label: "Structure", value: "4 Floors + Basement, Stilt Parking" },
             { label: "Config", value: "2BHK" },
-            { label: "Completion", value: "By the end of Sep-26" },
+            { label: "Opening", value: "Corner property, three side open" },
+            { label: "Availability", value: "1st floor available" },
+            { label: "Status", value: "Near completion" },
           ],
         },
         {
-          title: "B-89, Lajpat Nagar-2",
+          title: "B-58, Lajpat Nagar-1",
           details: [
             { label: "Area", value: "100 sqyrd" },
-            { label: "Opening", value: "Corner 3 side open" },
-            { label: "Structure", value: "4 Floors + Basement, Stilt Parking" },
             { label: "Config", value: "2BHK" },
-            { label: "Completion", value: "By the end of Sep-26" },
-          ],
-        },
-        {
-          title: "B-45A, Lajpat Nagar-2",
-          details: [
-            { label: "Area", value: "200 sqmt" },
-            { label: "Opening", value: "Corner 3 side open" },
-            { label: "Structure", value: "4 Floors + Basement, Stilt Parking" },
-            { label: "Config", value: "3BHK" },
-            { label: "Completion", value: "By the end of Oct-26" },
+            { label: "Special", value: "Park facing, 1 car parking" },
+            { label: "Availability", value: "3rd floor with terrace room" },
+            { label: "Status", value: "Possession soon" },
           ],
         },
         {
           title: "A-217, Lajpat Nagar-1",
           details: [
             { label: "Area", value: "100 sqyrd" },
-            { label: "Structure", value: "4 Floors + Basement, Stilt Parking" },
-            { label: "Config", value: "2BHK" },
-            { label: "Completion", value: "By the end of Oct-26" },
+            { label: "Availability", value: "3rd floor with 1 room set on terrace" },
+            { label: "Status", value: "Booking open" },
           ],
         },
         {
           title: "E-102, Lajpat Nagar-1",
           details: [
             { label: "Area", value: "100 sqyrd" },
-            { label: "Structure", value: "4 Floors + Basement, Stilt Parking" },
-            { label: "Config", value: "2BHK" },
-            { label: "Completion", value: "By the end of Oct-26" },
+            { label: "Availability", value: "1st & 2nd floor" },
+            { label: "Status", value: "Booking open" },
           ],
         },
         {
           title: "A-160, Dayanand Colony, Lajpat Nagar-4",
           details: [
             { label: "Area", value: "100 sqyrd" },
-            { label: "Structure", value: "4 Floors + Basement, Stilt Parking" },
             { label: "Config", value: "2BHK" },
-            { label: "Completion", value: "By the end of Sep-26" },
+            { label: "Availability", value: "All floors available" },
+            { label: "Status", value: "Booking open" },
+          ],
+        },
+        {
+          title: "A-108, Dayanand Colony, Lajpat Nagar-4",
+          details: [
+            { label: "Area", value: "100 sqyrd" },
+            { label: "Special", value: "Park facing" },
+            { label: "Availability", value: "Ground, 1st & 2nd floor" },
+            { label: "Status", value: "Booking open" },
+          ],
+        },
+        {
+          title: "A-149, Dayanand Colony, Lajpat Nagar-4",
+          details: [
+            { label: "Area", value: "100 sqyrd" },
+            { label: "Availability", value: "3rd floor with 1 room set on terrace" },
+            { label: "Status", value: "Booking open" },
+          ],
+        },
+        {
+          title: "C-80, Dayanand Colony, Lajpat Nagar-4",
+          details: [
+            { label: "Area", value: "100 sqyrd" },
+            { label: "Special", value: "Park facing" },
+            { label: "Availability", value: "3rd floor with 1 room set on terrace" },
+            { label: "Status", value: "Booking open" },
           ],
         },
       ]}

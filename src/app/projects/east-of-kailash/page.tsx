@@ -24,22 +24,22 @@ export default function EastOfKailashProjectPage() {
       addressLabel="East Of Kailash"
       addresses={[
         {
-          title: "G-52 East Of Kailash.",
+          title: "1, Sant Nagar, East of Kailash",
           details: [
-            { label: "Area", value: "800 sqyrd" },
-            { label: "Units", value: "2 units, 400 yards each" },
-            { label: "Config", value: "5BHK" },
-            { label: "Completion", value: "By the end of Jul-26" },
+            { label: "Area", value: "240 sqyrd" },
+            { label: "Opening", value: "Corner property" },
+            { label: "Availability", value: "Ground floor & 3rd floor with terrace" },
+            { label: "Status", value: "Booking open" },
           ],
         },
         {
-          title: "no.-1,Sant nagar, East of Kailash",
+          title: "109, Sant Nagar, East of Kailash",
           details: [
-            { label: "Area", value: "200 sqmt" },
-            { label: "Opening", value: "Corner 3 side open" },
-            { label: "Structure", value: "4 Floors + Basement, Stilt Parking" },
+            { label: "Area", value: "133 sqyrd" },
             { label: "Config", value: "3BHK" },
-            { label: "Completion", value: "By the end of Oct-26" },
+            { label: "Availability", value: "3rd floor available" },
+            { label: "Special", value: "1 car parking" },
+            { label: "Status", value: "Possession soon" },
           ],
         },
       ]}
