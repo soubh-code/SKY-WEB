@@ -1,16 +1,21 @@
 "use client";
 
-import { CircularGallery, GalleryItem } from "@/components/ui/circular-gallery";
+import type { GalleryItem } from "@/components/ui/circular-gallery";
+import { DeferredPicture } from "@/components/DeferredPicture";
 import { InstagramLink } from "@/components/InstagramLink";
 import { RouteLoadingLink } from "@/components/RouteLoadingLink";
 import { SkyLogo } from "@/components/SkyLogo";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
+import { useDeferredMotion } from "@/hooks/useDeferredMotion";
+import {
+  isTabletPerformanceDevice,
+  TABLET_PERFORMANCE_QUERY,
+  useTabletPerformanceMode,
+} from "@/hooks/useTabletPerformanceMode";
 import { business } from "@/lib/business";
 import { getCompletedProjectPropertyCount } from "./completed-projects/completed-project-data";
-import { motion, useReducedMotion } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Lenis from "lenis";
 import {
   ArrowLeft,
   ArrowRight,
@@ -25,11 +30,16 @@ import {
   Waves,
   WalletCards,
 } from "lucide-react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 gsap.registerPlugin(ScrollTrigger);
+
+const CircularGallery = dynamic(
+  () => import("@/components/ui/circular-gallery").then((module) => module.CircularGallery),
+  { ssr: false },
+);
 
 const navItems = [
   { label: "Home", id: "home", href: "/#home", section: true },
@@ -50,10 +60,14 @@ const PHONE_ENTRY_FRAME_COUNT = 99;
 const PHONE_ENTRY_FRAME_VERSION = "20fps-99";
 const ANDROID_ENTRY_FRAME_COUNT = 92;
 const ANDROID_ENTRY_FRAME_VERSION = "android-webp-92";
+const TABLET_ENTRY_FRAME_COUNT = 34;
+const TABLET_ENTRY_FRAME_VERSION = "tablet-webp-34";
 const phoneEntryFrameSrc = (index: number) =>
   `/assets/entry-phone-frames/${String(index).padStart(3, "0")}.webp?v=${PHONE_ENTRY_FRAME_VERSION}`;
 const androidEntryFrameSrc = (index: number) =>
   `/assets/entry-android-frames/${String(index).padStart(3, "0")}.webp?v=${ANDROID_ENTRY_FRAME_VERSION}`;
+const tabletEntryFrameSrc = (index: number) =>
+  `/assets/tablet/entry-frames/${String(index).padStart(3, "0")}.webp?v=${TABLET_ENTRY_FRAME_VERSION}`;
 
 const cardImages = [
   "/assets/card-images/card-01.avif",
@@ -313,6 +327,7 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
   type EntryFrame = HTMLImageElement | ImageBitmap | VideoFrame;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
   const copyRef = useRef<HTMLDivElement>(null);
   const hintRef = useRef<HTMLDivElement>(null);
@@ -324,10 +339,12 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
 
   useEffect(() => {
     const canvas = canvasRef.current;
+    const video = videoRef.current;
     const section = sectionRef.current;
-    if (!canvas || !section) return;
+    if (!canvas || !video || !section) return;
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const tabletPerformance = isTabletPerformanceDevice();
     const context = canvas.getContext("2d");
     if (!context) return;
 
@@ -336,14 +353,25 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
     let readySignaled = false;
     let frameCount = 72;
     let avifDecoder: ImageDecoder | null = null;
-    const isTouchViewport = () => window.innerWidth <= 560;
+    let usesProgressiveAvif = false;
+    let avifDecodeActive = false;
+    let requestedAvifFrame = 0;
+    let tabletFrameLoader: ((index: number) => void) | null = null;
+    let usesTabletVideo = false;
+    let pendingVideoProgress = 0;
+    let videoSeekFrame = 0;
+    const failedAvifFrames = new Set<number>();
+    const decodedAvifOrder: number[] = [];
+    const isTouchViewport = () => window.innerWidth <= 560 || tabletPerformance;
     const isPhoneViewport = () => window.innerWidth <= 560;
     const isAndroidPhoneViewport = () => {
       const userAgent = window.navigator.userAgent.toLowerCase();
       return isPhoneViewport() && userAgent.includes("android");
     };
-    const getEntryAnimationSrc = () =>
-      isPhoneViewport() ? "/assets/entry-scroll-phone.avif" : "/assets/entry-scroll-desktop.avif";
+    const getEntryAnimationSrc = () => {
+      if (tabletPerformance) return "/assets/tablet/entry-scroll-tablet.avif";
+      return isPhoneViewport() ? "/assets/entry-scroll-phone.avif" : "/assets/entry-scroll-desktop.avif";
+    };
 
     let entryTrigger: ScrollTrigger | null = null;
 
@@ -355,7 +383,8 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
     };
 
     const signalReady = () => {
-      if (readySignaled || readyFrames < frameCount) return;
+      const readyFrameTarget = usesProgressiveAvif ? 1 : tabletPerformance ? Math.min(frameCount, 2) : frameCount;
+      if (readySignaled || readyFrames < readyFrameTarget) return;
       readySignaled = true;
       scheduleFrame(pendingFrameRef.current);
       if (!reduced) {
@@ -413,7 +442,32 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
       if (frameIndex === currentFrameRef.current) return;
 
       const image = framesRef.current[frameIndex];
-      if (!isFrameReady(image)) return;
+      if (!isFrameReady(image)) {
+        if (usesProgressiveAvif) requestDecodedAvifFrame(frameIndex);
+        if (tabletPerformance && tabletFrameLoader) tabletFrameLoader(frameIndex);
+
+        if (tabletPerformance) {
+          let nearestIndex = -1;
+          let nearestDistance = Number.POSITIVE_INFINITY;
+          framesRef.current.forEach((candidate, candidateIndex) => {
+            if (!isFrameReady(candidate)) return;
+            const distance = Math.abs(candidateIndex - frameIndex);
+            if (distance < nearestDistance) {
+              nearestDistance = distance;
+              nearestIndex = candidateIndex;
+            }
+          });
+
+          if (nearestIndex >= 0 && nearestIndex !== currentFrameRef.current) {
+            const nearestFrame = framesRef.current[nearestIndex];
+            const { width, height } = canvas.getBoundingClientRect();
+            context.clearRect(0, 0, width, height);
+            currentFrameRef.current = nearestIndex;
+            drawCover(nearestFrame);
+          }
+        }
+        return;
+      }
 
       const { width, height } = canvas.getBoundingClientRect();
       context.clearRect(0, 0, width, height);
@@ -431,7 +485,77 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
       });
     };
 
-    const loadImageFrame = (src: string, index: number) => {
+    const scheduleVideoProgress = (progress: number) => {
+      pendingVideoProgress = progress;
+      if (videoSeekFrame || !usesTabletVideo) return;
+      videoSeekFrame = window.requestAnimationFrame(() => {
+        videoSeekFrame = 0;
+        if (!Number.isFinite(video.duration) || video.duration <= 0) return;
+        const nextTime = pendingVideoProgress * Math.max(0, video.duration - 0.001);
+        if (Math.abs(video.currentTime - nextTime) > 0.01) video.currentTime = nextTime;
+      });
+    };
+
+    const pruneDecodedAvifFrames = () => {
+      const maxCachedFrames = tabletPerformance ? 5 : 8;
+      let attemptsRemaining = decodedAvifOrder.length;
+
+      while (decodedAvifOrder.length > maxCachedFrames && attemptsRemaining > 0) {
+        attemptsRemaining -= 1;
+        const index = decodedAvifOrder.shift();
+        if (index === undefined) return;
+        if (index === currentFrameRef.current || index === pendingFrameRef.current || index === requestedAvifFrame) {
+          decodedAvifOrder.push(index);
+          continue;
+        }
+
+        const frame = framesRef.current[index];
+        if (frame && "close" in frame) frame.close();
+        delete framesRef.current[index];
+      }
+    };
+
+    const pumpAvifDecoder = async () => {
+      if (!avifDecoder || avifDecodeActive || disposed) return;
+      const frameIndex = Math.round(Math.max(0, Math.min(frameCount - 1, requestedAvifFrame)));
+      if (framesRef.current[frameIndex] || failedAvifFrames.has(frameIndex)) return;
+
+      avifDecodeActive = true;
+      try {
+        const { image } = await avifDecoder.decode({ frameIndex });
+        if (disposed) {
+          image.close();
+          return;
+        }
+
+        framesRef.current[frameIndex] = image;
+        decodedAvifOrder.push(frameIndex);
+        readyFrames += 1;
+        pruneDecodedAvifFrames();
+        signalReady();
+        if (frameIndex === Math.round(pendingFrameRef.current)) scheduleFrame(frameIndex);
+      } catch {
+        failedAvifFrames.add(frameIndex);
+      } finally {
+        avifDecodeActive = false;
+      }
+
+      if (!disposed && requestedAvifFrame !== frameIndex) void pumpAvifDecoder();
+    };
+
+    function requestDecodedAvifFrame(index: number) {
+      requestedAvifFrame = Math.round(Math.max(0, Math.min(frameCount - 1, index)));
+      if (!framesRef.current[requestedAvifFrame] && !failedAvifFrames.has(requestedAvifFrame)) {
+        void pumpAvifDecoder();
+      }
+    }
+
+    const loadImageFrame = (
+      src: string,
+      index: number,
+      createBitmap = true,
+      onReady?: () => void,
+    ) => {
       const image = new window.Image();
       image.decoding = "async";
       image.onload = async () => {
@@ -445,7 +569,7 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
           }
         }
 
-        if ("createImageBitmap" in window) {
+        if (createBitmap && "createImageBitmap" in window) {
           try {
             framesRef.current[index] = await window.createImageBitmap(image);
           } catch {
@@ -454,22 +578,27 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
         }
 
         readyFrames += 1;
-        if (!disposed && index === pendingFrameRef.current) {
+        if (!disposed && index === Math.round(pendingFrameRef.current)) {
           scheduleFrame(index);
         }
         if (!disposed) signalReady();
+        if (!disposed) onReady?.();
       };
       image.src = src;
       return image;
     };
 
-    const loadFrameSequence = (count: number, srcForIndex: (index: number) => string) => {
+    const loadFrameSequence = (
+      count: number,
+      srcForIndex: (index: number) => string,
+      createBitmaps = true,
+    ) => {
       frameCount = count;
       readyFrames = 0;
       framesRef.current = new Array<EntryFrame>(frameCount);
 
       for (let index = 0; index < frameCount; index += 1) {
-        framesRef.current[index] = loadImageFrame(srcForIndex(index), index);
+        framesRef.current[index] = loadImageFrame(srcForIndex(index), index, createBitmaps);
       }
     };
 
@@ -481,7 +610,79 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
       loadFrameSequence(ANDROID_ENTRY_FRAME_COUNT, androidEntryFrameSrc);
     };
 
+    const loadTabletFrameSequence = () => {
+      frameCount = TABLET_ENTRY_FRAME_COUNT;
+      readyFrames = 0;
+      framesRef.current = new Array<EntryFrame>(frameCount);
+      const loading = new Set<number>();
+      const priorityFrames = [0, 11, 22, frameCount - 1];
+      let requestedFrame: number | null = null;
+      let requestActive = false;
+
+      const queueIdle = (callback: () => void) => {
+        if ("requestIdleCallback" in window) {
+          window.requestIdleCallback(callback, { timeout: 120 });
+          return;
+        }
+        globalThis.setTimeout(callback, 24);
+      };
+
+      const loadIndex = (index: number, onReady?: () => void) => {
+        if (index < 0 || index >= frameCount || loading.has(index) || framesRef.current[index]) return;
+        loading.add(index);
+        framesRef.current[index] = loadImageFrame(tabletEntryFrameSrc(index), index, false, onReady);
+      };
+
+      const loadLatestRequestedFrame = () => {
+        if (requestActive || requestedFrame === null) return;
+        const index = requestedFrame;
+        requestedFrame = null;
+
+        if (loading.has(index) || framesRef.current[index]) {
+          if (requestedFrame !== null) queueIdle(loadLatestRequestedFrame);
+          return;
+        }
+
+        requestActive = true;
+        loadIndex(index, () => {
+          requestActive = false;
+          if (requestedFrame !== null) queueIdle(loadLatestRequestedFrame);
+        });
+      };
+
+      tabletFrameLoader = (index) => {
+        requestedFrame = Math.round(index);
+        loadLatestRequestedFrame();
+      };
+      priorityFrames.forEach((index) => loadIndex(index));
+    };
+
+    const loadTabletVideoFallback = () => {
+      usesTabletVideo = true;
+      frameCount = 1;
+      readyFrames = 0;
+      canvas.style.display = "none";
+      video.style.display = "block";
+
+      video.onloadedmetadata = () => {
+        readyFrames = 1;
+        if (reduced && Number.isFinite(video.duration)) {
+          video.currentTime = Math.max(0, video.duration - 0.001);
+        }
+        signalReady();
+      };
+      video.onerror = () => {
+        usesTabletVideo = false;
+        video.style.display = "none";
+        canvas.style.display = "block";
+        loadTabletFrameSequence();
+      };
+      video.src = "/assets/tablet/entry-scroll-tablet.mp4";
+      video.load();
+    };
+
     const loadStaticAvifFallback = (src: string) => {
+      usesProgressiveAvif = false;
       if (isAndroidPhoneViewport()) {
         loadAndroidFrameSequence();
         return;
@@ -489,6 +690,11 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
 
       if (isPhoneViewport()) {
         loadPhoneFrameSequenceFallback();
+        return;
+      }
+
+      if (tabletPerformance) {
+        loadTabletVideoFallback();
         return;
       }
 
@@ -524,18 +730,10 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
 
       frameCount = decodedFrameCount;
       readyFrames = 0;
+      usesProgressiveAvif = true;
       framesRef.current = new Array<EntryFrame>(frameCount);
-
-      for (let index = 0; index < frameCount; index += 1) {
-        if (disposed) return;
-        const { image } = await decoder.decode({ frameIndex: index });
-        framesRef.current[index] = image;
-        readyFrames += 1;
-        if (index === pendingFrameRef.current) {
-          scheduleFrame(index);
-        }
-        signalReady();
-      }
+      requestedAvifFrame = pendingFrameRef.current;
+      requestDecodedAvifFrame(requestedAvifFrame);
     };
 
     if (isAndroidPhoneViewport()) {
@@ -551,6 +749,10 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
 
     resize();
     window.addEventListener("resize", resize);
+    window.addEventListener("orientationchange", resize);
+    window.visualViewport?.addEventListener("resize", resize);
+    const canvasResizeObserver = new ResizeObserver(resize);
+    canvasResizeObserver.observe(canvas);
 
     if (reduced) {
       scheduleFrame(frameCount - 1);
@@ -562,13 +764,17 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
         if (drawRafRef.current !== null) {
           window.cancelAnimationFrame(drawRafRef.current);
         }
+        canvasResizeObserver.disconnect();
         window.removeEventListener("resize", resize);
+        window.removeEventListener("orientationchange", resize);
+        window.visualViewport?.removeEventListener("resize", resize);
       };
     }
 
     const updateEntryVisuals = (progress: number) => {
       const frame = progress * (frameCount - 1);
-      scheduleFrame(frame);
+      if (usesTabletVideo) scheduleVideoProgress(progress);
+      else scheduleFrame(frame);
 
       const copyAlpha = gsap.utils.clamp(0, 1, 1 - progress / 0.23);
       const hintAlpha = gsap.utils.clamp(0, 1, 1 - progress / 0.3);
@@ -644,13 +850,21 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
       if (drawRafRef.current !== null) {
         window.cancelAnimationFrame(drawRafRef.current);
       }
+      if (videoSeekFrame) window.cancelAnimationFrame(videoSeekFrame);
       framesRef.current.forEach((frame) => {
         if ("close" in frame) {
           frame.close();
         }
       });
       avifDecoder?.close?.();
+      video.onloadedmetadata = null;
+      video.onerror = null;
+      video.removeAttribute("src");
+      video.load();
+      canvasResizeObserver.disconnect();
       window.removeEventListener("resize", resize);
+      window.removeEventListener("orientationchange", resize);
+      window.visualViewport?.removeEventListener("resize", resize);
       window.removeEventListener("pageshow", restoreEntryAnimation);
       window.removeEventListener("popstate", restoreEntryAnimation);
       window.removeEventListener("hashchange", restoreEntryAnimation);
@@ -660,6 +874,7 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
   return (
     <section id="home" ref={sectionRef} className="entry-transition" aria-label="Entering Sky Skrabers">
       <canvas ref={canvasRef} className="entry-transition__canvas" />
+      <video ref={videoRef} className="entry-transition__video" muted playsInline preload="auto" aria-hidden="true" />
       <div className="hero__shade" />
       <div ref={copyRef} className="hero__copy">
         <h1>
@@ -716,7 +931,7 @@ function ServicesPanel() {
   useEffect(() => {
     const container = cardsRef.current;
     if (!container) return;
-    if (window.innerWidth <= 560) return;
+    if (window.innerWidth <= 560 || isTabletPerformanceDevice()) return;
 
     const syncPointer = (event: PointerEvent) => {
       const positions = Array.from(container.querySelectorAll<HTMLElement>(".service-card"), (card) => {
@@ -787,15 +1002,32 @@ function ServicesPanel() {
   );
 }
 
+function ResponsiveSectionBackground({ className, alt }: { className: string; alt: string }) {
+  return (
+    <DeferredPicture
+      className="responsive-section-background"
+      imageClassName={className}
+      src="/assets/section-3-background.avif"
+      tabletSrc="/assets/tablet/section-3-background.avif"
+      alt={alt}
+      width={1672}
+      height={941}
+      rootMargin="700px"
+    />
+  );
+}
+
 function CompletedProjects() {
   const router = useRouter();
   const sectionRef = useRef<HTMLElement>(null);
-  const prefersReducedMotion = useReducedMotion();
+  const { MotionDiv, prefersReducedMotion } = useDeferredMotion();
+  const isTabletPerformance = useTabletPerformanceMode();
   const [active, setActive] = useState(0);
   const [rotation, setRotation] = useState(0);
   const [paused, setPaused] = useState(false);
   const [galleryRadius, setGalleryRadius] = useState(410);
   const [isTouchViewport, setIsTouchViewport] = useState(false);
+  const [galleryReady, setGalleryReady] = useState(false);
   const anglePerProject = 360 / projects.length;
   const previousScrollProgressRef = useRef(0);
   const targetRotationRef = useRef(0);
@@ -804,6 +1036,33 @@ function CompletedProjects() {
   const lastAutoFrameRef = useRef<number | null>(null);
   const resumeTimeoutRef = useRef<gsap.core.Tween | null>(null);
   const scrollIdleTimeoutRef = useRef<gsap.core.Tween | null>(null);
+
+  useEffect(() => {
+    let observer: IntersectionObserver | null = null;
+    const frame = window.requestAnimationFrame(() => {
+      if (!isTabletPerformanceDevice()) {
+        setGalleryReady(true);
+        return;
+      }
+
+      const section = sectionRef.current;
+      if (!section) return;
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          if (!entry.isIntersecting) return;
+          setGalleryReady(true);
+          observer?.disconnect();
+        },
+        { rootMargin: "900px" },
+      );
+      observer.observe(section);
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      observer?.disconnect();
+    };
+  }, [isTabletPerformance]);
 
   const getActiveProject = useCallback((nextRotation: number) => {
     const normalized = ((-nextRotation % 360) + 360) % 360;
@@ -835,7 +1094,7 @@ function CompletedProjects() {
   }, []);
 
   useEffect(() => {
-    if (prefersReducedMotion) return;
+    if (prefersReducedMotion || isTabletPerformance) return;
 
     const section = sectionRef.current;
     if (!section) return;
@@ -888,10 +1147,10 @@ function CompletedProjects() {
         scrollIdleTimeoutRef.current = null;
       }
     };
-  }, [isTouchViewport, prefersReducedMotion, rotateBy]);
+  }, [isTabletPerformance, isTouchViewport, prefersReducedMotion, rotateBy]);
 
   useEffect(() => {
-    if (prefersReducedMotion) return;
+    if (prefersReducedMotion || isTabletPerformance) return;
 
     let frameId = 0;
     const degreesPerMs = anglePerProject / 3000;
@@ -928,7 +1187,7 @@ function CompletedProjects() {
         resumeTimeoutRef.current = null;
       }
     };
-  }, [anglePerProject, getActiveProject, isTouchViewport, paused, prefersReducedMotion]);
+  }, [anglePerProject, getActiveProject, isTabletPerformance, isTouchViewport, paused, prefersReducedMotion]);
 
   useEffect(() => {
     const syncRadius = () => {
@@ -977,23 +1236,18 @@ function CompletedProjects() {
       id="our-projects"
       className="projects projects--gallery"
     >
-      <Image
-        src="/assets/section-3-background.avif"
+      <ResponsiveSectionBackground
         alt="Completed South Delhi residential project background by Sky Skrabers"
-        fill
         className="atmosphere projects__background"
-        quality={100}
-        sizes="(max-width: 560px) 240vw, (max-width: 820px) 180vw, 120vw"
-        unoptimized
       />
       <div className="section-overlay projects__overlay" />
-      <motion.div
+      <MotionDiv
         className="gallery-heading"
-        initial={prefersReducedMotion ? false : { opacity: 0, y: 90 }}
+        initial={prefersReducedMotion || isTabletPerformance ? false : { opacity: 0, y: 90 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: false, amount: 0.45 }}
-        transition={prefersReducedMotion ? { duration: 0 } : { duration: 1.35, ease: [0.16, 1, 0.3, 1] }}
-        style={{ willChange: "transform, opacity" }}
+        transition={prefersReducedMotion || isTabletPerformance ? { duration: 0 } : { duration: 1.35, ease: [0.16, 1, 0.3, 1] }}
+        style={{ willChange: isTabletPerformance ? "auto" : "transform, opacity" }}
       >
         <p className="eyebrow">Our Completed Projects</p>
         <h2>
@@ -1001,32 +1255,42 @@ function CompletedProjects() {
           <br />
           <span>Real Legacies.</span>
         </h2>
-      </motion.div>
+      </MotionDiv>
 
-      <motion.div
+      <MotionDiv
         className="gallery-shell"
-        initial={prefersReducedMotion ? false : { opacity: 0, y: 92, scale: 0.9 }}
+        initial={prefersReducedMotion || isTabletPerformance ? false : { opacity: 0, y: 92, scale: 0.9 }}
         whileInView={{ opacity: 1, y: 0, scale: 1 }}
         viewport={{ once: false, amount: 0.04 }}
-        transition={prefersReducedMotion ? { duration: 0 } : { duration: 1.08, ease: [0.16, 1, 0.3, 1] }}
-        style={{ willChange: "transform, opacity" }}
+        transition={prefersReducedMotion || isTabletPerformance ? { duration: 0 } : { duration: 1.08, ease: [0.16, 1, 0.3, 1] }}
+        style={{ willChange: isTabletPerformance ? "auto" : "transform, opacity" }}
       >
-        <CircularGallery items={projects} rotation={rotation} radius={galleryRadius} activeIndex={active} onItemSelect={openOrSelectProject} />
+        {galleryReady ? (
+          <CircularGallery
+            items={projects}
+            rotation={rotation}
+            radius={galleryRadius}
+            activeIndex={active}
+            onItemSelect={openOrSelectProject}
+          />
+        ) : (
+          <div className="circular-gallery circular-gallery--reserved" aria-hidden="true" />
+        )}
         <button className="gallery-arrow gallery-arrow--left" onClick={previousProject} aria-label="Previous completed project">
           <ArrowLeft size={22} />
         </button>
         <button className="gallery-arrow gallery-arrow--right" onClick={nextProject} aria-label="Next completed project">
           <ArrowRight size={22} />
         </button>
-      </motion.div>
+      </MotionDiv>
 
-      <motion.div
+      <MotionDiv
         className="project-controls gallery-dots"
-        initial={prefersReducedMotion ? false : { opacity: 0, y: 24 }}
+        initial={prefersReducedMotion || isTabletPerformance ? false : { opacity: 0, y: 24 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: false, amount: 0.04 }}
-        transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.75, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-        style={{ willChange: "transform, opacity" }}
+        transition={prefersReducedMotion || isTabletPerformance ? { duration: 0 } : { duration: 0.75, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+        style={{ willChange: isTabletPerformance ? "auto" : "transform, opacity" }}
       >
         {projects.map((project, index) => (
           <button
@@ -1036,14 +1300,15 @@ function CompletedProjects() {
             aria-label={`Show ${project.name}`}
           />
         ))}
-      </motion.div>
+      </MotionDiv>
     </section>
   );
 }
 
 function OngoingProjects() {
   const router = useRouter();
-  const prefersReducedMotion = useReducedMotion();
+  const { MotionDiv, MotionButton, prefersReducedMotion } = useDeferredMotion();
+  const isTabletPerformance = useTabletPerformanceMode();
   const [active, setActive] = useState(2);
   const [clickToExpand, setClickToExpand] = useState(false);
   const [armedProject, setArmedProject] = useState<number | null>(null);
@@ -1060,33 +1325,39 @@ function OngoingProjects() {
   };
 
   useEffect(() => {
-    const query = window.matchMedia("(max-width: 560px)");
+    const phoneQuery = window.matchMedia("(max-width: 560px)");
+    const tabletQuery = window.matchMedia(
+      "(min-width: 561px) and (max-width: 1199px), " +
+        "(min-width: 1200px) and (max-width: 1366px) and (min-height: 800px) and (max-height: 1199px)",
+    );
     const syncMode = () => {
-      setClickToExpand(query.matches);
+      setClickToExpand(phoneQuery.matches || tabletQuery.matches);
       setArmedProject(null);
     };
 
     syncMode();
-    query.addEventListener("change", syncMode);
-    return () => query.removeEventListener("change", syncMode);
+    phoneQuery.addEventListener("change", syncMode);
+    tabletQuery.addEventListener("change", syncMode);
+    return () => {
+      phoneQuery.removeEventListener("change", syncMode);
+      tabletQuery.removeEventListener("change", syncMode);
+    };
   }, []);
 
   return (
     <section id="ongoing-projects" className="ongoing" data-nav-section="our-projects">
-      <Image
-        src="/assets/section-3-background.avif"
+      <ResponsiveSectionBackground
         alt="Ongoing South Delhi residential project backdrop by Sky Skrabers"
-        fill
         className="ongoing__tower"
       />
       <div className="section-overlay section-overlay--heavy" />
-      <motion.div
+      <MotionDiv
         className="section-heading"
-        initial={prefersReducedMotion ? false : { opacity: 0, y: 76 }}
+        initial={prefersReducedMotion || isTabletPerformance ? false : { opacity: 0, y: 76 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: false, amount: 0.45 }}
-        transition={prefersReducedMotion ? { duration: 0 } : { duration: 1.15, ease: [0.16, 1, 0.3, 1] }}
-        style={{ willChange: "transform, opacity" }}
+        transition={prefersReducedMotion || isTabletPerformance ? { duration: 0 } : { duration: 1.15, ease: [0.16, 1, 0.3, 1] }}
+        style={{ willChange: isTabletPerformance ? "auto" : "transform, opacity" }}
       >
         <p className="eyebrow">Our Ongoing Projects</p>
         <h2>
@@ -1094,24 +1365,24 @@ function OngoingProjects() {
           <br />
           <span>Building Today.</span>
         </h2>
-      </motion.div>
-      <motion.div
+      </MotionDiv>
+      <MotionDiv
         className="expanding-carousel"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: false, amount: 0.28 }}
         variants={
-          prefersReducedMotion
+          prefersReducedMotion || isTabletPerformance
             ? { hidden: {}, visible: {} }
             : {
                 hidden: {},
                 visible: { transition: { staggerChildren: 0.16, delayChildren: 0.18 } },
               }
         }
-        style={{ willChange: "transform, opacity" }}
+        style={{ willChange: isTabletPerformance ? "auto" : "transform, opacity" }}
       >
         {ongoing.map((project, index) => (
-          <motion.button
+          <MotionButton
             key={project.name}
             className={`ongoing-card ${active === index ? "is-active" : ""}`}
             onPointerEnter={(event) => {
@@ -1130,7 +1401,7 @@ function OngoingProjects() {
             }
             aria-pressed={active === index}
             variants={
-              prefersReducedMotion
+              prefersReducedMotion || isTabletPerformance
                 ? {
                     hidden: { opacity: 1, x: 0, scale: 1 },
                     visible: { opacity: 1, x: 0, scale: 1 },
@@ -1140,18 +1411,18 @@ function OngoingProjects() {
                     visible: { opacity: 1, x: 0, scale: 1 },
                   }
             }
-            transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.64, ease: [0.22, 1, 0.36, 1] }}
-            style={{ willChange: "transform, opacity" }}
+            transition={prefersReducedMotion || isTabletPerformance ? { duration: 0 } : { duration: 0.64, ease: [0.22, 1, 0.36, 1] }}
+            style={{ willChange: isTabletPerformance ? "auto" : "transform, opacity" }}
           >
-            <span
-              className="ongoing-card__image"
-              style={{
-                backgroundImage: `linear-gradient(90deg, rgba(5, 11, 20, 0.08), rgba(5, 11, 20, 0.58)), url("${project.image}")`,
-                backgroundPosition: project.imagePosition,
-                backgroundRepeat: "no-repeat",
-                backgroundSize: "cover",
-              }}
-            />
+            <span className="ongoing-card__image">
+              <DeferredPicture
+                src={project.image}
+                tabletSrc={`/assets/tablet/card-images/${project.image.split("/").pop()?.replace(/\.[^.]+$/, ".webp")}`}
+                alt={`${project.name} ongoing residential project in New Delhi by Sky Skrabers`}
+                rootMargin="500px"
+                style={{ objectFit: "cover", objectPosition: project.imagePosition }}
+              />
+            </span>
             <span className="ongoing-card__details-cta">Click to view details</span>
             <span className="ongoing-card__label">
               <span className="ongoing-card__icon">
@@ -1173,9 +1444,9 @@ function OngoingProjects() {
               </span>
               <i />
             </span>
-          </motion.button>
+          </MotionButton>
         ))}
-      </motion.div>
+      </MotionDiv>
     </section>
   );
 }
@@ -1329,6 +1600,7 @@ function Footer() {
 export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [heroReady, setHeroReady] = useState(false);
+  const isTabletPerformance = useTabletPerformanceMode();
 
   const handleHeroReady = useCallback(() => {
     setHeroReady(true);
@@ -1354,29 +1626,44 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    const fallback = gsap.delayedCall(12, () => setHeroReady(true));
-    const lenis = new Lenis({ lerp: 0.08, smoothWheel: true });
-    lenis.on("scroll", ScrollTrigger.update);
-    const updateLenis = (time: number) => lenis.raf(time * 1000);
-    gsap.ticker.add(updateLenis);
-    gsap.ticker.lagSmoothing(0);
+    const fallback = gsap.delayedCall(isTabletPerformance ? 0.65 : 12, () => setHeroReady(true));
+    if (isTabletPerformance) {
+      return () => fallback.kill();
+    }
+
+    let cancelled = false;
+    let lenis: InstanceType<(typeof import("lenis"))["default"]> | null = null;
+    let updateLenis: ((time: number) => void) | null = null;
+
+    void import("lenis").then(({ default: Lenis }) => {
+      if (cancelled) return;
+      lenis = new Lenis({ lerp: 0.08, smoothWheel: true });
+      lenis.on("scroll", ScrollTrigger.update);
+      updateLenis = (time: number) => lenis?.raf(time * 1000);
+      gsap.ticker.add(updateLenis);
+      gsap.ticker.lagSmoothing(0);
+    });
 
     return () => {
+      cancelled = true;
       fallback.kill();
-      lenis.off("scroll", ScrollTrigger.update);
-      gsap.ticker.remove(updateLenis);
-      lenis.destroy();
+      lenis?.off("scroll", ScrollTrigger.update);
+      if (updateLenis) gsap.ticker.remove(updateLenis);
+      lenis?.destroy();
     };
-  }, []);
+  }, [isTabletPerformance]);
 
   useEffect(() => {
     if (!heroReady) return;
 
-    const timeout = gsap.delayedCall(0.85, () => setLoading(false));
+    const tabletLoaderSeen = isTabletPerformance && window.sessionStorage.getItem("sky-tablet-loader-seen") === "1";
+    const delay = isTabletPerformance ? (tabletLoaderSeen ? 0.08 : 0.18) : 0.85;
+    if (isTabletPerformance) window.sessionStorage.setItem("sky-tablet-loader-seen", "1");
+    const timeout = gsap.delayedCall(delay, () => setLoading(false));
     return () => {
       timeout.kill();
     };
-  }, [heroReady]);
+  }, [heroReady, isTabletPerformance]);
 
   useEffect(() => {
     const wasHistoryNavigation = () => {
@@ -1409,8 +1696,22 @@ export default function HomePage() {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduced) return;
 
+    if (isTabletPerformance) {
+      const targets = document.querySelectorAll<HTMLElement>(
+        ".site-header, .reveal-section h2, .reveal-section .eyebrow, .reveal-section .section-copy, .reveal-section .glass-card, .reveal-section .ongoing-card",
+      );
+      gsap.set(targets, { clearProps: "opacity,visibility,transform,willChange" });
+      return;
+    }
+
     const ctx = gsap.context(() => {
-      gsap.from(".site-header", { y: -26, autoAlpha: 0, duration: 1.1, ease: "power3.out", force3D: true });
+      gsap.from(".site-header", {
+        y: -26,
+        autoAlpha: 0,
+        duration: 1.1,
+        ease: "power3.out",
+        force3D: true,
+      });
       gsap.utils.toArray<HTMLElement>(".reveal-section").forEach((section) => {
         const targets = section.querySelectorAll<HTMLElement>("h2, .eyebrow, .section-copy, .glass-card, .ongoing-card");
 
@@ -1429,7 +1730,7 @@ export default function HomePage() {
     });
 
     return () => ctx.revert();
-  }, []);
+  }, [isTabletPerformance]);
 
   const main = useMemo(
     () => (

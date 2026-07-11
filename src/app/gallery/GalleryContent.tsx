@@ -1,11 +1,12 @@
 "use client";
 
+import { DeferredPicture } from "@/components/DeferredPicture";
 import { RouteLoadingLink } from "@/components/RouteLoadingLink";
 import { SkyLogo } from "@/components/SkyLogo";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { ShaderBackground } from "@/components/ui/shader-background";
+import { useTabletPerformanceMode } from "@/hooks/useTabletPerformanceMode";
 import { Camera, Menu } from "lucide-react";
-import Image from "next/image";
 import { useState } from "react";
 
 const navItems = [
@@ -130,14 +131,23 @@ function GalleryHeader() {
 }
 
 function GalleryRail({ items, reverse = false }: { items: typeof topRow; reverse?: boolean }) {
-  const doubledItems = [...items, ...items];
+  const isTabletPerformance = useTabletPerformanceMode();
+  const railItems = isTabletPerformance ? items : [...items, ...items];
 
   return (
-    <div className={reverse ? "gallery-rail gallery-rail--reverse" : "gallery-rail"} aria-hidden="true">
+    <div
+      className={`${reverse ? "gallery-rail gallery-rail--reverse" : "gallery-rail"}${isTabletPerformance ? " gallery-rail--tablet" : ""}`}
+      aria-hidden="true"
+    >
       <div className="gallery-rail__track">
-        {doubledItems.map((item, index) => (
+        {railItems.map((item, index) => (
           <article className="gallery-frame" key={`${item.title}-${index}`}>
-            <Image src={item.src} alt={item.alt} fill sizes="(max-width: 760px) 76vw, 34vw" />
+            <DeferredPicture
+              src={item.src}
+              alt={item.alt}
+              className="deferred-picture--fill"
+              rootMargin="500px"
+            />
           </article>
         ))}
       </div>
@@ -148,7 +158,7 @@ function GalleryRail({ items, reverse = false }: { items: typeof topRow; reverse
 export function GalleryContent() {
   return (
     <>
-      <ShaderBackground className="construction-shader-background" />
+      <ShaderBackground className="construction-shader-background" staticOnPhone />
       <GalleryHeader />
       <main className="gallery-page">
         <section className="gallery-hero" aria-labelledby="gallery-title">

@@ -1,5 +1,7 @@
 "use client";
 
+import { DeferredPicture } from "@/components/DeferredPicture";
+import { useTabletPerformanceMode } from "@/hooks/useTabletPerformanceMode";
 import React, { HTMLAttributes, useEffect, useState } from "react";
 
 const cn = (...classes: (string | undefined | null | false)[]) => classes.filter(Boolean).join(" ");
@@ -82,6 +84,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
   ({ items, className, rotation = 0, radius = 560, activeIndex = 0, onItemSelect, ...props }, ref) => {
     const anglePerItem = 360 / items.length;
     const [isMobileGallery, setIsMobileGallery] = useState(false);
+    const isTabletPerformance = useTabletPerformanceMode();
 
     useEffect(() => {
       const mediaQuery = window.matchMedia("(max-width: 560px)");
@@ -98,7 +101,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
         ref={ref}
         role="region"
         aria-label="Sky Skrabers circular project gallery"
-        className={cn("circular-gallery", className)}
+        className={cn("circular-gallery", isTabletPerformance && "circular-gallery--tablet", className)}
         {...props}
       >
         <div className="circular-gallery__stage">
@@ -109,7 +112,9 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
             const isActive = index === activeIndex;
             const depthOpacity = normalizedAngle <= 72 ? 1 : Math.max(0.18, 1 - (normalizedAngle - 72) / 86);
             const towerOcclusion = getTowerOcclusion(relativeAngle);
-            const opacity = isMobileGallery
+            const opacity = isTabletPerformance
+              ? 1
+              : isMobileGallery
               ? getMobileOpacity(relativeAngle, normalizedAngle)
               : depthOpacity * towerOcclusion;
             const scale = isActive ? 1 : 0.84 + (1 - normalizedAngle / 180) * 0.1;
@@ -128,18 +133,21 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                 onClick={() => onItemSelect?.(index)}
                 style={
                   {
-                    "--item-transform": mobileTransform?.transform ?? `rotateY(${displayAngle}deg) translateZ(${radius}px) rotateY(${-displayAngle}deg) scale(${displayScale})`,
+                    "--item-transform": isTabletPerformance
+                      ? "translate3d(0, 0, 0)"
+                      : mobileTransform?.transform ?? `rotateY(${displayAngle}deg) translateZ(${radius}px) rotateY(${-displayAngle}deg) scale(${displayScale})`,
                     "--item-opacity": opacity,
-                    "--item-z": mobileTransform?.zIndex ?? Math.round(1000 - normalizedAngle),
+                    "--item-z": isTabletPerformance ? 1 : mobileTransform?.zIndex ?? Math.round(1000 - normalizedAngle),
                     pointerEvents: opacity < 0.08 ? "none" : "auto",
                   } as React.CSSProperties
                 }
               >
                 <span className="circular-gallery__image-wrap">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <DeferredPicture
                     src={item.image}
+                    tabletSrc={`/assets/tablet/card-images/${item.image.split("/").pop()?.replace(/\.[^.]+$/, ".webp")}`}
                     alt={item.imageAlt ?? `${item.name} premium South Delhi project by Sky Skrabers`}
+                    rootMargin="500px"
                     style={{ objectFit: item.imageFit || "cover", objectPosition: item.imagePosition || "center" }}
                   />
                 </span>

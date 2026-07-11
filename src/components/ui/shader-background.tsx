@@ -1,9 +1,11 @@
 "use client";
 
+import { useTabletPerformanceMode } from "@/hooks/useTabletPerformanceMode";
 import { useEffect, useRef } from "react";
 
 type ShaderBackgroundProps = {
   className?: string;
+  staticOnPhone?: boolean;
 };
 
 const vertexShaderSource = `
@@ -142,8 +144,9 @@ function initShaderProgram(gl: WebGLRenderingContext) {
   return shaderProgram;
 }
 
-export function ShaderBackground({ className }: ShaderBackgroundProps) {
+export function ShaderBackground({ className, staticOnPhone = false }: ShaderBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const isTabletPerformance = useTabletPerformanceMode();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -161,14 +164,17 @@ export function ShaderBackground({ className }: ShaderBackgroundProps) {
     const time = gl.getUniformLocation(shaderProgram, "iTime");
     const positions = [-1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 1.0];
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const useStaticPhoneFrame = staticOnPhone && window.matchMedia("(max-width: 560px)").matches;
     let animationFrame = 0;
     let startTime = performance.now();
+    let isVisible = true;
+    let pageVisible = document.visibilityState === "visible";
 
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
 
     const resizeCanvas = () => {
-      const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
+      const ratio = isTabletPerformance || useStaticPhoneFrame ? 1 : Math.min(window.devicePixelRatio || 1, 1.5);
       const width = Math.round(window.innerWidth * ratio);
       const height = Math.round(window.innerHeight * ratio);
       canvas.width = width;
@@ -177,6 +183,7 @@ export function ShaderBackground({ className }: ShaderBackgroundProps) {
     };
 
     const render = () => {
+      animationFrame = 0;
       const currentTime = (performance.now() - startTime) / 1000;
 
       gl.clearColor(0, 0, 0, 1);
@@ -189,10 +196,38 @@ export function ShaderBackground({ className }: ShaderBackgroundProps) {
       gl.enableVertexAttribArray(vertexPosition);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
-      if (!reducedMotion) {
+      if (!reducedMotion && !isTabletPerformance && !useStaticPhoneFrame && isVisible && pageVisible) {
         animationFrame = window.requestAnimationFrame(render);
       }
     };
+
+    const resumeRendering = () => {
+      if (animationFrame || reducedMotion || isTabletPerformance || useStaticPhoneFrame || !isVisible || !pageVisible) return;
+      animationFrame = window.requestAnimationFrame(render);
+    };
+
+    const handleVisibilityChange = () => {
+      pageVisible = document.visibilityState === "visible";
+      if (!pageVisible && animationFrame) {
+        window.cancelAnimationFrame(animationFrame);
+        animationFrame = 0;
+        return;
+      }
+      resumeRendering();
+    };
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isVisible = entry.isIntersecting;
+        if (!isVisible && animationFrame) {
+          window.cancelAnimationFrame(animationFrame);
+          animationFrame = 0;
+          return;
+        }
+        resumeRendering();
+      },
+      { rootMargin: "160px" },
+    );
 
     const restartCanvas = () => {
       startTime = performance.now();
@@ -201,17 +236,21 @@ export function ShaderBackground({ className }: ShaderBackgroundProps) {
 
     resizeCanvas();
     render();
+    observer.observe(canvas);
     window.addEventListener("resize", resizeCanvas);
     window.addEventListener("pageshow", restartCanvas);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       window.cancelAnimationFrame(animationFrame);
+      observer.disconnect();
       window.removeEventListener("resize", resizeCanvas);
       window.removeEventListener("pageshow", restartCanvas);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       gl.deleteBuffer(positionBuffer);
       gl.deleteProgram(shaderProgram);
     };
-  }, []);
+  }, [isTabletPerformance, staticOnPhone]);
 
   return <canvas ref={canvasRef} className={className} aria-hidden="true" />;
 }
