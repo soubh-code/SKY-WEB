@@ -15,6 +15,7 @@ type DeferredPictureProps = {
   height?: number;
   style?: CSSProperties;
   rootMargin?: string;
+  eager?: boolean;
 };
 
 export function DeferredPicture({
@@ -27,18 +28,22 @@ export function DeferredPicture({
   height,
   style,
   rootMargin = "600px",
+  eager = false,
 }: DeferredPictureProps) {
   const pictureRef = useRef<HTMLPictureElement>(null);
-  const [shouldLoad, setShouldLoad] = useState(false);
+  const [hasIntersected, setHasIntersected] = useState(false);
+  const shouldLoad = eager || hasIntersected;
 
   useEffect(() => {
+    if (eager) return;
+
     const picture = pictureRef.current;
     if (!picture) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (!entry.isIntersecting) return;
-        setShouldLoad(true);
+        setHasIntersected(true);
         observer.disconnect();
       },
       { rootMargin },
@@ -46,7 +51,7 @@ export function DeferredPicture({
 
     observer.observe(picture);
     return () => observer.disconnect();
-  }, [rootMargin]);
+  }, [eager, rootMargin]);
 
   return (
     <picture ref={pictureRef} className={className}>
@@ -56,13 +61,12 @@ export function DeferredPicture({
           srcSet={tabletSrc}
         />
       ) : null}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={shouldLoad ? src : transparentPixel}
         alt={alt}
         width={width}
         height={height}
-        loading="lazy"
+        loading={eager ? "eager" : "lazy"}
         decoding="async"
         className={imageClassName}
         style={style}

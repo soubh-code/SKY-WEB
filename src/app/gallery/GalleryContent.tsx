@@ -7,7 +7,7 @@ import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { ShaderBackground } from "@/components/ui/shader-background";
 import { useTabletPerformanceMode } from "@/hooks/useTabletPerformanceMode";
 import { Camera, Menu } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const navItems = [
   { label: "Home", href: "/#home" },
@@ -132,7 +132,20 @@ function GalleryHeader() {
 
 function GalleryRail({ items, reverse = false }: { items: typeof topRow; reverse?: boolean }) {
   const isTabletPerformance = useTabletPerformanceMode();
-  const railItems = isTabletPerformance ? items : [...items, ...items];
+  const [isPhoneRail, setIsPhoneRail] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 560px)");
+    const syncPhoneRail = () => setIsPhoneRail(mediaQuery.matches);
+
+    syncPhoneRail();
+    mediaQuery.addEventListener("change", syncPhoneRail);
+    return () => mediaQuery.removeEventListener("change", syncPhoneRail);
+  }, []);
+
+  const railItems = isTabletPerformance
+    ? items
+    : Array.from({ length: isPhoneRail ? 4 : 2 }, () => items).flat();
 
   return (
     <div
@@ -146,6 +159,7 @@ function GalleryRail({ items, reverse = false }: { items: typeof topRow; reverse
               src={item.src}
               alt={item.alt}
               className="deferred-picture--fill"
+              eager
               rootMargin="500px"
             />
           </article>

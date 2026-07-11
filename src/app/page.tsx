@@ -9,7 +9,6 @@ import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { useDeferredMotion } from "@/hooks/useDeferredMotion";
 import {
   isTabletPerformanceDevice,
-  TABLET_PERFORMANCE_QUERY,
   useTabletPerformanceMode,
 } from "@/hooks/useTabletPerformanceMode";
 import { business } from "@/lib/business";
@@ -1094,7 +1093,7 @@ function CompletedProjects() {
   }, []);
 
   useEffect(() => {
-    if (prefersReducedMotion || isTabletPerformance) return;
+    if (prefersReducedMotion || isTabletPerformance || isTouchViewport) return;
 
     const section = sectionRef.current;
     if (!section) return;
@@ -1150,7 +1149,7 @@ function CompletedProjects() {
   }, [isTabletPerformance, isTouchViewport, prefersReducedMotion, rotateBy]);
 
   useEffect(() => {
-    if (prefersReducedMotion || isTabletPerformance) return;
+    if (prefersReducedMotion || isTabletPerformance || isTouchViewport) return;
 
     let frameId = 0;
     const degreesPerMs = anglePerProject / 3000;
@@ -1209,7 +1208,7 @@ function CompletedProjects() {
   const selectProject = (index: number) => {
     pauseBriefly();
     const forwardSteps = (index - active + projects.length) % projects.length;
-    rotateBy(-forwardSteps * anglePerProject);
+    rotateBy(-forwardSteps * anglePerProject, isTouchViewport);
   };
 
   const openOrSelectProject = (index: number) => {
@@ -1223,12 +1222,12 @@ function CompletedProjects() {
 
   const nextProject = () => {
     pauseBriefly();
-    rotateBy(-anglePerProject);
+    rotateBy(-anglePerProject, isTouchViewport);
   };
 
   const previousProject = () => {
     pauseBriefly();
-    rotateBy(anglePerProject);
+    rotateBy(anglePerProject, isTouchViewport);
   };
   return (
     <section
