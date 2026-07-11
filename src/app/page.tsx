@@ -1093,7 +1093,7 @@ function CompletedProjects() {
   }, []);
 
   useEffect(() => {
-    if (prefersReducedMotion || isTabletPerformance || isTouchViewport) return;
+    if (prefersReducedMotion || isTabletPerformance) return;
 
     const section = sectionRef.current;
     if (!section) return;
@@ -1149,7 +1149,7 @@ function CompletedProjects() {
   }, [isTabletPerformance, isTouchViewport, prefersReducedMotion, rotateBy]);
 
   useEffect(() => {
-    if (prefersReducedMotion || isTabletPerformance || isTouchViewport) return;
+    if (prefersReducedMotion || isTabletPerformance) return;
 
     let frameId = 0;
     const degreesPerMs = anglePerProject / 3000;
@@ -1208,7 +1208,7 @@ function CompletedProjects() {
   const selectProject = (index: number) => {
     pauseBriefly();
     const forwardSteps = (index - active + projects.length) % projects.length;
-    rotateBy(-forwardSteps * anglePerProject, isTouchViewport);
+    rotateBy(-forwardSteps * anglePerProject);
   };
 
   const openOrSelectProject = (index: number) => {
@@ -1222,12 +1222,12 @@ function CompletedProjects() {
 
   const nextProject = () => {
     pauseBriefly();
-    rotateBy(-anglePerProject, isTouchViewport);
+    rotateBy(-anglePerProject);
   };
 
   const previousProject = () => {
     pauseBriefly();
-    rotateBy(anglePerProject, isTouchViewport);
+    rotateBy(anglePerProject);
   };
   return (
     <section

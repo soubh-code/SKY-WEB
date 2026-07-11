@@ -101,6 +101,7 @@ const galleryItems = [
 
 const topRow = galleryItems.slice(0, 7);
 const bottomRow = galleryItems.slice(7);
+const galleryImageSources = galleryItems.map((item) => item.src);
 
 function GalleryHeader() {
   const [open, setOpen] = useState(false);
@@ -145,7 +146,7 @@ function GalleryRail({ items, reverse = false }: { items: typeof topRow; reverse
 
   const railItems = isTabletPerformance
     ? items
-    : Array.from({ length: isPhoneRail ? 4 : 2 }, () => items).flat();
+    : Array.from({ length: isPhoneRail ? 6 : 2 }, () => items).flat();
 
   return (
     <div
@@ -170,11 +171,55 @@ function GalleryRail({ items, reverse = false }: { items: typeof topRow; reverse
 }
 
 export function GalleryContent() {
+  const [galleryLoaded, setGalleryLoaded] = useState(false);
+  const [loadedCount, setLoadedCount] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    let completed = 0;
+
+    const markLoaded = () => {
+      completed += 1;
+      if (cancelled) return;
+      setLoadedCount(completed);
+      if (completed >= galleryImageSources.length) {
+        setGalleryLoaded(true);
+      }
+    };
+
+    const preloaders = galleryImageSources.map((src) => {
+      const image = new window.Image();
+      image.decoding = "async";
+      image.onload = markLoaded;
+      image.onerror = markLoaded;
+      image.src = src;
+      return image;
+    });
+
+    return () => {
+      cancelled = true;
+      preloaders.forEach((image) => {
+        image.onload = null;
+        image.onerror = null;
+      });
+    };
+  }, []);
+
   return (
     <>
       <ShaderBackground className="construction-shader-background" staticOnPhone />
-      <GalleryHeader />
-      <main className="gallery-page">
+      {!galleryLoaded ? (
+        <div className="gallery-loader" role="status" aria-live="polite">
+          <SkyLogo priority />
+          <span>Loading Gallery</span>
+          <strong>
+            {loadedCount}/{galleryImageSources.length}
+          </strong>
+        </div>
+      ) : null}
+      <div className={galleryLoaded ? "gallery-ready" : "gallery-waiting"} aria-hidden={!galleryLoaded}>
+        <GalleryHeader />
+        <main className="gallery-page">
         <section className="gallery-hero" aria-labelledby="gallery-title">
           <div className="construction-hero__signal" aria-hidden="true">
             <span />
@@ -193,8 +238,9 @@ export function GalleryContent() {
           <GalleryRail items={topRow} />
           <GalleryRail items={bottomRow} reverse />
         </section>
-      </main>
-      <WhatsAppButton />
+        </main>
+        <WhatsAppButton />
+      </div>
     </>
   );
 }
