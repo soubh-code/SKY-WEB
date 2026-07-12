@@ -2475,6 +2475,12 @@ form button:hover {
   pointer-events: none;
 }
 
+.shader-background-static {
+  object-fit: cover;
+  object-position: center;
+  user-select: none;
+}
+
 .construction-page {
   position: relative;
   z-index: 1;
@@ -4394,77 +4400,6 @@ form button:hover {
     contain-intrinsic-size: auto 1000px;
   }
 
-  .circular-gallery--tablet {
-    display: block;
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    scrollbar-width: none;
-    scroll-snap-type: x mandatory;
-    touch-action: pan-x pan-y;
-  }
-
-  .circular-gallery--tablet::-webkit-scrollbar {
-    display: none;
-  }
-
-  .circular-gallery--tablet .circular-gallery__stage {
-    display: flex;
-    width: max-content;
-    height: 100%;
-    align-items: center;
-    gap: 1.25rem;
-    padding-inline: max(2rem, calc((100vw - 380px) / 2));
-    transform-style: flat;
-  }
-
-  .circular-gallery--tablet .circular-gallery__item {
-    position: relative;
-    top: auto;
-    left: auto;
-    width: min(42vw, 380px);
-    height: min(56vw, 500px);
-    flex: 0 0 min(42vw, 380px);
-    translate: none;
-    opacity: 1;
-    transform: translate3d(0, 0, 0) !important;
-    transform-style: flat;
-    scroll-snap-align: center;
-    scroll-snap-stop: always;
-    will-change: auto;
-  }
-
-  .circular-gallery--tablet .circular-gallery__item::before,
-  .circular-gallery--tablet .circular-gallery__item::after {
-    display: none;
-  }
-
-  .projects--gallery .gallery-arrow,
-  .projects--gallery .gallery-dots {
-    display: none;
-  }
-
-  .expanding-carousel {
-    justify-content: flex-start;
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    scrollbar-width: none;
-    scroll-snap-type: x mandatory;
-    touch-action: pan-x pan-y;
-  }
-
-  .expanding-carousel::-webkit-scrollbar {
-    display: none;
-  }
-
-  .ongoing-card,
-  .ongoing-card.is-active {
-    min-width: 0;
-    flex: 0 0 45vw;
-    scroll-snap-align: center;
-    scroll-snap-stop: always;
-    will-change: auto;
-  }
-
   .ongoing-card__content {
     width: 68%;
     gap: 0.55rem;
@@ -4481,11 +4416,6 @@ form button:hover {
     font-size: clamp(0.72rem, 1.15vw, 0.9rem);
     letter-spacing: 0.05em;
   }
-
-  .ongoing-card__image {
-    will-change: auto;
-  }
-
   .gallery-rail--tablet {
     overflow-x: auto;
     overscroll-behavior-x: contain;
@@ -4571,38 +4501,6 @@ form button:hover {
   .gallery-shell {
     height: min(370px, 46vh);
     margin-top: clamp(2rem, 5vh, 3.5rem);
-  }
-
-  .circular-gallery--tablet .circular-gallery__stage {
-    padding-inline: max(2rem, calc((100vw - 300px) / 2));
-  }
-
-  .circular-gallery--tablet .circular-gallery__item {
-    width: min(34vw, 300px);
-    height: min(44vw, 370px);
-    flex-basis: min(34vw, 300px);
-  }
-}
-
-@media (min-width: 561px) and (max-width: 1199px),
-  (min-width: 1200px) and (max-width: 1366px) and (min-height: 800px) and (max-height: 1199px) {
-  .expanding-carousel {
-    overflow-x: hidden;
-    scroll-snap-type: none;
-  }
-
-  .ongoing-card,
-  .ongoing-card.is-active {
-    min-width: 0;
-    scroll-snap-align: none;
-  }
-
-  .ongoing-card {
-    flex: 1 1 0;
-  }
-
-  .ongoing-card.is-active {
-    flex: 0 0 56%;
   }
 }
 

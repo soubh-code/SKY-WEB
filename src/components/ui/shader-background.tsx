@@ -149,6 +149,8 @@ export function ShaderBackground({ className, staticOnPhone = false }: ShaderBac
   const isTabletPerformance = useTabletPerformanceMode();
 
   useEffect(() => {
+    if (isTabletPerformance) return;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -251,6 +253,18 @@ export function ShaderBackground({ className, staticOnPhone = false }: ShaderBac
       gl.deleteProgram(shaderProgram);
     };
   }, [isTabletPerformance, staticOnPhone]);
+
+  if (isTabletPerformance) {
+    return (
+      <img
+        src="/assets/shader-background-tablet-static.webp"
+        className={className ? `${className} shader-background-static` : "shader-background-static"}
+        alt=""
+        aria-hidden="true"
+        decoding="async"
+      />
+    );
+  }
 
   return <canvas ref={canvasRef} className={className} aria-hidden="true" />;
 }

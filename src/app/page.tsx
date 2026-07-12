@@ -384,8 +384,12 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
       const userAgent = window.navigator.userAgent.toLowerCase();
       return isPhoneViewport() && userAgent.includes("android");
     };
+    const isTabletPortraitViewport = () =>
+      window.matchMedia(
+        "(min-width: 561px) and (max-width: 1199px) and (orientation: portrait), " +
+          "(min-width: 1200px) and (max-width: 1366px) and (max-height: 1199px) and (orientation: portrait)",
+      ).matches;
     const getEntryAnimationSrc = () => {
-      if (tabletPerformance) return "/assets/tablet/entry-scroll-tablet.avif";
       return isPhoneViewport() ? "/assets/entry-scroll-phone.avif" : "/assets/entry-scroll-desktop.avif";
     };
 
@@ -604,6 +608,11 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
         return;
       }
 
+      if (isTabletPortraitViewport()) {
+        loadPhoneFrameSequenceFallback();
+        return;
+      }
+
       if (isPhoneViewport()) {
         loadPhoneFrameSequenceFallback();
         return;
@@ -652,7 +661,9 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
       requestDecodedAvifFrame(requestedAvifFrame);
     };
 
-    if (tabletPerformance) {
+    if (isTabletPortraitViewport()) {
+      loadPhoneFrameSequenceFallback();
+    } else if (tabletPerformance) {
       loadTabletFrameSequence();
     } else if (isAndroidPhoneViewport()) {
       loadAndroidFrameSequence();
@@ -937,7 +948,6 @@ function CompletedProjects() {
   const router = useRouter();
   const sectionRef = useRef<HTMLElement>(null);
   const { MotionDiv, prefersReducedMotion } = useDeferredMotion();
-  const isTabletPerformance = useTabletPerformanceMode();
   const [active, setActive] = useState(0);
   const [rotation, setRotation] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -954,31 +964,14 @@ function CompletedProjects() {
   const scrollIdleTimeoutRef = useRef<gsap.core.Tween | null>(null);
 
   useEffect(() => {
-    let observer: IntersectionObserver | null = null;
     const frame = window.requestAnimationFrame(() => {
-      if (!isTabletPerformanceDevice()) {
-        setGalleryReady(true);
-        return;
-      }
-
-      const section = sectionRef.current;
-      if (!section) return;
-      observer = new IntersectionObserver(
-        ([entry]) => {
-          if (!entry.isIntersecting) return;
-          setGalleryReady(true);
-          observer?.disconnect();
-        },
-        { rootMargin: "900px" },
-      );
-      observer.observe(section);
+      setGalleryReady(true);
     });
 
     return () => {
       window.cancelAnimationFrame(frame);
-      observer?.disconnect();
     };
-  }, [isTabletPerformance]);
+  }, []);
 
   const getActiveProject = useCallback((nextRotation: number) => {
     const normalized = ((-nextRotation % 360) + 360) % 360;
@@ -1010,7 +1003,7 @@ function CompletedProjects() {
   }, []);
 
   useEffect(() => {
-    if (prefersReducedMotion || isTabletPerformance) return;
+    if (prefersReducedMotion) return;
 
     const section = sectionRef.current;
     if (!section) return;
@@ -1063,10 +1056,10 @@ function CompletedProjects() {
         scrollIdleTimeoutRef.current = null;
       }
     };
-  }, [isTabletPerformance, isTouchViewport, prefersReducedMotion, rotateBy]);
+  }, [isTouchViewport, prefersReducedMotion, rotateBy]);
 
   useEffect(() => {
-    if (prefersReducedMotion || isTabletPerformance) return;
+    if (prefersReducedMotion) return;
 
     let frameId = 0;
     const degreesPerMs = anglePerProject / 3000;
@@ -1103,7 +1096,7 @@ function CompletedProjects() {
         resumeTimeoutRef.current = null;
       }
     };
-  }, [anglePerProject, getActiveProject, isTabletPerformance, isTouchViewport, paused, prefersReducedMotion]);
+  }, [anglePerProject, getActiveProject, isTouchViewport, paused, prefersReducedMotion]);
 
   useEffect(() => {
     const syncRadius = () => {
@@ -1159,11 +1152,11 @@ function CompletedProjects() {
       <div className="section-overlay projects__overlay" />
       <MotionDiv
         className="gallery-heading"
-        initial={prefersReducedMotion || isTabletPerformance ? false : { opacity: 0, y: 90 }}
+        initial={prefersReducedMotion ? false : { opacity: 0, y: 90 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: false, amount: 0.45 }}
-        transition={prefersReducedMotion || isTabletPerformance ? { duration: 0 } : { duration: 1.35, ease: [0.16, 1, 0.3, 1] }}
-        style={{ willChange: isTabletPerformance ? "auto" : "transform, opacity" }}
+        transition={prefersReducedMotion ? { duration: 0 } : { duration: 1.35, ease: [0.16, 1, 0.3, 1] }}
+        style={{ willChange: "transform, opacity" }}
       >
         <p className="eyebrow">Our Completed Projects</p>
         <h2>
@@ -1175,11 +1168,11 @@ function CompletedProjects() {
 
       <MotionDiv
         className="gallery-shell"
-        initial={prefersReducedMotion || isTabletPerformance ? false : { opacity: 0, y: 92, scale: 0.9 }}
+        initial={prefersReducedMotion ? false : { opacity: 0, y: 92, scale: 0.9 }}
         whileInView={{ opacity: 1, y: 0, scale: 1 }}
         viewport={{ once: false, amount: 0.04 }}
-        transition={prefersReducedMotion || isTabletPerformance ? { duration: 0 } : { duration: 1.08, ease: [0.16, 1, 0.3, 1] }}
-        style={{ willChange: isTabletPerformance ? "auto" : "transform, opacity" }}
+        transition={prefersReducedMotion ? { duration: 0 } : { duration: 1.08, ease: [0.16, 1, 0.3, 1] }}
+        style={{ willChange: "transform, opacity" }}
       >
         {galleryReady ? (
           <CircularGallery
@@ -1202,11 +1195,11 @@ function CompletedProjects() {
 
       <MotionDiv
         className="project-controls gallery-dots"
-        initial={prefersReducedMotion || isTabletPerformance ? false : { opacity: 0, y: 24 }}
+        initial={prefersReducedMotion ? false : { opacity: 0, y: 24 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: false, amount: 0.04 }}
-        transition={prefersReducedMotion || isTabletPerformance ? { duration: 0 } : { duration: 0.75, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-        style={{ willChange: isTabletPerformance ? "auto" : "transform, opacity" }}
+        transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.75, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+        style={{ willChange: "transform, opacity" }}
       >
         {projects.map((project, index) => (
           <button
@@ -1224,7 +1217,6 @@ function CompletedProjects() {
 function OngoingProjects() {
   const router = useRouter();
   const { MotionDiv, MotionButton, prefersReducedMotion } = useDeferredMotion();
-  const isTabletPerformance = useTabletPerformanceMode();
   const [active, setActive] = useState(2);
   const [clickToExpand, setClickToExpand] = useState(false);
   const [armedProject, setArmedProject] = useState<number | null>(null);
@@ -1269,11 +1261,11 @@ function OngoingProjects() {
       <div className="section-overlay section-overlay--heavy" />
       <MotionDiv
         className="section-heading"
-        initial={prefersReducedMotion || isTabletPerformance ? false : { opacity: 0, y: 76 }}
+        initial={prefersReducedMotion ? false : { opacity: 0, y: 76 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: false, amount: 0.45 }}
-        transition={prefersReducedMotion || isTabletPerformance ? { duration: 0 } : { duration: 1.15, ease: [0.16, 1, 0.3, 1] }}
-        style={{ willChange: isTabletPerformance ? "auto" : "transform, opacity" }}
+        transition={prefersReducedMotion ? { duration: 0 } : { duration: 1.15, ease: [0.16, 1, 0.3, 1] }}
+        style={{ willChange: "transform, opacity" }}
       >
         <p className="eyebrow">Our Ongoing Projects</p>
         <h2>
@@ -1288,14 +1280,14 @@ function OngoingProjects() {
         whileInView="visible"
         viewport={{ once: false, amount: 0.28 }}
         variants={
-          prefersReducedMotion || isTabletPerformance
+          prefersReducedMotion
             ? { hidden: {}, visible: {} }
             : {
                 hidden: {},
                 visible: { transition: { staggerChildren: 0.16, delayChildren: 0.18 } },
               }
         }
-        style={{ willChange: isTabletPerformance ? "auto" : "transform, opacity" }}
+        style={{ willChange: "transform, opacity" }}
       >
         {ongoing.map((project, index) => (
           <MotionButton
@@ -1317,7 +1309,7 @@ function OngoingProjects() {
             }
             aria-pressed={active === index}
             variants={
-              prefersReducedMotion || isTabletPerformance
+              prefersReducedMotion
                 ? {
                     hidden: { opacity: 1, x: 0, scale: 1 },
                     visible: { opacity: 1, x: 0, scale: 1 },
@@ -1327,8 +1319,8 @@ function OngoingProjects() {
                     visible: { opacity: 1, x: 0, scale: 1 },
                   }
             }
-            transition={prefersReducedMotion || isTabletPerformance ? { duration: 0 } : { duration: 0.64, ease: [0.22, 1, 0.36, 1] }}
-            style={{ willChange: isTabletPerformance ? "auto" : "transform, opacity" }}
+            transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.64, ease: [0.22, 1, 0.36, 1] }}
+            style={{ willChange: "transform, opacity" }}
           >
             <span className="ongoing-card__image">
               <DeferredPicture
@@ -1607,14 +1599,6 @@ export default function HomePage() {
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduced) return;
-
-    if (isTabletPerformance) {
-      const targets = document.querySelectorAll<HTMLElement>(
-        ".site-header, .reveal-section h2, .reveal-section .eyebrow, .reveal-section .section-copy, .reveal-section .glass-card, .reveal-section .ongoing-card",
-      );
-      gsap.set(targets, { clearProps: "opacity,visibility,transform,willChange" });
-      return;
-    }
 
     const ctx = gsap.context(() => {
       gsap.from(".site-header", {
