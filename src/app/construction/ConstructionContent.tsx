@@ -4,9 +4,10 @@ import { RouteLoadingLink } from "@/components/RouteLoadingLink";
 import { SkyLogo } from "@/components/SkyLogo";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { ShaderBackground } from "@/components/ui/shader-background";
+import { preloadConstructionComparisonImages } from "@/lib/route-preloads";
 import { ArrowLeftRight, Building2, CheckCircle2, Menu } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const navItems = [
   { label: "Home", href: "/#home" },
@@ -99,6 +100,10 @@ function ConstructionHeader() {
 export function ConstructionContent() {
   const [revealedCards, setRevealedCards] = useState<Record<string, boolean>>({});
 
+  useEffect(() => {
+    void preloadConstructionComparisonImages();
+  }, []);
+
   const toggleCard = (title: string) => {
     setRevealedCards((current) => ({
       ...current,
@@ -185,6 +190,7 @@ export function ConstructionContent() {
                         src={imageSrc}
                         alt={imageAlt}
                         fill
+                        unoptimized
                         sizes="(max-width: 760px) 100vw, (max-width: 1200px) 50vw, 560px"
                         className="image-slot__media"
                         style={{ objectFit: "cover", objectPosition: "center" }}

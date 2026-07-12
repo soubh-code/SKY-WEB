@@ -2928,6 +2928,8 @@ form button:hover {
 }
 
 .gallery-frame img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   transition: transform 0.45s ease;
 }
@@ -4271,23 +4273,64 @@ form button:hover {
   }
 
   .gallery-frame {
-    flex-basis: min(58vw, 252px);
+    flex-basis: 0;
   }
 
-  .gallery-rail__track {
-    gap: 0.75rem;
-    padding-inline: 0.75rem;
+  .gallery-rail:not(.gallery-rail--phone) {
+    display: none;
   }
 
   .gallery-marquee {
-    --gallery-scroll-duration: 8s;
     gap: 1rem;
   }
 
-  .gallery-rail__track {
+  .gallery-rail--phone {
+    display: block;
+    overflow: hidden;
+    contain: layout paint;
+    cursor: grab;
+    touch-action: pan-y;
+    user-select: none;
+  }
+
+  .gallery-rail--phone:active {
+    cursor: grabbing;
+  }
+
+  .gallery-phone-track {
+    display: flex;
+    width: max-content;
+    gap: 0;
     contain: layout paint;
     backface-visibility: hidden;
     transform: translate3d(0, 0, 0);
+    will-change: transform;
+  }
+
+  .gallery-phone-group {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 0.72rem;
+    padding-right: 0.72rem;
+  }
+
+  .gallery-frame--phone {
+    flex: 0 0 58vw;
+    width: 58vw;
+    max-width: 248px;
+    min-width: 204px;
+    aspect-ratio: 16 / 10.5;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+
+  .gallery-frame--phone img {
+    transform: translateZ(0);
+    transition: none;
+  }
+
+  .gallery-frame--phone:hover img {
+    transform: translateZ(0);
   }
 
 }

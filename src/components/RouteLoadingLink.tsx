@@ -4,6 +4,7 @@ import { MouseEvent, ReactNode, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import gsap from "gsap";
+import { preloadAssetsForHref } from "@/lib/route-preloads";
 import { SkyLogo } from "./SkyLogo";
 
 type RouteLoadingLinkProps = {
@@ -144,6 +145,7 @@ export function RouteLoadingLink({
     event.preventDefault();
     markHomeReloadIfNeeded(href);
     setLoading(true);
+    const routeAssetsReady = preloadAssetsForHref(href);
 
     if (navigationTimeoutRef.current !== null) {
       navigationTimeoutRef.current.kill();
@@ -156,9 +158,21 @@ export function RouteLoadingLink({
 
     navigationTimeoutRef.current = gsap.delayedCall(0.95, () => {
       navigationTimeoutRef.current = null;
-      window.location.assign(destination);
+      let navigated = false;
+      const navigate = () => {
+        if (navigated) return;
+        navigated = true;
+        window.location.assign(destination);
+      };
+
+      routeAssetsReady.then(navigate).catch(navigate);
       safetyTimeoutRef.current = gsap.delayedCall(2.4, () => {
         safetyTimeoutRef.current = null;
+        if (!navigated) {
+          navigate();
+          return;
+        }
+
         setLoading(false);
         document.querySelectorAll(".route-kontext").forEach((node) => node.remove());
       });

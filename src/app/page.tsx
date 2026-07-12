@@ -59,8 +59,8 @@ const PHONE_ENTRY_FRAME_COUNT = 99;
 const PHONE_ENTRY_FRAME_VERSION = "20fps-99";
 const ANDROID_ENTRY_FRAME_COUNT = 92;
 const ANDROID_ENTRY_FRAME_VERSION = "android-webp-92";
-const TABLET_ENTRY_FRAME_COUNT = 34;
-const TABLET_ENTRY_FRAME_VERSION = "tablet-webp-34";
+const TABLET_ENTRY_FRAME_COUNT = 80;
+const TABLET_ENTRY_FRAME_VERSION = "tablet-webp-80";
 const phoneEntryFrameSrc = (index: number) =>
   `/assets/entry-phone-frames/${String(index).padStart(3, "0")}.webp?v=${PHONE_ENTRY_FRAME_VERSION}`;
 const androidEntryFrameSrc = (index: number) =>
@@ -246,6 +246,25 @@ function Header() {
   const [open, setOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
 
+  const scrollToHomeSection = useCallback((href: string) => {
+    const hash = href.includes("#") ? href.slice(href.indexOf("#")) : href;
+    const target = document.querySelector<HTMLElement>(hash);
+    if (!target) return;
+
+    const scrollToTarget = (behavior: ScrollBehavior) => {
+      const headerOffset = 92;
+      const top = target.getBoundingClientRect().top + window.scrollY - headerOffset;
+      window.scrollTo({ top: Math.max(0, top), behavior });
+    };
+
+    window.history.pushState(null, "", hash);
+    requestAnimationFrame(() => {
+      ScrollTrigger.refresh();
+      scrollToTarget("smooth");
+      gsap.delayedCall(0.42, () => scrollToTarget("auto"));
+    });
+  }, []);
+
   useEffect(() => {
     let ticking = false;
 
@@ -305,8 +324,10 @@ function Header() {
               key={item.id}
               href={item.href}
               className={activeSection === item.id ? "is-active" : undefined}
-              onClick={() => {
+              onClick={(event) => {
+                event.preventDefault();
                 if (item.section) setActiveSection(item.id);
+                scrollToHomeSection(item.href);
                 setOpen(false);
               }}
             >
@@ -355,10 +376,6 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
     let usesProgressiveAvif = false;
     let avifDecodeActive = false;
     let requestedAvifFrame = 0;
-    let tabletFrameLoader: ((index: number) => void) | null = null;
-    let usesTabletVideo = false;
-    let pendingVideoProgress = 0;
-    let videoSeekFrame = 0;
     const failedAvifFrames = new Set<number>();
     const decodedAvifOrder: number[] = [];
     const isTouchViewport = () => window.innerWidth <= 560 || tabletPerformance;
@@ -382,7 +399,7 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
     };
 
     const signalReady = () => {
-      const readyFrameTarget = usesProgressiveAvif ? 1 : tabletPerformance ? Math.min(frameCount, 2) : frameCount;
+      const readyFrameTarget = usesProgressiveAvif ? 1 : frameCount;
       if (readySignaled || readyFrames < readyFrameTarget) return;
       readySignaled = true;
       scheduleFrame(pendingFrameRef.current);
@@ -443,28 +460,6 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
       const image = framesRef.current[frameIndex];
       if (!isFrameReady(image)) {
         if (usesProgressiveAvif) requestDecodedAvifFrame(frameIndex);
-        if (tabletPerformance && tabletFrameLoader) tabletFrameLoader(frameIndex);
-
-        if (tabletPerformance) {
-          let nearestIndex = -1;
-          let nearestDistance = Number.POSITIVE_INFINITY;
-          framesRef.current.forEach((candidate, candidateIndex) => {
-            if (!isFrameReady(candidate)) return;
-            const distance = Math.abs(candidateIndex - frameIndex);
-            if (distance < nearestDistance) {
-              nearestDistance = distance;
-              nearestIndex = candidateIndex;
-            }
-          });
-
-          if (nearestIndex >= 0 && nearestIndex !== currentFrameRef.current) {
-            const nearestFrame = framesRef.current[nearestIndex];
-            const { width, height } = canvas.getBoundingClientRect();
-            context.clearRect(0, 0, width, height);
-            currentFrameRef.current = nearestIndex;
-            drawCover(nearestFrame);
-          }
-        }
         return;
       }
 
@@ -481,17 +476,6 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
       drawRafRef.current = window.requestAnimationFrame(() => {
         drawRafRef.current = null;
         drawFrame(pendingFrameRef.current);
-      });
-    };
-
-    const scheduleVideoProgress = (progress: number) => {
-      pendingVideoProgress = progress;
-      if (videoSeekFrame || !usesTabletVideo) return;
-      videoSeekFrame = window.requestAnimationFrame(() => {
-        videoSeekFrame = 0;
-        if (!Number.isFinite(video.duration) || video.duration <= 0) return;
-        const nextTime = pendingVideoProgress * Math.max(0, video.duration - 0.001);
-        if (Math.abs(video.currentTime - nextTime) > 0.01) video.currentTime = nextTime;
       });
     };
 
@@ -610,74 +594,7 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
     };
 
     const loadTabletFrameSequence = () => {
-      frameCount = TABLET_ENTRY_FRAME_COUNT;
-      readyFrames = 0;
-      framesRef.current = new Array<EntryFrame>(frameCount);
-      const loading = new Set<number>();
-      const priorityFrames = [0, 11, 22, frameCount - 1];
-      let requestedFrame: number | null = null;
-      let requestActive = false;
-
-      const queueIdle = (callback: () => void) => {
-        if ("requestIdleCallback" in window) {
-          window.requestIdleCallback(callback, { timeout: 120 });
-          return;
-        }
-        globalThis.setTimeout(callback, 24);
-      };
-
-      const loadIndex = (index: number, onReady?: () => void) => {
-        if (index < 0 || index >= frameCount || loading.has(index) || framesRef.current[index]) return;
-        loading.add(index);
-        framesRef.current[index] = loadImageFrame(tabletEntryFrameSrc(index), index, false, onReady);
-      };
-
-      const loadLatestRequestedFrame = () => {
-        if (requestActive || requestedFrame === null) return;
-        const index = requestedFrame;
-        requestedFrame = null;
-
-        if (loading.has(index) || framesRef.current[index]) {
-          if (requestedFrame !== null) queueIdle(loadLatestRequestedFrame);
-          return;
-        }
-
-        requestActive = true;
-        loadIndex(index, () => {
-          requestActive = false;
-          if (requestedFrame !== null) queueIdle(loadLatestRequestedFrame);
-        });
-      };
-
-      tabletFrameLoader = (index) => {
-        requestedFrame = Math.round(index);
-        loadLatestRequestedFrame();
-      };
-      priorityFrames.forEach((index) => loadIndex(index));
-    };
-
-    const loadTabletVideoFallback = () => {
-      usesTabletVideo = true;
-      frameCount = 1;
-      readyFrames = 0;
-      canvas.style.display = "none";
-      video.style.display = "block";
-
-      video.onloadedmetadata = () => {
-        readyFrames = 1;
-        if (reduced && Number.isFinite(video.duration)) {
-          video.currentTime = Math.max(0, video.duration - 0.001);
-        }
-        signalReady();
-      };
-      video.onerror = () => {
-        usesTabletVideo = false;
-        video.style.display = "none";
-        canvas.style.display = "block";
-        loadTabletFrameSequence();
-      };
-      video.src = "/assets/tablet/entry-scroll-tablet.mp4";
-      video.load();
+      loadFrameSequence(TABLET_ENTRY_FRAME_COUNT, tabletEntryFrameSrc);
     };
 
     const loadStaticAvifFallback = (src: string) => {
@@ -693,7 +610,7 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
       }
 
       if (tabletPerformance) {
-        loadTabletVideoFallback();
+        loadTabletFrameSequence();
         return;
       }
 
@@ -735,7 +652,9 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
       requestDecodedAvifFrame(requestedAvifFrame);
     };
 
-    if (isAndroidPhoneViewport()) {
+    if (tabletPerformance) {
+      loadTabletFrameSequence();
+    } else if (isAndroidPhoneViewport()) {
       loadAndroidFrameSequence();
     } else if (isPhoneViewport()) {
       loadPhoneFrameSequenceFallback();
@@ -772,8 +691,7 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
 
     const updateEntryVisuals = (progress: number) => {
       const frame = progress * (frameCount - 1);
-      if (usesTabletVideo) scheduleVideoProgress(progress);
-      else scheduleFrame(frame);
+      scheduleFrame(frame);
 
       const copyAlpha = gsap.utils.clamp(0, 1, 1 - progress / 0.23);
       const hintAlpha = gsap.utils.clamp(0, 1, 1 - progress / 0.3);
@@ -849,7 +767,6 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
       if (drawRafRef.current !== null) {
         window.cancelAnimationFrame(drawRafRef.current);
       }
-      if (videoSeekFrame) window.cancelAnimationFrame(videoSeekFrame);
       framesRef.current.forEach((frame) => {
         if ("close" in frame) {
           frame.close();
@@ -1625,11 +1542,7 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    const fallback = gsap.delayedCall(isTabletPerformance ? 0.65 : 12, () => setHeroReady(true));
-    if (isTabletPerformance) {
-      return () => fallback.kill();
-    }
-
+    const fallback = gsap.delayedCall(12, () => setHeroReady(true));
     let cancelled = false;
     let lenis: InstanceType<(typeof import("lenis"))["default"]> | null = null;
     let updateLenis: ((time: number) => void) | null = null;

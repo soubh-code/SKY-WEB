@@ -1,13 +1,12 @@
 "use client";
 
-import { DeferredPicture } from "@/components/DeferredPicture";
 import { RouteLoadingLink } from "@/components/RouteLoadingLink";
 import { SkyLogo } from "@/components/SkyLogo";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { ShaderBackground } from "@/components/ui/shader-background";
 import { useTabletPerformanceMode } from "@/hooks/useTabletPerformanceMode";
 import { Camera, Menu } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const navItems = [
   { label: "Home", href: "/#home" },
@@ -102,6 +101,7 @@ const galleryItems = [
 const topRow = galleryItems.slice(0, 7);
 const bottomRow = galleryItems.slice(7);
 const galleryImageSources = galleryItems.map((item) => item.src);
+type GalleryEntry = (typeof galleryItems)[number];
 
 function GalleryHeader() {
   const [open, setOpen] = useState(false);
@@ -131,7 +131,118 @@ function GalleryHeader() {
   );
 }
 
-function GalleryRail({ items, reverse = false }: { items: typeof topRow; reverse?: boolean }) {
+function GalleryPhoneRail({ reverse = false }: { reverse?: boolean }) {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const groupRef = useRef<HTMLDivElement>(null);
+  const draggingRef = useRef(false);
+  const lastTimeRef = useRef(0);
+  const offsetRef = useRef(0);
+  const startOffsetRef = useRef(0);
+  const startXRef = useRef(0);
+  const items = reverse ? [...galleryItems].reverse() : galleryItems;
+
+  const applyTransform = useCallback((offset: number, groupWidth: number) => {
+    const track = trackRef.current;
+    if (!track || groupWidth <= 0) return;
+
+    const x = reverse ? offset - groupWidth : -offset;
+    track.style.transform = `translate3d(${x}px, 0, 0)`;
+  }, [reverse]);
+
+  useEffect(() => {
+    const track = trackRef.current;
+    const group = groupRef.current;
+    if (!track || !group) return;
+
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (reduceMotion.matches) return;
+
+    let frameId = 0;
+    lastTimeRef.current = performance.now();
+    const speedPxPerSecond = 170;
+
+    const animate = (time: number) => {
+      const groupWidth = group.scrollWidth;
+      const deltaSeconds = Math.min((time - lastTimeRef.current) / 1000, 0.05);
+      lastTimeRef.current = time;
+
+      if (groupWidth > 0 && !draggingRef.current) {
+        offsetRef.current = (offsetRef.current + deltaSeconds * speedPxPerSecond) % groupWidth;
+        applyTransform(offsetRef.current, groupWidth);
+      }
+
+      frameId = window.requestAnimationFrame(animate);
+    };
+
+    frameId = window.requestAnimationFrame(animate);
+    return () => window.cancelAnimationFrame(frameId);
+  }, [applyTransform, reverse]);
+
+  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+
+    const groupWidth = groupRef.current?.scrollWidth ?? 0;
+    if (groupWidth <= 0) return;
+
+    draggingRef.current = true;
+    startXRef.current = event.clientX;
+    startOffsetRef.current = offsetRef.current;
+    lastTimeRef.current = performance.now();
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!draggingRef.current) return;
+
+    const groupWidth = groupRef.current?.scrollWidth ?? 0;
+    if (groupWidth <= 0) return;
+
+    const deltaX = event.clientX - startXRef.current;
+    const rawOffset = startOffsetRef.current + (reverse ? deltaX : -deltaX);
+    offsetRef.current = ((rawOffset % groupWidth) + groupWidth) % groupWidth;
+    applyTransform(offsetRef.current, groupWidth);
+  };
+
+  const handlePointerEnd = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!draggingRef.current) return;
+
+    draggingRef.current = false;
+    lastTimeRef.current = performance.now();
+
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  };
+
+  return (
+    <div
+      className={`gallery-rail gallery-rail--phone${reverse ? " gallery-rail--phone-reverse" : ""}`}
+      aria-hidden="true"
+      onPointerCancel={handlePointerEnd}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerEnd}
+    >
+      <div ref={trackRef} className="gallery-phone-track">
+        {[0, 1, 2].map((groupIndex) => (
+          <div
+            ref={groupIndex === 0 ? groupRef : undefined}
+            className="gallery-phone-group"
+            key={`phone-group-${groupIndex}`}
+          >
+            {items.map((item, index) => (
+              <article className="gallery-frame gallery-frame--phone" key={`${item.title}-${groupIndex}-${index}`}>
+                <img src={item.src} alt={item.alt} loading="eager" decoding="async" />
+              </article>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function GalleryRail({ items, reverse = false }: { items: readonly GalleryEntry[]; reverse?: boolean }) {
   const isTabletPerformance = useTabletPerformanceMode();
   const [isPhoneRail, setIsPhoneRail] = useState(false);
 
@@ -144,9 +255,11 @@ function GalleryRail({ items, reverse = false }: { items: typeof topRow; reverse
     return () => mediaQuery.removeEventListener("change", syncPhoneRail);
   }, []);
 
-  const railItems = isTabletPerformance
-    ? items
-    : Array.from({ length: isPhoneRail ? 6 : 2 }, () => items).flat();
+  if (isPhoneRail) {
+    return <GalleryPhoneRail reverse={reverse} />;
+  }
+
+  const railItems = isTabletPerformance ? items : [...items, ...items];
 
   return (
     <div
@@ -156,13 +269,7 @@ function GalleryRail({ items, reverse = false }: { items: typeof topRow; reverse
       <div className="gallery-rail__track">
         {railItems.map((item, index) => (
           <article className="gallery-frame" key={`${item.title}-${index}`}>
-            <DeferredPicture
-              src={item.src}
-              alt={item.alt}
-              className="deferred-picture--fill"
-              eager
-              rootMargin="500px"
-            />
+            <img src={item.src} alt={item.alt} loading="eager" decoding="async" />
           </article>
         ))}
       </div>
