@@ -41,6 +41,6 @@ export const business = {
   ],
 } as const;
 
-export const googleAnalyticsId = "G-SRK73HBTQ6";
+export const googleAnalyticsId = "G-CHME3DFEXK";
 export const googleSearchConsoleMetaCode = "ADD VERIFICATION CODE";
 export const googleSearchConsoleFile = "googleaae96cfbebf6a7d4.html";

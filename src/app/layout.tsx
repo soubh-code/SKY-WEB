@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
+import { MetaPixel } from "@/components/MetaPixel";
 import { CleanLegacyUrlHash } from "@/components/CleanLegacyUrlHash";
 import { business, googleSearchConsoleMetaCode, siteUrl } from "@/lib/business";
 import { Cormorant_Garamond, Inter } from "next/font/google";
@@ -162,6 +163,7 @@ export default function RootLayout({
       <body>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(businessSchema) }} />
         <GoogleAnalytics />
+        <MetaPixel />
         <CleanLegacyUrlHash />
         {children}
       </body>
