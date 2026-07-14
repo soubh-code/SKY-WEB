@@ -4,6 +4,11 @@ import { MouseEvent, ReactNode, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import gsap from "gsap";
+import {
+  getHomeSectionHash,
+  removeLocationHash,
+  saveHomeSectionTarget,
+} from "@/lib/home-section-navigation";
 import { preloadAssetsForHref } from "@/lib/route-preloads";
 import { SkyLogo } from "./SkyLogo";
 
@@ -31,16 +36,6 @@ function markHomeReloadIfNeeded(href: string) {
     }
   } catch {
     // If URL parsing fails, navigation should continue without the reload marker.
-  }
-}
-
-function getSamePageHashTarget(href: string) {
-  try {
-    const target = new URL(href, window.location.href);
-    const isSamePage = target.origin === window.location.origin && target.pathname === window.location.pathname;
-    return isSamePage && target.hash ? target.hash : null;
-  } catch {
-    return null;
   }
 }
 
@@ -112,14 +107,15 @@ export function RouteLoadingLink({
 
     onNavigate?.();
 
-    const samePageHash = getSamePageHashTarget(href);
+    const homeSectionHash = getHomeSectionHash(href);
+    const samePageHash = homeSectionHash && window.location.pathname === "/" ? homeSectionHash : null;
     if (samePageHash) {
       event.preventDefault();
       const target = document.querySelector<HTMLElement>(samePageHash);
       if (target) {
-        window.history.pushState(null, "", samePageHash);
         target.scrollIntoView({ behavior: "smooth", block: "start" });
       }
+      removeLocationHash();
       return;
     }
 
@@ -134,7 +130,9 @@ export function RouteLoadingLink({
       return;
     }
 
-    const destination = `${targetUrl.pathname}${targetUrl.search}${targetUrl.hash}`;
+    if (homeSectionHash) saveHomeSectionTarget(homeSectionHash);
+
+    const destination = `${targetUrl.pathname}${targetUrl.search}`;
     const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
 
     if (destination === current) {

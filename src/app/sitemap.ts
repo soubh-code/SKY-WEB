@@ -5,10 +5,6 @@ import { completedProjects } from "./completed-projects/completed-project-data";
 
 const staticRoutes = [
   "",
-  "/#about-us",
-  "/#our-projects",
-  "/#ongoing-projects",
-  "/#contact-us",
   "/construction",
   "/sell-property",
   "/collaboration",

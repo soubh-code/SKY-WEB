@@ -1,13 +1,13 @@
-import Link from "next/link";
+import { RouteLoadingLink } from "@/components/RouteLoadingLink";
 import { business } from "@/lib/business";
 
 export default function PrivacyPolicyPage() {
   return (
     <main className="legal-page">
       <section className="legal-panel glass-card">
-        <Link className="legal-back" href="/#contact-us">
+        <RouteLoadingLink className="legal-back" href="/#contact-us" pageTitle="Contact Us">
           Back to Sky Skrabers
-        </Link>
+        </RouteLoadingLink>
         <p className="eyebrow">Privacy Policy</p>
         <h1>Privacy Policy</h1>
         <p>

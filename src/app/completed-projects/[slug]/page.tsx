@@ -50,7 +50,8 @@ export default async function CompletedProjectPage({ params }: PageProps) {
       addressLabel={project.name}
       addressGroups={project.categories}
       whatsappText={`I want to know more about ${project.name} completed projects.`}
-      linkAddressCellsToWhatsapp={false}
+      linkAddressCellsToWhatsapp
+      addressWhatsappMessageTemplate="i want to know more about {address}. please provide some details"
       kicker="Completed Project / Property Portfolio"
       projectStatusLabel="Completed Project"
       secondaryMarqueeText="Outright Properties • Commercial Properties • Sky Skrabers •"

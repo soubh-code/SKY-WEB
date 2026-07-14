@@ -535,8 +535,7 @@ h2 span {
   background: var(--background);
 }
 
-.entry-transition__canvas,
-.entry-transition__video {
+.entry-transition__canvas {
   display: block;
   width: 100%;
   height: 100%;
@@ -545,10 +544,6 @@ h2 span {
   transform: translateZ(0);
   backface-visibility: hidden;
   will-change: transform;
-}
-
-.entry-transition__video {
-  display: none;
 }
 
 .entry-transition .hero__copy {
@@ -4447,8 +4442,7 @@ form button:hover {
     align-items: center;
   }
 
-  .entry-transition__canvas,
-  .entry-transition__video {
+  .entry-transition__canvas {
     filter: none;
   }
 

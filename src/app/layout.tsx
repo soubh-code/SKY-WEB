@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
+import { CleanLegacyUrlHash } from "@/components/CleanLegacyUrlHash";
 import { business, googleSearchConsoleMetaCode, siteUrl } from "@/lib/business";
 import { Cormorant_Garamond, Inter } from "next/font/google";
 import "./globals.css";
@@ -28,8 +29,8 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   icons: {
-    icon: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
+    icon: [{ url: "/icon.png", type: "image/png", sizes: "512x512" }],
+    apple: [{ url: "/apple-icon.png", sizes: "180x180" }],
   },
   manifest: "/manifest.webmanifest",
   keywords: [
@@ -161,6 +162,7 @@ export default function RootLayout({
       <body>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(businessSchema) }} />
         <GoogleAnalytics />
+        <CleanLegacyUrlHash />
         {children}
       </body>
     </html>

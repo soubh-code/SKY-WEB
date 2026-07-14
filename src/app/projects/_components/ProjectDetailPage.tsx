@@ -3,13 +3,11 @@
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { InstagramLink } from "@/components/InstagramLink";
 import { SkyLogo } from "@/components/SkyLogo";
+import { RouteLoadingLink } from "@/components/RouteLoadingLink";
 import { business } from "@/lib/business";
-import Link from "next/link";
 import { ArrowUpRight, MessageCircle, Send } from "lucide-react";
 import type { MouseEvent } from "react";
 import styles from "../lajpat-nagar-1-2/project-page.module.css";
-
-const HOME_RELOAD_PENDING_KEY = "sky-home-reload-pending";
 
 export type ProjectAddress = {
   title: string;
@@ -33,6 +31,7 @@ export type ProjectDetailPageProps = {
   addressGroups?: ProjectAddressGroup[];
   whatsappText: string;
   linkAddressCellsToWhatsapp?: boolean;
+  addressWhatsappMessageTemplate?: string;
   kicker?: string;
   projectStatusLabel?: string;
   secondaryMarqueeText?: string;
@@ -48,6 +47,7 @@ export function ProjectDetailPage({
   addressGroups,
   whatsappText,
   linkAddressCellsToWhatsapp = true,
+  addressWhatsappMessageTemplate,
   kicker = "Ongoing Project / South Delhi",
   projectStatusLabel = "Ongoing Project",
   secondaryMarqueeText = "Prime Address • South Delhi • Site Visit Ready •",
@@ -56,32 +56,26 @@ export function ProjectDetailPage({
 }: ProjectDetailPageProps) {
   const whatsappUrl = `https://wa.me/${business.whatsappSchema.replace("+", "")}?text=${encodeURIComponent(whatsappText)}`;
   const getPropertyWhatsappUrl = (propertyName: string) =>
-    `https://wa.me/${business.whatsappSchema.replace("+", "")}?text=${encodeURIComponent(`i am interested in knowing more about ${propertyName}`)}`;
+    `https://wa.me/${business.whatsappSchema.replace("+", "")}?text=${encodeURIComponent(
+      addressWhatsappMessageTemplate?.replace("{address}", propertyName) ?? `i am interested in knowing more about ${propertyName}`,
+    )}`;
   const groupedAddresses = addressGroups ?? [{ title: "", addresses }];
   const scrollToProjects = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
     document.getElementById("details")?.scrollIntoView({ behavior: "smooth", block: "center" });
-    window.history.replaceState(null, "", "#details");
+    window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
   };
   const scrollToVisit = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
     document.getElementById("visit")?.scrollIntoView({ behavior: "smooth", block: "center" });
-    window.history.replaceState(null, "", "#visit");
+    window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
   };
-  const markHomeReloadPending = (event: MouseEvent<HTMLAnchorElement>) => {
-    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.currentTarget.target === "_blank") {
-      return;
-    }
-
-    window.sessionStorage.setItem(HOME_RELOAD_PENDING_KEY, "1");
-  };
-
   return (
     <main className={styles.page}>
       <header className={styles.navbar}>
-        <Link className={styles.logo} href="/#home" aria-label="Sky Skrabers home" onClick={markHomeReloadPending}>
+        <RouteLoadingLink className={styles.logo} href="/#home" pageTitle="Home" ariaLabel="Sky Skrabers home">
           <SkyLogo className={styles.projectLogo} priority />
-        </Link>
+        </RouteLoadingLink>
         <nav className={styles.navPill} aria-label="Project navigation">
           <a href="#details" onClick={scrollToProjects}>
             Projects
@@ -204,8 +198,8 @@ export function ProjectDetailPage({
       <footer className={styles.footer}>
         <span>© 2026 Sky Skrabers</span>
         <nav aria-label="Footer links">
-          <Link href="/#home">Home</Link>
-          <Link href="/#contact-us">Contact</Link>
+          <RouteLoadingLink href="/#home" pageTitle="Home">Home</RouteLoadingLink>
+          <RouteLoadingLink href="/#contact-us" pageTitle="Contact Us">Contact</RouteLoadingLink>
           <InstagramLink>Instagram</InstagramLink>
           <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" data-analytics-event="whatsapp_click" data-analytics-label={`${projectName} footer WhatsApp`}>
             WhatsApp

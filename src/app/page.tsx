@@ -12,6 +12,10 @@ import {
   useTabletPerformanceMode,
 } from "@/hooks/useTabletPerformanceMode";
 import { business } from "@/lib/business";
+import {
+  removeLocationHash,
+  takeHomeSectionTarget,
+} from "@/lib/home-section-navigation";
 import { getCompletedProjectPropertyCount } from "./completed-projects/completed-project-data";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -30,6 +34,7 @@ import {
   WalletCards,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -61,12 +66,16 @@ const ANDROID_ENTRY_FRAME_COUNT = 92;
 const ANDROID_ENTRY_FRAME_VERSION = "android-webp-92";
 const TABLET_ENTRY_FRAME_COUNT = 80;
 const TABLET_ENTRY_FRAME_VERSION = "tablet-webp-80";
+const DESKTOP_ENTRY_FRAME_COUNT = 91;
+const DESKTOP_ENTRY_FRAME_VERSION = "desktop-webp-91";
 const phoneEntryFrameSrc = (index: number) =>
   `/assets/entry-phone-frames/${String(index).padStart(3, "0")}.webp?v=${PHONE_ENTRY_FRAME_VERSION}`;
 const androidEntryFrameSrc = (index: number) =>
   `/assets/entry-android-frames/${String(index).padStart(3, "0")}.webp?v=${ANDROID_ENTRY_FRAME_VERSION}`;
 const tabletEntryFrameSrc = (index: number) =>
   `/assets/tablet/entry-frames/${String(index).padStart(3, "0")}.webp?v=${TABLET_ENTRY_FRAME_VERSION}`;
+const desktopEntryFrameSrc = (index: number) =>
+  `/assets/entry-desktop-frames/${String(index).padStart(3, "0")}.webp?v=${DESKTOP_ENTRY_FRAME_VERSION}`;
 
 const cardImages = [
   "/assets/card-images/card-01.avif",
@@ -257,12 +266,12 @@ function Header() {
       window.scrollTo({ top: Math.max(0, top), behavior });
     };
 
-    window.history.pushState(null, "", hash);
     requestAnimationFrame(() => {
       ScrollTrigger.refresh();
       scrollToTarget("smooth");
       gsap.delayedCall(0.42, () => scrollToTarget("auto"));
     });
+    removeLocationHash();
   }, []);
 
   useEffect(() => {
@@ -304,9 +313,18 @@ function Header() {
 
   return (
     <header className="site-header">
-      <a href="#home" aria-label="Sky Skrabers home">
+      <Link
+        href="/"
+        aria-label="Sky Skrabers home"
+        onClick={(event) => {
+          event.preventDefault();
+          setActiveSection("home");
+          scrollToHomeSection("#home");
+          setOpen(false);
+        }}
+      >
         <Logo />
-      </a>
+      </Link>
       <nav className={open ? "nav nav--open" : "nav"} aria-label="Primary navigation">
         {navItems.map((item) =>
           !item.section ? (
@@ -344,10 +362,9 @@ function Header() {
 }
 
 function EntryTransition({ onReady }: { onReady?: () => void }) {
-  type EntryFrame = HTMLImageElement | ImageBitmap | VideoFrame;
+  type EntryFrame = HTMLImageElement | ImageBitmap;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
   const copyRef = useRef<HTMLDivElement>(null);
   const hintRef = useRef<HTMLDivElement>(null);
@@ -359,9 +376,8 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    const video = videoRef.current;
     const section = sectionRef.current;
-    if (!canvas || !video || !section) return;
+    if (!canvas || !section) return;
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const tabletPerformance = isTabletPerformanceDevice();
@@ -371,13 +387,7 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
     let disposed = false;
     let readyFrames = 0;
     let readySignaled = false;
-    let frameCount = 72;
-    let avifDecoder: ImageDecoder | null = null;
-    let usesProgressiveAvif = false;
-    let avifDecodeActive = false;
-    let requestedAvifFrame = 0;
-    const failedAvifFrames = new Set<number>();
-    const decodedAvifOrder: number[] = [];
+    let frameCount = DESKTOP_ENTRY_FRAME_COUNT;
     const isTouchViewport = () => window.innerWidth <= 560 || tabletPerformance;
     const isPhoneViewport = () => window.innerWidth <= 560;
     const isAndroidPhoneViewport = () => {
@@ -389,10 +399,6 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
         "(min-width: 561px) and (max-width: 1199px) and (orientation: portrait), " +
           "(min-width: 1200px) and (max-width: 1366px) and (max-height: 1199px) and (orientation: portrait)",
       ).matches;
-    const getEntryAnimationSrc = () => {
-      return isPhoneViewport() ? "/assets/entry-scroll-phone.avif" : "/assets/entry-scroll-desktop.avif";
-    };
-
     let entryTrigger: ScrollTrigger | null = null;
 
     const setEntryLayerHints = (active: boolean) => {
@@ -403,8 +409,7 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
     };
 
     const signalReady = () => {
-      const readyFrameTarget = usesProgressiveAvif ? 1 : frameCount;
-      if (readySignaled || readyFrames < readyFrameTarget) return;
+      if (readySignaled || readyFrames < frameCount) return;
       readySignaled = true;
       scheduleFrame(pendingFrameRef.current);
       if (!reduced) {
@@ -430,9 +435,6 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
     const getFrameSize = (image: EntryFrame) => {
       if ("naturalWidth" in image) {
         return { width: image.naturalWidth, height: image.naturalHeight };
-      }
-      if ("displayWidth" in image) {
-        return { width: image.displayWidth, height: image.displayHeight };
       }
 
       return { width: image.width, height: image.height };
@@ -462,10 +464,7 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
       if (frameIndex === currentFrameRef.current) return;
 
       const image = framesRef.current[frameIndex];
-      if (!isFrameReady(image)) {
-        if (usesProgressiveAvif) requestDecodedAvifFrame(frameIndex);
-        return;
-      }
+      if (!isFrameReady(image)) return;
 
       const { width, height } = canvas.getBoundingClientRect();
       context.clearRect(0, 0, width, height);
@@ -482,60 +481,6 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
         drawFrame(pendingFrameRef.current);
       });
     };
-
-    const pruneDecodedAvifFrames = () => {
-      const maxCachedFrames = tabletPerformance ? 5 : 8;
-      let attemptsRemaining = decodedAvifOrder.length;
-
-      while (decodedAvifOrder.length > maxCachedFrames && attemptsRemaining > 0) {
-        attemptsRemaining -= 1;
-        const index = decodedAvifOrder.shift();
-        if (index === undefined) return;
-        if (index === currentFrameRef.current || index === pendingFrameRef.current || index === requestedAvifFrame) {
-          decodedAvifOrder.push(index);
-          continue;
-        }
-
-        const frame = framesRef.current[index];
-        if (frame && "close" in frame) frame.close();
-        delete framesRef.current[index];
-      }
-    };
-
-    const pumpAvifDecoder = async () => {
-      if (!avifDecoder || avifDecodeActive || disposed) return;
-      const frameIndex = Math.round(Math.max(0, Math.min(frameCount - 1, requestedAvifFrame)));
-      if (framesRef.current[frameIndex] || failedAvifFrames.has(frameIndex)) return;
-
-      avifDecodeActive = true;
-      try {
-        const { image } = await avifDecoder.decode({ frameIndex });
-        if (disposed) {
-          image.close();
-          return;
-        }
-
-        framesRef.current[frameIndex] = image;
-        decodedAvifOrder.push(frameIndex);
-        readyFrames += 1;
-        pruneDecodedAvifFrames();
-        signalReady();
-        if (frameIndex === Math.round(pendingFrameRef.current)) scheduleFrame(frameIndex);
-      } catch {
-        failedAvifFrames.add(frameIndex);
-      } finally {
-        avifDecodeActive = false;
-      }
-
-      if (!disposed && requestedAvifFrame !== frameIndex) void pumpAvifDecoder();
-    };
-
-    function requestDecodedAvifFrame(index: number) {
-      requestedAvifFrame = Math.round(Math.max(0, Math.min(frameCount - 1, index)));
-      if (!framesRef.current[requestedAvifFrame] && !failedAvifFrames.has(requestedAvifFrame)) {
-        void pumpAvifDecoder();
-      }
-    }
 
     const loadImageFrame = (
       src: string,
@@ -601,64 +546,8 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
       loadFrameSequence(TABLET_ENTRY_FRAME_COUNT, tabletEntryFrameSrc);
     };
 
-    const loadStaticAvifFallback = (src: string) => {
-      usesProgressiveAvif = false;
-      if (isAndroidPhoneViewport()) {
-        loadAndroidFrameSequence();
-        return;
-      }
-
-      if (isTabletPortraitViewport()) {
-        loadPhoneFrameSequenceFallback();
-        return;
-      }
-
-      if (isPhoneViewport()) {
-        loadPhoneFrameSequenceFallback();
-        return;
-      }
-
-      if (tabletPerformance) {
-        loadTabletFrameSequence();
-        return;
-      }
-
-      frameCount = 1;
-      readyFrames = 0;
-      framesRef.current = [loadImageFrame(src, 0)];
-    };
-
-    const loadAnimatedAvifFrames = async (src: string) => {
-      const decoderConstructor = (window as unknown as { ImageDecoder?: typeof ImageDecoder }).ImageDecoder;
-
-      if (!decoderConstructor) {
-        loadStaticAvifFallback(src);
-        return;
-      }
-
-      const response = await fetch(src);
-      if (!response.ok || disposed) return;
-
-      const blob = await response.blob();
-      const data = await blob.arrayBuffer();
-      const decoder = new decoderConstructor({ data, type: blob.type || "image/avif" });
-      avifDecoder = decoder;
-      await decoder.tracks.ready;
-
-      const decodedFrameCount = decoder.tracks.selectedTrack?.frameCount ?? 0;
-      if (!decodedFrameCount || disposed) {
-        decoder.close?.();
-        avifDecoder = null;
-        loadStaticAvifFallback(src);
-        return;
-      }
-
-      frameCount = decodedFrameCount;
-      readyFrames = 0;
-      usesProgressiveAvif = true;
-      framesRef.current = new Array<EntryFrame>(frameCount);
-      requestedAvifFrame = pendingFrameRef.current;
-      requestDecodedAvifFrame(requestedAvifFrame);
+    const loadDesktopFrameSequence = () => {
+      loadFrameSequence(DESKTOP_ENTRY_FRAME_COUNT, desktopEntryFrameSrc);
     };
 
     if (isTabletPortraitViewport()) {
@@ -670,10 +559,7 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
     } else if (isPhoneViewport()) {
       loadPhoneFrameSequenceFallback();
     } else {
-      const entryAnimationSrc = getEntryAnimationSrc();
-      void loadAnimatedAvifFrames(entryAnimationSrc).catch(() => {
-        if (!disposed) loadStaticAvifFallback(entryAnimationSrc);
-      });
+      loadDesktopFrameSequence();
     }
 
     resize();
@@ -783,11 +669,6 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
           frame.close();
         }
       });
-      avifDecoder?.close?.();
-      video.onloadedmetadata = null;
-      video.onerror = null;
-      video.removeAttribute("src");
-      video.load();
       canvasResizeObserver.disconnect();
       window.removeEventListener("resize", resize);
       window.removeEventListener("orientationchange", resize);
@@ -801,7 +682,6 @@ function EntryTransition({ onReady }: { onReady?: () => void }) {
   return (
     <section id="home" ref={sectionRef} className="entry-transition" aria-label="Entering Sky Skrabers">
       <canvas ref={canvasRef} className="entry-transition__canvas" />
-      <video ref={videoRef} className="entry-transition__video" muted playsInline preload="auto" aria-hidden="true" />
       <div className="hero__shade" />
       <div ref={copyRef} className="hero__copy">
         <h1>
@@ -1490,9 +1370,9 @@ function Footer() {
               {item.label}
             </RouteLoadingLink>
           ) : (
-            <a key={item.id} href={item.href}>
-            {item.label}
-            </a>
+            <RouteLoadingLink key={item.id} href={item.href} pageTitle={item.label}>
+              {item.label}
+            </RouteLoadingLink>
           ),
         )}
       </nav>
@@ -1540,6 +1420,33 @@ export default function HomePage() {
       window.removeEventListener("popstate", reloadHomeIfNeeded);
     };
   }, []);
+
+  useEffect(() => {
+    if (loading || !heroReady) return;
+
+    const hash = takeHomeSectionTarget() ?? window.location.hash;
+    const sectionId = hash.startsWith("#") ? hash.slice(1) : "";
+    if (!sectionId) return;
+
+    const target = document.getElementById(sectionId);
+    if (!target) {
+      removeLocationHash();
+      return;
+    }
+
+    const scrollToTarget = () => {
+      const headerOffset = 92;
+      const top = target.getBoundingClientRect().top + window.scrollY - headerOffset;
+      ScrollTrigger.refresh();
+      window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+      removeLocationHash();
+    };
+
+    const delayedScroll = gsap.delayedCall(0.08, scrollToTarget);
+    return () => {
+      delayedScroll.kill();
+    };
+  }, [heroReady, loading]);
 
   useEffect(() => {
     const fallback = gsap.delayedCall(12, () => setHeroReady(true));
