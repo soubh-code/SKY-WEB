@@ -1,3 +1,5 @@
+import type { PortableTextBlock } from "next-sanity";
+
 export type BlogMetric = {
   label: string;
   value: string;
@@ -18,10 +20,14 @@ export type BlogPost = {
   displayDate: string;
   readTime: string;
   description: string;
+  image: string;
+  imageAlt: string;
+  imageSource: string;
   keywords: string[];
   pullQuotes: [string, string];
   metrics: BlogMetric[];
-  sections: BlogSection[];
+  sections?: BlogSection[];
+  body?: PortableTextBlock[];
 };
 
 export const blogPosts: BlogPost[] = [
@@ -36,6 +42,9 @@ export const blogPosts: BlogPost[] = [
     readTime: "7 min read",
     description:
       "Developer view on South Delhi micro-markets, pricing gaps, buyer behaviour, and why GK, Defence Colony and Hauz Khas move differently by lane and buyer pool.",
+    image: "/assets/blogs/south-delhi-micro-market.webp",
+    imageAlt: "Premium South Delhi residence exterior showing lane character and micro-market value",
+    imageSource: "https://unsplash.com/photos/7oAneWHzwwE",
     keywords: ["South Delhi micro market", "GK real estate", "Defence Colony builder floor", "Hauz Khas property"],
     pullQuotes: [
       "South Delhi is not expensive because it is South Delhi. It is expensive where scarcity, access and social comfort meet in the same lane.",
@@ -88,6 +97,9 @@ export const blogPosts: BlogPost[] = [
     readTime: "8 min read",
     description:
       "South Delhi construction cost breakdown for premium builder floors, structure, waterproofing, services, lifts, stone, and where builders cut hidden corners.",
+    image: "/assets/blogs/construction-quality-south-delhi.webp",
+    imageAlt: "Close view of reinforced concrete construction detail for premium residential structure",
+    imageSource: "https://unsplash.com/photos/eyq7H7gO0EY",
     keywords: ["South Delhi construction cost", "premium builder floor", "construction quality", "waterproofing"],
     pullQuotes: [
       "The cheapest corner to cut is the one the buyer cannot photograph on possession day.",
@@ -140,6 +152,9 @@ export const blogPosts: BlogPost[] = [
     readTime: "8 min read",
     description:
       "South Delhi joint development agreements explained through market risk, owner share, builder exposure, timelines, and sale velocity in premium colonies.",
+    image: "/assets/blogs/joint-development-agreements.webp",
+    imageAlt: "Real estate agreement being signed for a property collaboration discussion",
+    imageSource: "https://unsplash.com/photos/Iz0Q3qtqvjU",
     keywords: ["South Delhi joint development", "JD agreement", "builder collaboration", "Defence Colony"],
     pullQuotes: [
       "A collaboration is not a handshake over future profit. It is a risk document wearing polite clothes.",
@@ -192,6 +207,9 @@ export const blogPosts: BlogPost[] = [
     readTime: "7 min read",
     description:
       "South Delhi luxury interior design choices that hurt resale value, from over-custom layouts to loud finishes in GK, Defence Colony and Vasant Vihar homes.",
+    image: "/assets/blogs/interior-design-south-delhi.webp",
+    imageAlt: "Refined luxury living room interior with neutral finishes and premium furniture",
+    imageSource: "https://unsplash.com/photos/vdfUjNhI1PA",
     keywords: ["South Delhi interiors", "luxury apartment resale", "interior design value", "builder floor interiors"],
     pullQuotes: [
       "The more a home shouts the seller's personality, the harder the buyer negotiates.",
@@ -244,6 +262,9 @@ export const blogPosts: BlogPost[] = [
     readTime: "8 min read",
     description:
       "South Delhi builder floor vs apartment comparison covering land share, privacy, maintenance, parking, resale liquidity, and buyer behaviour in premium colonies.",
+    image: "/assets/blogs/buying-builder-floor-south-delhi.webp",
+    imageAlt: "Modern residential apartment facade representing builder floor versus apartment choice",
+    imageSource: "https://unsplash.com/photos/FO7uEVpFdzE",
     keywords: ["builder floor South Delhi", "South Delhi apartment", "land share", "premium property buying"],
     pullQuotes: [
       "A builder floor is better only when the building is planned like a long-term asset, not a quick sale.",
@@ -296,6 +317,9 @@ export const blogPosts: BlogPost[] = [
     readTime: "7 min read",
     description:
       "South Delhi RERA perspective on developer discipline, buyer protection, timelines, disclosures, compliance, and what regulation still does not solve today.",
+    image: "/assets/blogs/rera-south-delhi-developer.webp",
+    imageAlt: "Property documents being reviewed for legal and RERA due diligence",
+    imageSource: "https://unsplash.com/photos/wNxbeoNUg_4",
     keywords: ["RERA South Delhi", "developer compliance", "builder floor legal", "property due diligence"],
     pullQuotes: [
       "RERA can punish bad behaviour. It cannot make a careless developer careful before the mistake happens.",
@@ -348,6 +372,9 @@ export const blogPosts: BlogPost[] = [
     readTime: "7 min read",
     description:
       "South Delhi luxury real estate trends in privacy, planning, services, calm design, buyer expectations, and why many developers still sell outdated signals.",
+    image: "/assets/blogs/luxury-redefinition-south-delhi.webp",
+    imageAlt: "Contemporary luxury residence exterior with calm lighting and strong privacy planning",
+    imageSource: "https://unsplash.com/photos/eLG6MsOeupk",
     keywords: ["South Delhi luxury homes", "luxury real estate trends", "privacy planning", "premium builder floor"],
     pullQuotes: [
       "Luxury has moved from what guests notice in ten seconds to what owners stop worrying about after ten months.",
@@ -400,6 +427,9 @@ export const blogPosts: BlogPost[] = [
     readTime: "8 min read",
     description:
       "South Delhi selling strategy for owners who want stronger pricing, cleaner buyer handling, staging discipline, and less value leakage today.",
+    image: "/assets/blogs/selling-property-south-delhi.webp",
+    imageAlt: "House keys, model homes, and valuation documents for premium property selling",
+    imageSource: "https://unsplash.com/photos/R2mMFDpe1eM",
     keywords: ["sell property South Delhi", "South Delhi valuation", "property selling strategy", "premium resale"],
     pullQuotes: [
       "The first price is not a wish. It is the market's first impression of how serious the seller is.",

@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { siteUrl } from "@/lib/business";
+import { getBlogCategories, getBlogPosts } from "@/sanity/client";
 import { BlogShell, BlogsIndex } from "./BlogClient";
-import { blogCategories, blogPosts } from "./blog-data";
+
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "South Delhi Real Estate Journal",
@@ -20,7 +22,9 @@ export const metadata: Metadata = {
   },
 };
 
-export default function BlogsPage() {
+export default async function BlogsPage() {
+  const blogPosts = await getBlogPosts();
+  const blogCategories = getBlogCategories(blogPosts);
   const blogSchema = {
     "@context": "https://schema.org",
       "@type": "Blog",
@@ -39,6 +43,7 @@ export default function BlogsPage() {
       description: post.description,
       datePublished: post.date,
       dateModified: post.updatedDate ?? post.date,
+      image: `${siteUrl}${post.image}`,
       author: {
         "@type": "Organization",
         name: "Sky Skrabers",

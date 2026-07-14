@@ -32,10 +32,10 @@ const securityHeaders = [
       "default-src 'self'",
       scriptSrc,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "img-src 'self' data: blob: https://*.google.com https://*.googleusercontent.com https://*.gstatic.com https://www.google-analytics.com https://www.googletagmanager.com",
+      "img-src 'self' data: blob: https://cdn.sanity.io https://*.google.com https://*.googleusercontent.com https://*.gstatic.com https://www.google-analytics.com https://www.googletagmanager.com",
       "font-src 'self' https://fonts.gstatic.com",
-      "connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com",
-      "frame-src https://www.google.com",
+      "connect-src 'self' https://sanity.io https://*.sanity.io https://www.google-analytics.com https://www.googletagmanager.com",
+      "frame-src https://www.google.com https://sanity.io https://*.sanity.io",
       "base-uri 'self'",
       "form-action 'self'",
       "frame-ancestors 'none'",
@@ -49,6 +49,12 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: ["127.0.0.1"],
   images: {
     qualities: [75, 100],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "cdn.sanity.io",
+      },
+    ],
   },
   async headers() {
     return [

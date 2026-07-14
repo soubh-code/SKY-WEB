@@ -6,6 +6,7 @@ import { SkyLogo } from "@/components/SkyLogo";
 import { InstagramLink } from "@/components/InstagramLink";
 import type { BlogPost } from "./blog-data";
 import { ArrowUpRight, BookOpenText, Menu } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { type ReactNode, useState } from "react";
 
@@ -145,8 +146,14 @@ export function BlogsIndex({ posts, categories }: { posts: BlogPost[]; categorie
               key={post.slug}
               aria-label={`Read ${post.title}`}
             >
-              <div className="blog-card__placeholder" aria-hidden="true">
-                <span>{String(index + 1).padStart(2, "0")}</span>
+              <div className="blog-card__image">
+                <Image
+                  src={post.image}
+                  alt={post.imageAlt}
+                  fill
+                  priority={index === 0 && activeCategory === "All"}
+                  sizes={index === 0 && activeCategory === "All" ? "(max-width: 980px) 100vw, 66vw" : "(max-width: 980px) 100vw, 33vw"}
+                />
               </div>
               <span>{post.category}</span>
               {index === 0 && activeCategory === "All" ? <h2>{post.title}</h2> : <h3>{post.title}</h3>}

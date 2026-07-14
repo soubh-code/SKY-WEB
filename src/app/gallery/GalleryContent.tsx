@@ -314,7 +314,7 @@ export function GalleryContent() {
 
   return (
     <>
-      <ShaderBackground className="construction-shader-background" staticOnPhone />
+      <ShaderBackground className="construction-shader-background" />
       {!galleryLoaded ? (
         <div className="gallery-loader" role="status" aria-live="polite">
           <SkyLogo priority />

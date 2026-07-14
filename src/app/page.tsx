@@ -851,7 +851,7 @@ function ServicesPanel() {
       Icon: Handshake,
       title: "Collaboration",
       copy: "Partner with us to plan, build, or unlock the right value for your property.",
-      href: "/#contact-us",
+      href: "/collaboration",
     },
   ] as const;
 
@@ -1238,17 +1238,25 @@ function OngoingProjects() {
       "(min-width: 561px) and (max-width: 1199px), " +
         "(min-width: 1200px) and (max-width: 1366px) and (min-height: 800px) and (max-height: 1199px)",
     );
+    const tabletLandscapeQuery = window.matchMedia(
+      "(orientation: landscape) and (min-width: 900px) and (max-width: 1536px) and (min-height: 680px)",
+    );
     const syncMode = () => {
-      setClickToExpand(phoneQuery.matches || tabletQuery.matches);
+      const hasTouchScreen = navigator.maxTouchPoints > 0;
+      setClickToExpand(phoneQuery.matches || tabletQuery.matches || (hasTouchScreen && tabletLandscapeQuery.matches));
       setArmedProject(null);
     };
 
     syncMode();
     phoneQuery.addEventListener("change", syncMode);
     tabletQuery.addEventListener("change", syncMode);
+    tabletLandscapeQuery.addEventListener("change", syncMode);
+    window.addEventListener("resize", syncMode);
     return () => {
       phoneQuery.removeEventListener("change", syncMode);
       tabletQuery.removeEventListener("change", syncMode);
+      tabletLandscapeQuery.removeEventListener("change", syncMode);
+      window.removeEventListener("resize", syncMode);
     };
   }, []);
 

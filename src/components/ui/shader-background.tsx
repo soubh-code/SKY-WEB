@@ -5,7 +5,6 @@ import { useEffect, useRef } from "react";
 
 type ShaderBackgroundProps = {
   className?: string;
-  staticOnPhone?: boolean;
 };
 
 const vertexShaderSource = `
@@ -144,7 +143,7 @@ function initShaderProgram(gl: WebGLRenderingContext) {
   return shaderProgram;
 }
 
-export function ShaderBackground({ className, staticOnPhone = false }: ShaderBackgroundProps) {
+export function ShaderBackground({ className }: ShaderBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isTabletPerformance = useTabletPerformanceMode();
 
@@ -166,7 +165,6 @@ export function ShaderBackground({ className, staticOnPhone = false }: ShaderBac
     const time = gl.getUniformLocation(shaderProgram, "iTime");
     const positions = [-1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 1.0];
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const useStaticPhoneFrame = staticOnPhone && window.matchMedia("(max-width: 560px)").matches;
     let animationFrame = 0;
     let startTime = performance.now();
     let isVisible = true;
@@ -176,7 +174,7 @@ export function ShaderBackground({ className, staticOnPhone = false }: ShaderBac
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
 
     const resizeCanvas = () => {
-      const ratio = isTabletPerformance || useStaticPhoneFrame ? 1 : Math.min(window.devicePixelRatio || 1, 1.5);
+      const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
       const width = Math.round(window.innerWidth * ratio);
       const height = Math.round(window.innerHeight * ratio);
       canvas.width = width;
@@ -198,13 +196,13 @@ export function ShaderBackground({ className, staticOnPhone = false }: ShaderBac
       gl.enableVertexAttribArray(vertexPosition);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
-      if (!reducedMotion && !isTabletPerformance && !useStaticPhoneFrame && isVisible && pageVisible) {
+      if (!reducedMotion && isVisible && pageVisible) {
         animationFrame = window.requestAnimationFrame(render);
       }
     };
 
     const resumeRendering = () => {
-      if (animationFrame || reducedMotion || isTabletPerformance || useStaticPhoneFrame || !isVisible || !pageVisible) return;
+      if (animationFrame || reducedMotion || !isVisible || !pageVisible) return;
       animationFrame = window.requestAnimationFrame(render);
     };
 
@@ -252,7 +250,7 @@ export function ShaderBackground({ className, staticOnPhone = false }: ShaderBac
       gl.deleteBuffer(positionBuffer);
       gl.deleteProgram(shaderProgram);
     };
-  }, [isTabletPerformance, staticOnPhone]);
+  }, [isTabletPerformance]);
 
   if (isTabletPerformance) {
     return (

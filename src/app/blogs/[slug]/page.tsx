@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { notFound } from "next/navigation";
+import { PortableText } from "@portabletext/react";
 import { RouteLoadingLink } from "@/components/RouteLoadingLink";
 import { siteUrl } from "@/lib/business";
+import { getBlogPostBySlug, getBlogPosts } from "@/sanity/client";
 import { BlogShell } from "../BlogClient";
-import { blogPosts, getBlogPost } from "../blog-data";
+
+export const revalidate = 60;
 
 type BlogArticlePageProps = {
   params: Promise<{
@@ -11,7 +15,9 @@ type BlogArticlePageProps = {
   }>;
 };
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
+  const blogPosts = await getBlogPosts();
+
   return blogPosts.map((post) => ({
     slug: post.slug,
   }));
@@ -19,13 +25,15 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: BlogArticlePageProps): Promise<Metadata> {
   const { slug } = await params;
-  const post = getBlogPost(slug);
+  const post = await getBlogPostBySlug(slug);
 
   if (!post) {
     return {
       title: "Blog Not Found",
     };
   }
+
+  const imageUrl = `${siteUrl}${post.image}`;
 
   return {
     title: post.title,
@@ -43,18 +51,27 @@ export async function generateMetadata({ params }: BlogArticlePageProps): Promis
       publishedTime: post.date,
       modifiedTime: post.updatedDate ?? post.date,
       authors: ["Sky Skrabers"],
+      images: [
+        {
+          url: imageUrl,
+          width: 1600,
+          height: 1000,
+          alt: post.imageAlt,
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title: `${post.title} | Sky Skrabers`,
       description: post.description,
+      images: [imageUrl],
     },
   };
 }
 
 export default async function BlogArticlePage({ params }: BlogArticlePageProps) {
   const { slug } = await params;
-  const post = getBlogPost(slug);
+  const post = await getBlogPostBySlug(slug);
 
   if (!post) {
     notFound();
@@ -83,6 +100,7 @@ export default async function BlogArticlePage({ params }: BlogArticlePageProps) 
       },
     },
     keywords: post.keywords.join(", "),
+    image: `${siteUrl}${post.image}`,
     url: `${siteUrl}/blogs/${post.slug}`,
   };
 
@@ -106,36 +124,52 @@ export default async function BlogArticlePage({ params }: BlogArticlePageProps) 
             </div>
           </header>
 
-          <div className="blog-article__placeholder blog-article__placeholder--hero" aria-hidden="true">
-            <span>Sky Skrabers Journal</span>
-          </div>
+          <figure className="blog-article__image blog-article__image--hero">
+            <Image src={post.image} alt={post.imageAlt} fill priority sizes="(max-width: 820px) 100vw, 780px" />
+          </figure>
 
           <div className="blog-article__body" itemProp="articleBody">
-            {post.sections.map((section, index) => (
-              <section key={section.heading}>
-                {index === 1 ? <blockquote>{post.pullQuotes[0]}</blockquote> : null}
-                {index === 2 ? (
-                  <>
-                    <div className="blog-article__metrics" aria-label="Article highlights">
-                      {post.metrics.map((metric) => (
-                        <div key={metric.value}>
-                          <strong>{metric.value}</strong>
-                          <span>{metric.label}</span>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="blog-article__placeholder blog-article__placeholder--inline" aria-hidden="true">
-                      <span>Field Notes</span>
-                    </div>
-                  </>
+            {post.body?.length ? (
+              <>
+                {post.metrics.length ? (
+                  <div className="blog-article__metrics" aria-label="Article highlights">
+                    {post.metrics.map((metric) => (
+                      <div key={metric.value}>
+                        <strong>{metric.value}</strong>
+                        <span>{metric.label}</span>
+                      </div>
+                    ))}
+                  </div>
                 ) : null}
-                <h2>{section.heading}</h2>
-                {section.paragraphs.map((paragraph) => (
-                  <p key={paragraph}>{paragraph}</p>
-                ))}
-                {index === 2 ? <blockquote>{post.pullQuotes[1]}</blockquote> : null}
-              </section>
-            ))}
+                <PortableText value={post.body} />
+              </>
+            ) : (
+              post.sections?.map((section, index) => (
+                <section key={section.heading}>
+                  {index === 1 ? <blockquote>{post.pullQuotes[0]}</blockquote> : null}
+                  {index === 2 ? (
+                    <>
+                      <div className="blog-article__metrics" aria-label="Article highlights">
+                        {post.metrics.map((metric) => (
+                          <div key={metric.value}>
+                            <strong>{metric.value}</strong>
+                            <span>{metric.label}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="blog-article__placeholder blog-article__placeholder--inline" aria-hidden="true">
+                        <span>Field Notes</span>
+                      </div>
+                    </>
+                  ) : null}
+                  <h2>{section.heading}</h2>
+                  {section.paragraphs.map((paragraph) => (
+                    <p key={paragraph}>{paragraph}</p>
+                  ))}
+                  {index === 2 ? <blockquote>{post.pullQuotes[1]}</blockquote> : null}
+                </section>
+              ))
+            )}
           </div>
         </article>
       </main>
