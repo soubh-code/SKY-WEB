@@ -2,8 +2,8 @@ import type { NextConfig } from "next";
 
 const isDev = process.env.NODE_ENV !== "production";
 const scriptSrc = isDev
-  ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com"
-  : "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com";
+  ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://connect.facebook.net"
+  : "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://connect.facebook.net";
 
 const securityHeaders = [
   {
@@ -32,9 +32,9 @@ const securityHeaders = [
       "default-src 'self'",
       scriptSrc,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "img-src 'self' data: blob: https://cdn.sanity.io https://*.google.com https://*.googleusercontent.com https://*.gstatic.com https://www.google-analytics.com https://www.googletagmanager.com",
+      "img-src 'self' data: blob: https://cdn.sanity.io https://*.google.com https://*.googleusercontent.com https://*.gstatic.com https://www.google-analytics.com https://www.googletagmanager.com https://www.facebook.com",
       "font-src 'self' https://fonts.gstatic.com",
-      "connect-src 'self' https://sanity.io https://*.sanity.io https://www.google-analytics.com https://www.googletagmanager.com",
+      "connect-src 'self' https://sanity.io https://*.sanity.io https://www.google-analytics.com https://www.googletagmanager.com https://www.facebook.com https://connect.facebook.net",
       "frame-src https://www.google.com https://sanity.io https://*.sanity.io",
       "base-uri 'self'",
       "form-action 'self'",
