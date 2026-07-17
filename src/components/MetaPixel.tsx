@@ -3,14 +3,9 @@
 import { usePathname, useSearchParams } from "next/navigation";
 import Script from "next/script";
 import { Suspense, useEffect, useRef } from "react";
+import { trackMetaLead } from "@/lib/meta-pixel";
 
 const metaPixelId = "1009592428341379";
-
-declare global {
-  interface Window {
-    fbq?: (...args: unknown[]) => void;
-  }
-}
 
 function MetaPixelPageViews() {
   const pathname = usePathname();
@@ -27,6 +22,36 @@ function MetaPixelPageViews() {
 
     window.fbq?.("track", "PageView");
   }, [pathname, searchParams]);
+
+  return null;
+}
+
+function MetaPixelLeadEvents() {
+  useEffect(() => {
+    const handleClick = (event: MouseEvent) => {
+      const target = event.target instanceof Element ? event.target : null;
+      const anchor = target?.closest<HTMLAnchorElement>("a[href]");
+      if (!anchor) return;
+
+      if (anchor.dataset.metaLeadSource === "contact_map") {
+        trackMetaLead("Contact Location View", "contact_map");
+        return;
+      }
+
+      const url = new URL(anchor.href, window.location.href);
+      if (url.protocol === "tel:") {
+        trackMetaLead("Phone Call Enquiry", "phone_call");
+        return;
+      }
+
+      if (url.hostname === "wa.me" || url.hostname === "api.whatsapp.com") {
+        trackMetaLead("WhatsApp Enquiry", "whatsapp");
+      }
+    };
+
+    document.addEventListener("click", handleClick, true);
+    return () => document.removeEventListener("click", handleClick, true);
+  }, []);
 
   return null;
 }
@@ -60,6 +85,7 @@ export function MetaPixel() {
       <Suspense fallback={null}>
         <MetaPixelPageViews />
       </Suspense>
+      <MetaPixelLeadEvents />
     </>
   );
 }
