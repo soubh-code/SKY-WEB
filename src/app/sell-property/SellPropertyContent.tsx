@@ -12,12 +12,12 @@ const whatsappSellUrl =
   `https://wa.me/${business.whatsappSchema.replace("+", "")}?text=Hello%20Sky%20Skrabers%2C%20I%20want%20to%20sell%20my%20property.%20Please%20connect%20with%20me.`;
 
 const navItems = [
-  { label: "Home", href: "/#home" },
-  { label: "Our Projects", href: "/#our-projects" },
-  { label: "About Us", href: "/#about-us" },
+  { label: "Home", href: "/" },
+  { label: "Our Projects", href: "/our-projects" },
+  { label: "About Us", href: "/about-us" },
   { label: "Virtual Tours", href: "/virtual-tours" },
   { label: "Blogs", href: "/blogs" },
-  { label: "Contact Us", href: "/#contact-us" },
+  { label: "Contact Us", href: "/contact-us" },
   { label: "Gallery", href: "/gallery" },
 ];
 
@@ -55,7 +55,7 @@ function SellPropertyHeader() {
 
   return (
     <header className="site-header">
-      <RouteLoadingLink href="/#home" pageTitle="Home" ariaLabel="Sky Skrabers home">
+      <RouteLoadingLink href="/" pageTitle="Home" ariaLabel="Sky Skrabers home">
         <Logo />
       </RouteLoadingLink>
       <nav className={open ? "nav nav--open" : "nav"} aria-label="Primary navigation">

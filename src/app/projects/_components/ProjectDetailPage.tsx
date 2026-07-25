@@ -73,7 +73,7 @@ export function ProjectDetailPage({
   return (
     <main className={styles.page}>
       <header className={styles.navbar}>
-        <RouteLoadingLink className={styles.logo} href="/#home" pageTitle="Home" ariaLabel="Sky Skrabers home">
+        <RouteLoadingLink className={styles.logo} href="/" pageTitle="Home" ariaLabel="Sky Skrabers home">
           <SkyLogo className={styles.projectLogo} priority />
         </RouteLoadingLink>
         <nav className={styles.navPill} aria-label="Project navigation">
@@ -198,8 +198,8 @@ export function ProjectDetailPage({
       <footer className={styles.footer}>
         <span>© 2026 Sky Skrabers</span>
         <nav aria-label="Footer links">
-          <RouteLoadingLink href="/#home" pageTitle="Home">Home</RouteLoadingLink>
-          <RouteLoadingLink href="/#contact-us" pageTitle="Contact Us">Contact</RouteLoadingLink>
+          <RouteLoadingLink href="/" pageTitle="Home">Home</RouteLoadingLink>
+          <RouteLoadingLink href="/contact-us" pageTitle="Contact Us">Contact</RouteLoadingLink>
           <InstagramLink>Instagram</InstagramLink>
           <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" data-analytics-event="whatsapp_click" data-analytics-label={`${projectName} footer WhatsApp`}>
             WhatsApp

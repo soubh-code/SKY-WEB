@@ -11,12 +11,12 @@ import Link from "next/link";
 import { type ReactNode, useState } from "react";
 
 const navItems = [
-  { label: "Home", href: "/#home" },
-  { label: "Our Projects", href: "/#our-projects" },
-  { label: "About Us", href: "/#about-us" },
+  { label: "Home", href: "/" },
+  { label: "Our Projects", href: "/our-projects" },
+  { label: "About Us", href: "/about-us" },
   { label: "Virtual Tours", href: "/virtual-tours" },
   { label: "Blogs", href: "/blogs" },
-  { label: "Contact Us", href: "/#contact-us" },
+  { label: "Contact Us", href: "/contact-us" },
   { label: "Gallery", href: "/gallery" },
 ];
 
@@ -27,7 +27,7 @@ function BlogHeader() {
 
   return (
     <header className="site-header">
-      <RouteLoadingLink href="/#home" pageTitle="Home" ariaLabel="Sky Skrabers home">
+      <RouteLoadingLink href="/" pageTitle="Home" ariaLabel="Sky Skrabers home">
         <SkyLogo priority />
       </RouteLoadingLink>
       <nav className={open ? "nav nav--open" : "nav"} aria-label="Primary navigation">

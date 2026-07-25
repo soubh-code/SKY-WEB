@@ -43,16 +43,6 @@ export default function LajpatNagarProjectPage() {
           ],
         },
         {
-          title: "G-9, Lajpat Nagar-1",
-          details: [
-            { label: "Area", value: "100 sqyrd" },
-            { label: "Config", value: "2BHK" },
-            { label: "Opening", value: "Corner property, three side open" },
-            { label: "Availability", value: "1st floor available" },
-            { label: "Status", value: "Near completion" },
-          ],
-        },
-        {
           title: "B-58, Lajpat Nagar-1",
           details: [
             { label: "Area", value: "100 sqyrd" },

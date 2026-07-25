@@ -34,7 +34,6 @@ import {
   WalletCards,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -46,12 +45,12 @@ const CircularGallery = dynamic(
 );
 
 const navItems = [
-  { label: "Home", id: "home", href: "/#home", section: true },
-  { label: "Our Projects", id: "our-projects", href: "/#our-projects", section: true },
-  { label: "About Us", id: "about-us", href: "/#about-us", section: true },
+  { label: "Home", id: "home", href: "/", section: true },
+  { label: "Our Projects", id: "our-projects", href: "/our-projects", section: true },
+  { label: "About Us", id: "about-us", href: "/about-us", section: true },
   { label: "Virtual Tours", id: "virtual-tours", href: "/virtual-tours", section: false, trackOnHome: true },
   { label: "Blogs", id: "blogs", href: "/blogs", section: false, trackOnHome: true },
-  { label: "Contact Us", id: "contact-us", href: "/#contact-us", section: true },
+  { label: "Contact Us", id: "contact-us", href: "/contact-us", section: true },
   { label: "Gallery", id: "gallery", href: "/gallery", section: false },
 ];
 const navTargets = navItems.filter((item) => item.section || item.trackOnHome);
@@ -174,7 +173,7 @@ const ongoing = [
     imagePosition: "50% 55%",
     coords: "Lajpat Nagar 1/2/4",
     slug: "lajpat-nagar-1-2",
-    propertyCount: 10,
+    propertyCount: 9,
   },
   {
     name: "Lajpat Nagar 3",
@@ -255,25 +254,6 @@ function Header() {
   const [open, setOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
 
-  const scrollToHomeSection = useCallback((href: string) => {
-    const hash = href.includes("#") ? href.slice(href.indexOf("#")) : href;
-    const target = document.querySelector<HTMLElement>(hash);
-    if (!target) return;
-
-    const scrollToTarget = (behavior: ScrollBehavior) => {
-      const headerOffset = 92;
-      const top = target.getBoundingClientRect().top + window.scrollY - headerOffset;
-      window.scrollTo({ top: Math.max(0, top), behavior });
-    };
-
-    requestAnimationFrame(() => {
-      ScrollTrigger.refresh();
-      scrollToTarget("smooth");
-      gsap.delayedCall(0.42, () => scrollToTarget("auto"));
-    });
-    removeLocationHash();
-  }, []);
-
   useEffect(() => {
     let ticking = false;
 
@@ -313,46 +293,26 @@ function Header() {
 
   return (
     <header className="site-header">
-      <Link
+      <RouteLoadingLink
         href="/"
+        pageTitle="Home"
         aria-label="Sky Skrabers home"
-        onClick={(event) => {
-          event.preventDefault();
-          setActiveSection("home");
-          scrollToHomeSection("#home");
-          setOpen(false);
-        }}
+        onNavigate={() => setOpen(false)}
       >
         <Logo />
-      </Link>
+      </RouteLoadingLink>
       <nav className={open ? "nav nav--open" : "nav"} aria-label="Primary navigation">
-        {navItems.map((item) =>
-          !item.section ? (
-            <RouteLoadingLink
-              key={item.id}
-              className={activeSection === item.id ? "is-active" : undefined}
-              href={item.href}
-              pageTitle={item.label}
-              onNavigate={() => setOpen(false)}
-            >
-              {item.label}
-            </RouteLoadingLink>
-          ) : (
-            <a
-              key={item.id}
-              href={item.href}
-              className={activeSection === item.id ? "is-active" : undefined}
-              onClick={(event) => {
-                event.preventDefault();
-                if (item.section) setActiveSection(item.id);
-                scrollToHomeSection(item.href);
-                setOpen(false);
-              }}
-            >
-              {item.label}
-            </a>
-          ),
-        )}
+        {navItems.map((item) => (
+          <RouteLoadingLink
+            key={item.id}
+            className={activeSection === item.id ? "is-active" : undefined}
+            href={item.href}
+            pageTitle={item.label}
+            onNavigate={() => setOpen(false)}
+          >
+            {item.label}
+          </RouteLoadingLink>
+        ))}
       </nav>
       <button className="menu-button" aria-label="Open navigation" onClick={() => setOpen((value) => !value)}>
         <Menu size={22} />
@@ -719,7 +679,7 @@ function ServicesPanel() {
       Icon: Building2,
       title: "Buy New Home",
       copy: "Find your perfect home in our handpicked premium properties.",
-      href: "/#ongoing-projects",
+      href: "/buy-new-home",
     },
     {
       Icon: WalletCards,
@@ -1394,7 +1354,11 @@ function Footer() {
   );
 }
 
-export default function HomePage() {
+type HomePageProps = {
+  initialSection?: "home" | "our-projects" | "ongoing-projects" | "about-us" | "contact-us";
+};
+
+export function HomePage({ initialSection }: HomePageProps) {
   const [loading, setLoading] = useState(true);
   const [heroReady, setHeroReady] = useState(false);
   const isTabletPerformance = useTabletPerformanceMode();
@@ -1425,8 +1389,8 @@ export default function HomePage() {
   useEffect(() => {
     if (loading || !heroReady) return;
 
-    const hash = takeHomeSectionTarget() ?? window.location.hash;
-    const sectionId = hash.startsWith("#") ? hash.slice(1) : "";
+    const legacyHash = takeHomeSectionTarget() ?? window.location.hash;
+    const sectionId = initialSection ?? (legacyHash.startsWith("#") ? legacyHash.slice(1) : "");
     if (!sectionId) return;
 
     const target = document.getElementById(sectionId);
@@ -1447,7 +1411,7 @@ export default function HomePage() {
     return () => {
       delayedScroll.kill();
     };
-  }, [heroReady, loading]);
+  }, [heroReady, initialSection, loading]);
 
   useEffect(() => {
     const fallback = gsap.delayedCall(12, () => setHeroReady(true));
@@ -1568,4 +1532,8 @@ export default function HomePage() {
       <WhatsAppButton />
     </>
   );
+}
+
+export default function HomeRoute() {
+  return <HomePage />;
 }

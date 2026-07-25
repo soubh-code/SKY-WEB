@@ -5,7 +5,7 @@ export default function PrivacyPolicyPage() {
   return (
     <main className="legal-page">
       <section className="legal-panel glass-card">
-        <RouteLoadingLink className="legal-back" href="/#contact-us" pageTitle="Contact Us">
+        <RouteLoadingLink className="legal-back" href="/contact-us" pageTitle="Contact Us">
           Back to Sky Skrabers
         </RouteLoadingLink>
         <p className="eyebrow">Privacy Policy</p>

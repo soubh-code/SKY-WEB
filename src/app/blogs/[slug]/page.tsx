@@ -109,7 +109,7 @@ export default async function BlogArticlePage({ params }: BlogArticlePageProps) 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
       <main className="blog-page blog-article-page">
         <article className="blog-article" itemScope itemType="https://schema.org/BlogPosting">
-          <RouteLoadingLink className="blog-article__back" href="/#home" pageTitle="Home">
+          <RouteLoadingLink className="blog-article__back" href="/" pageTitle="Home">
             Back to home
           </RouteLoadingLink>
           <header className="blog-article__header">
