@@ -3,7 +3,7 @@
 import { googleAnalyticsId } from "@/lib/business";
 import { usePathname, useSearchParams } from "next/navigation";
 import Script from "next/script";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 
 declare global {
   interface Window {
@@ -19,9 +19,14 @@ const sendEvent = (eventName: string, params: Record<string, unknown> = {}) => {
 function AnalyticsPageViews() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const hasTrackedInitialPage = useRef(false);
 
   useEffect(() => {
     if (!pathname || !window.gtag) return;
+    if (!hasTrackedInitialPage.current) {
+      hasTrackedInitialPage.current = true;
+      return;
+    }
 
     const query = searchParams.toString();
     const pagePath = query ? `${pathname}?${query}` : pathname;

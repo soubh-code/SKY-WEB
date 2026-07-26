@@ -24,6 +24,11 @@ export default function PrivacyPolicyPage() {
           We use your information to respond to enquiries, schedule calls or site visits, share project details, improve
           our services, and maintain records related to customer communication.
         </p>
+        <h2>Cookies And Tracking</h2>
+        <p>
+          Essential storage supports core website functions. Google Analytics helps us understand website performance,
+          while Meta Pixel helps measure advertising activity and the effectiveness of our campaigns.
+        </p>
         <h2>Sharing And Security</h2>
         <p>
           We do not sell personal information. Information may be shared only with trusted service providers or advisors
