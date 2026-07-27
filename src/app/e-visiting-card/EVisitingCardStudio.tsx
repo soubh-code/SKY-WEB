@@ -35,7 +35,7 @@ declare global {
   }
 }
 
-const mapHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.address)}`;
+const mapHref = "https://maps.app.goo.gl/v3KMnFvX4o36YDY38";
 const whatsappHref = `https://wa.me/91${cardDetails.phone}?text=${encodeURIComponent(
   "Hello Sky Skrabers, I would like to connect with Avneet Singh Arora.",
 )}`;
@@ -148,8 +148,7 @@ export function EVisitingCardStudio() {
       </nav>
 
       <div className={styles.cardStack}>
-        <section className={styles.faceSection} aria-labelledby="front-label">
-          <p className={styles.faceLabel} id="front-label">Front</p>
+        <section className={styles.faceSection} aria-label="Front of the Sky Skrabers visiting card">
           <article className={`${styles.cardFace} ${styles.frontFace}`}>
             <Image
               className={styles.frontResidence}
@@ -171,8 +170,7 @@ export function EVisitingCardStudio() {
           </article>
         </section>
 
-        <section className={styles.faceSection} aria-labelledby="back-label">
-          <p className={styles.faceLabel} id="back-label">Back</p>
+        <section className={styles.faceSection} aria-label="Back of the Sky Skrabers visiting card">
           <article className={`${styles.cardFace} ${styles.backFace}`}>
             <div className={styles.marblePanel} aria-hidden="true" />
             <div className={styles.qrColumn}>

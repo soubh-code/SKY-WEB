@@ -70,15 +70,6 @@
   perspective: 1600px;
 }
 
-.faceLabel {
-  margin: 0 0 13px 12px;
-  color: var(--gold-light);
-  text-transform: uppercase;
-  font-family: var(--font-sans, Arial, sans-serif);
-  font-size: 13px;
-  letter-spacing: 0;
-}
-
 .cardFace {
   width: 100%;
   aspect-ratio: 1.58;
@@ -496,11 +487,6 @@
   .cardStack {
     margin-top: 32px;
     gap: 38px;
-  }
-
-  .faceLabel {
-    margin-left: 8px;
-    font-size: 11px;
   }
 
   .cardFace {

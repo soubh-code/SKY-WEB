@@ -1,4 +1,4 @@
-export const EVISITING_CARD_URL = "https://skyskrabers.in/e-visiting-card";
+export const EVISITING_CARD_URL = "https://www.skyskrabers.in/e-visiting-card";
 
 export type CardDetails = {
   name: string;
@@ -17,7 +17,7 @@ export const cardDetails: CardDetails = {
   phone: "9999997327",
   email: "arora.avneet100@gmail.com",
   website: "skyskrabers.in",
-  location: "C 132, Block C, Lajpat Nagar II, Lajpat Nagar, New Delhi, Delhi 110024",
+  location: "Sky Skrabers",
   tagline: "SKY SKRABERS: LUXURY REDEFINED",
   qrUrl: EVISITING_CARD_URL,
 };
