@@ -13,7 +13,7 @@ export type CardDetails = {
 
 export const cardDetails: CardDetails = {
   name: "AVNEET SINGH ARORA",
-  designation: "FOUNDER / OWNER",
+  designation: "FOUNDER / DIRECTOR",
   phone: "9999997327",
   email: "arora.avneet100@gmail.com",
   website: "skyskrabers.in",
