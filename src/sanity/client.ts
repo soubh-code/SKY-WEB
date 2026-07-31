@@ -85,9 +85,18 @@ function normalizeSanityPost(post: SanityBlogPost): BlogPost {
   };
 }
 
+function sortBlogPostsNewestFirst(posts: BlogPost[]) {
+  return [...posts].sort((left, right) => {
+    const rightDate = new Date(right.date).getTime();
+    const leftDate = new Date(left.date).getTime();
+
+    return rightDate - leftDate;
+  });
+}
+
 export async function getBlogPosts() {
   if (!isSanityConfigured) {
-    return localBlogPosts;
+    return sortBlogPostsNewestFirst(localBlogPosts);
   }
 
   try {
@@ -96,10 +105,10 @@ export async function getBlogPosts() {
     const sanitySlugs = new Set(normalizedPosts.map((post) => post.slug));
     const localFallbackPosts = localBlogPosts.filter((post) => !sanitySlugs.has(post.slug));
 
-    return [...normalizedPosts, ...localFallbackPosts];
+    return sortBlogPostsNewestFirst([...normalizedPosts, ...localFallbackPosts]);
   } catch (error) {
     console.warn("Sanity blog fetch failed. Falling back to local blog posts.", error);
-    return localBlogPosts;
+    return sortBlogPostsNewestFirst(localBlogPosts);
   }
 }
 

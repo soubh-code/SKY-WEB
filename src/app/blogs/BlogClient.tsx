@@ -117,7 +117,7 @@ export function BlogsIndex({ posts, categories }: { posts: BlogPost[]; categorie
         <div className="blog-journal-hero__meta" aria-label="Journal focus">
           <span>
             <BookOpenText size={18} />
-            8 field notes
+            {posts.length} field notes
           </span>
           <span>Builder floors</span>
           <span>Owner strategy</span>
