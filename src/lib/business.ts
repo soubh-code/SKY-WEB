@@ -1,4 +1,4 @@
-export const siteUrl = "https://skyskrabers.in";
+export const siteUrl = "https://www.skyskrabers.in";
 
 export const business = {
   name: "Sky Skrabers",
@@ -42,5 +42,4 @@ export const business = {
 } as const;
 
 export const googleAnalyticsId = "G-CHME3DFEXK";
-export const googleSearchConsoleMetaCode = "ADD VERIFICATION CODE";
 export const googleSearchConsoleFile = "googleaae96cfbebf6a7d4.html";

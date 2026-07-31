@@ -507,42 +507,42 @@ export const blogPosts: BlogPost[] = [
         heading: "Why Lajpat Nagar remains a serious property market",
         paragraphs: [
           "Lajpat Nagar combines established neighbourhood character with metro access, Central and South Delhi connectivity, active markets and dependable daily infrastructure. That combination keeps the buyer pool broad, from families seeking a well-connected home to investors looking for an address with lasting end-user demand.",
-          "For people comparing proprties for sale in lajpat nagar , the meaningful questions go beyond a colony-wide rate. Plot size, road width, parking, floor position, natural light, construction quality and the legal status of the building all influence value and future liquidity.",
+          "For people comparing properties for sale in Lajpat Nagar, the meaningful questions go beyond a colony-wide rate. Plot size, road width, parking, floor position, natural light, construction quality and the legal status of the building all influence value and future liquidity.",
         ],
       },
       {
         heading: "How Sky Skrabers built a Lajpat Nagar presence",
         paragraphs: [
           "Sky Skrabers has worked in South Delhi since 2011 and has developed its Lajpat Nagar presence through close attention to planning, execution and the expectations of local buyers. The company is currently working across nine different sites in the wider Lajpat Nagar 1, 2, 3 and 4 belt.",
-          "That active pipeline gives the team a practical view of proprties for sale in lajpat nagar , including how buyers compare lanes, what floor plans work on different plots, and which construction details protect long-term usability.",
+          "That active pipeline gives the team a practical view of properties for sale in Lajpat Nagar, including how buyers compare lanes, what floor plans work on different plots, and which construction details protect long-term usability.",
         ],
       },
       {
         heading: "Investment options across Lajpat Nagar 1 and 2",
         paragraphs: [
           "Lajpat Nagar 1 can appeal to buyers who value connectivity and an established residential setting, while Lajpat Nagar 2 benefits from strong access to the Central Market area, metro connectivity and surrounding South Delhi neighbourhoods. In both parts, the quality of the lane and the building remains more important than a broad location label.",
-          "When reviewing proprties for sale in lajpat nagar , investors should compare usable floor area, stilt parking, lift access, frontage, daylight and the documentation available for the specific property. A smaller, correctly planned home can hold stronger value than a larger but compromised floor.",
+          "When reviewing properties for sale in Lajpat Nagar, investors should compare usable floor area, stilt parking, lift access, frontage, daylight and the documentation available for the specific property. A smaller, correctly planned home can hold stronger value than a larger but compromised floor.",
         ],
       },
       {
         heading: "Investment options across Lajpat Nagar 3 and 4",
         paragraphs: [
           "Lajpat Nagar 3 offers a mix of residential convenience and access to established commercial activity, while Lajpat Nagar 4 and adjoining Dayanand Colony provide a different lane character and entry point. Each pocket needs its own valuation logic rather than one average price.",
-          "Buyers searching proprties for sale in lajpat nagar should assess the exact micro-location, parking pressure at different times of day, neighbouring construction, access roads and the likely end-user profile before making an investment decision.",
+          "Buyers searching properties for sale in Lajpat Nagar should assess the exact micro-location, parking pressure at different times of day, neighbouring construction, access roads and the likely end-user profile before making an investment decision.",
         ],
       },
       {
         heading: "What to verify before investing",
         paragraphs: [
           "A premium facade is only one part of the decision. Buyers should review title documents, sanctioned plans, ownership records, applicable registrations, completion timelines, specifications and payment milestones with qualified legal and financial advisers.",
-          "The strongest proprties for sale in lajpat nagar are the ones where location, planning, construction and documentation support the same value proposition. Sky Skrabers approaches each site with this complete view rather than relying only on surface finishes.",
+          "The strongest properties for sale in Lajpat Nagar are the ones where location, planning, construction and documentation support the same value proposition. Sky Skrabers approaches each site with this complete view rather than relying only on surface finishes.",
         ],
       },
       {
         heading: "A developer-led route to the right opportunity",
         paragraphs: [
           "With nine active sites across Lajpat Nagar 1, 2, 3 and 4, Sky Skrabers can help buyers compare opportunities by requirement rather than by listing volume alone. The right choice may depend on family size, floor preference, parking needs, possession horizon and investment objective.",
-          "For current availability of proprties for sale in lajpat nagar , speak directly with Sky Skrabers. Project availability and commercial terms can change, so every shortlisted property should be verified at the time of enquiry.",
+          "For current availability of properties for sale in Lajpat Nagar, speak directly with Sky Skrabers. Project availability and commercial terms can change, so every shortlisted property should be verified at the time of enquiry.",
         ],
       },
     ],

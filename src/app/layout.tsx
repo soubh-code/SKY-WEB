@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import { MetaPixel } from "@/components/MetaPixel";
 import { CleanLegacyUrlHash } from "@/components/CleanLegacyUrlHash";
-import { business, googleSearchConsoleMetaCode, siteUrl } from "@/lib/business";
+import { business, siteUrl } from "@/lib/business";
 import { Cormorant_Garamond, Inter } from "next/font/google";
 import "./globals.css";
 
@@ -68,9 +68,6 @@ export const metadata: Metadata = {
     description:
       "Premium South Delhi real estate, construction, collaborations, buying support, selling guidance, and ongoing projects by Sky Skrabers.",
     images: ["/og-image.png"],
-  },
-  verification: {
-    google: googleSearchConsoleMetaCode,
   },
 };
 

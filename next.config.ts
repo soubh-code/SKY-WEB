@@ -67,6 +67,21 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
+        source: "/blog",
+        destination: "/blogs",
+        permanent: true,
+      },
+      {
+        source: "/contact",
+        destination: "/contact-us",
+        permanent: true,
+      },
+      {
+        source: "/residential-projects/lajpat-nagar-new-delhi-unit-1-2",
+        destination: "/projects/lajpat-nagar-1-2",
+        permanent: true,
+      },
+      {
         source: "/projects/lajpat-nagar-1-2-4",
         destination: "/projects/lajpat-nagar-1-2",
         permanent: true,
