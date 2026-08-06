@@ -16,17 +16,26 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-## Google Ads Property Lead Email
+## Google Ads Property Lead Storage
 
-The Google Ads property popup submits leads through the server-only `/api/ads-property-lead` endpoint. Configure these variables locally in `.env.local` and in the Vercel project environment settings:
+The Google Ads property popup stores leads in the Hostinger MySQL/MariaDB database through the server-only `/api/ads-property-lead` endpoint. Create the table by running the contents of:
 
 ```bash
-RESEND_API_KEY=your_resend_api_key
-RESEND_FROM_EMAIL="Sky Skrabers Website <leads@skyskrabers.in>"
-ADS_LEAD_NOTIFICATION_EMAIL=help@skyskrabers.in
+database/google_ads_property_leads.sql
 ```
 
-Verify `skyskrabers.in` in Resend before using the example sender. Never prefix these variables with `NEXT_PUBLIC_`.
+Configure these server-only values locally in `.env.local` and in the Vercel project environment settings:
+
+```bash
+HOSTINGER_DB_HOST=srv1085.hstgr.io
+HOSTINGER_DB_PORT=3306
+HOSTINGER_DB_NAME=u272872204_whatsapp_leads
+HOSTINGER_DB_USER=your_hostinger_database_user
+HOSTINGER_DB_PASSWORD=your_hostinger_database_password
+HOSTINGER_DB_SSL_MODE=required
+```
+
+Never prefix database credentials with `NEXT_PUBLIC_`. The SQL connection uses a small reusable pool suitable for Vercel serverless instances. Hostinger Remote MySQL must allow the Vercel function's outbound IP before production use.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 

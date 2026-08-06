@@ -1,3 +1,6 @@
+import { createHash, randomBytes } from "node:crypto";
+import { getHostingerDbPool } from "@/lib/hostinger-db";
+import type { ResultSetHeader } from "mysql2";
 import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -47,43 +50,53 @@ type LeadPayload = {
   attribution?: unknown;
 };
 
-const escapeHtml = (value: string) =>
-  value.replace(/[&<>'"]/g, (character) => {
-    const entities: Record<string, string> = {
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      "'": "&#39;",
-      '"': "&quot;",
-    };
-    return entities[character];
-  });
+type WhatsAppPayload = {
+  leadId?: unknown;
+  updateToken?: unknown;
+};
 
 const getClientIp = (request: NextRequest) =>
   request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
   request.headers.get("x-real-ip") ||
   "unknown";
 
-const isRateLimited = (ip: string) => {
+const isRateLimited = (key: string) => {
   const now = Date.now();
-  const recentRequests = (rateLimitStore.get(ip) ?? []).filter((timestamp) => now - timestamp < RATE_LIMIT_WINDOW_MS);
+  const recentRequests = (rateLimitStore.get(key) ?? []).filter((timestamp) => now - timestamp < RATE_LIMIT_WINDOW_MS);
 
   if (recentRequests.length >= RATE_LIMIT_MAX_REQUESTS) {
-    rateLimitStore.set(ip, recentRequests);
+    rateLimitStore.set(key, recentRequests);
     return true;
   }
 
   recentRequests.push(now);
-  rateLimitStore.set(ip, recentRequests);
+  rateLimitStore.set(key, recentRequests);
 
   if (rateLimitStore.size > 1000) {
-    for (const [key, timestamps] of rateLimitStore) {
-      if (!timestamps.some((timestamp) => now - timestamp < RATE_LIMIT_WINDOW_MS)) rateLimitStore.delete(key);
+    for (const [storedKey, timestamps] of rateLimitStore) {
+      if (!timestamps.some((timestamp) => now - timestamp < RATE_LIMIT_WINDOW_MS)) rateLimitStore.delete(storedKey);
     }
   }
 
   return false;
 };
+
+const cleanText = (value: unknown, maxLength: number) =>
+  typeof value === "string"
+    ? value.replace(/[\u0000-\u001F\u007F]/g, " ").replace(/\s+/g, " ").trim().slice(0, maxLength)
+    : "";
+
+const cleanUrl = (value: unknown) => {
+  const candidate = cleanText(value, 2048);
+  try {
+    const url = new URL(candidate);
+    return url.protocol === "http:" || url.protocol === "https:" ? url.toString() : "";
+  } catch {
+    return "";
+  }
+};
+
+const hashUpdateToken = (token: string) => createHash("sha256").update(token).digest("hex");
 
 export async function POST(request: NextRequest) {
   let payload: LeadPayload;
@@ -93,93 +106,130 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
 
-  if (typeof payload.website === "string" && payload.website.trim()) {
+  if (cleanText(payload.website, 200)) {
     return NextResponse.json({ ok: true });
   }
 
-  const ip = getClientIp(request);
-  if (isRateLimited(ip)) {
+  if (isRateLimited(`submit:${getClientIp(request)}`)) {
     return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 });
   }
 
-  const name = typeof payload.name === "string" ? payload.name.trim().slice(0, 100) : "";
-  const rawPhone = typeof payload.phone === "string" ? payload.phone : "";
-  const phone = rawPhone.replace(/\D/g, "").replace(/^91(?=\d{10}$)/, "");
-  const budget = typeof payload.budget === "string" ? payload.budget : "";
+  const name = cleanText(payload.name, 100);
+  const phone = cleanText(payload.phone, 30).replace(/\D/g, "").replace(/^91(?=\d{10}$)/, "");
+  const budget = cleanText(payload.budget, 50);
   const locations = Array.isArray(payload.locations)
     ? [...new Set(payload.locations.filter((value): value is string => typeof value === "string" && allowedLocations.has(value)))]
     : [];
-  const landingPageUrl = typeof payload.landingPageUrl === "string" ? payload.landingPageUrl.slice(0, 2048) : "";
+  const landingPage = cleanUrl(payload.landingPageUrl);
+  const referrer = cleanUrl(request.headers.get("referer"));
   const rawAttribution = payload.attribution && typeof payload.attribution === "object"
     ? payload.attribution as Record<string, unknown>
     : {};
   const attribution = Object.fromEntries(
-    Object.entries(rawAttribution).flatMap(([key, value]) =>
-      attributionKeys.has(key) && typeof value === "string" && value.trim()
-        ? [[key, value.trim().slice(0, 500)]]
-        : [],
-    ),
+    Object.entries(rawAttribution).flatMap(([key, value]) => {
+      const cleanedValue = cleanText(value, 500);
+      return attributionKeys.has(key) && cleanedValue ? [[key, cleanedValue]] : [];
+    }),
+  );
+  const isPaidGoogleAttribution = Boolean(attribution.gclid || attribution.gbraid || attribution.wbraid) || (
+    attribution.utm_source?.toLowerCase() === "google" && attribution.utm_medium?.toLowerCase() === "cpc"
   );
 
-  if (name.length < 2 || !/^[6-9]\d{9}$/.test(phone) || !allowedBudgets.has(budget) || !locations.length) {
+  if (
+    name.length < 2 ||
+    !/^[6-9]\d{9}$/.test(phone) ||
+    !allowedBudgets.has(budget) ||
+    !locations.length ||
+    !isPaidGoogleAttribution
+  ) {
     return NextResponse.json({ error: "Please check the submitted details." }, { status: 400 });
   }
 
-  const apiKey = process.env.RESEND_API_KEY;
-  const recipient = process.env.ADS_LEAD_NOTIFICATION_EMAIL;
-  const sender = process.env.RESEND_FROM_EMAIL;
-  if (!apiKey || !recipient || !sender) {
-    console.error("Ads property lead email environment variables are not configured.");
-    return NextResponse.json({ error: "Lead service is unavailable." }, { status: 503 });
+  const updateToken = randomBytes(32).toString("hex");
+  const updateTokenHash = hashUpdateToken(updateToken);
+
+  try {
+    const [result] = await getHostingerDbPool().execute<ResultSetHeader>(
+      `INSERT INTO google_ads_property_leads (
+        name,
+        phone,
+        budget,
+        locations,
+        gclid,
+        gbraid,
+        wbraid,
+        utm_source,
+        utm_medium,
+        utm_campaign,
+        utm_term,
+        utm_content,
+        landing_page,
+        referrer,
+        whatsapp_update_token_hash
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        name,
+        phone,
+        budget,
+        JSON.stringify(locations),
+        attribution.gclid || null,
+        attribution.gbraid || null,
+        attribution.wbraid || null,
+        attribution.utm_source || null,
+        attribution.utm_medium || null,
+        attribution.utm_campaign || null,
+        attribution.utm_term || null,
+        attribution.utm_content || null,
+        landingPage || null,
+        referrer || null,
+        updateTokenHash,
+      ],
+    );
+
+    return NextResponse.json({
+      ok: true,
+      leadId: String(result.insertId),
+      updateToken,
+    });
+  } catch (error) {
+    console.error("Could not store Google Ads property lead in MySQL:", error instanceof Error ? error.message : "Unknown error");
+    return NextResponse.json({ error: "Lead could not be stored." }, { status: 503 });
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  let payload: WhatsAppPayload;
+  try {
+    payload = (await request.json()) as WhatsAppPayload;
+  } catch {
+    return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
 
-  const submittedAt = new Date().toISOString();
-  const attributionRows = Object.entries(attribution)
-    .map(([key, value]) => `<tr><td style="padding:6px 12px 6px 0"><strong>${escapeHtml(key)}</strong></td><td>${escapeHtml(value)}</td></tr>`)
-    .join("");
-
-  const emailResponse = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: sender,
-      to: [recipient],
-      subject: "New Google Ads property enquiry",
-      html: `
-        <div style="font-family:Arial,sans-serif;color:#182433;line-height:1.5">
-          <h1 style="color:#08111f">New Google Ads property enquiry</h1>
-          <table style="border-collapse:collapse">
-            <tr><td style="padding:6px 12px 6px 0"><strong>Name</strong></td><td>${escapeHtml(name)}</td></tr>
-            <tr><td style="padding:6px 12px 6px 0"><strong>Phone</strong></td><td>${escapeHtml(phone)}</td></tr>
-            <tr><td style="padding:6px 12px 6px 0"><strong>Budget</strong></td><td>${escapeHtml(budget)}</td></tr>
-            <tr><td style="padding:6px 12px 6px 0"><strong>Locations</strong></td><td>${escapeHtml(locations.join(", "))}</td></tr>
-            <tr><td style="padding:6px 12px 6px 0"><strong>Submitted</strong></td><td>${escapeHtml(submittedAt)}</td></tr>
-            <tr><td style="padding:6px 12px 6px 0"><strong>Landing page</strong></td><td>${escapeHtml(landingPageUrl)}</td></tr>
-            ${attributionRows}
-          </table>
-        </div>
-      `,
-      text: [
-        "New Google Ads property enquiry",
-        `Name: ${name}`,
-        `Phone: ${phone}`,
-        `Budget: ${budget}`,
-        `Locations: ${locations.join(", ")}`,
-        `Submitted: ${submittedAt}`,
-        `Landing page: ${landingPageUrl}`,
-        ...Object.entries(attribution).map(([key, value]) => `${key}: ${value}`),
-      ].join("\n"),
-    }),
-  });
-
-  if (!emailResponse.ok) {
-    const errorText = await emailResponse.text();
-    console.error("Resend rejected an ads property lead email:", emailResponse.status, errorText.slice(0, 500));
-    return NextResponse.json({ error: "Lead email could not be sent." }, { status: 502 });
+  const leadId = cleanText(payload.leadId, 20);
+  const updateToken = cleanText(payload.updateToken, 64);
+  if (!/^\d{1,20}$/.test(leadId) || !/^[a-f0-9]{64}$/.test(updateToken)) {
+    return NextResponse.json({ error: "Invalid lead." }, { status: 400 });
   }
 
-  return NextResponse.json({ ok: true });
+  if (isRateLimited(`whatsapp:${getClientIp(request)}`)) {
+    return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 });
+  }
+
+  try {
+    const [result] = await getHostingerDbPool().execute<ResultSetHeader>(
+      `UPDATE google_ads_property_leads
+       SET whatsapp_clicked = 1, whatsapp_clicked_at = CURRENT_TIMESTAMP
+       WHERE id = ? AND whatsapp_update_token_hash = ?`,
+      [leadId, hashUpdateToken(updateToken)],
+    );
+
+    if (result.affectedRows !== 1) {
+      return NextResponse.json({ error: "Lead not found." }, { status: 404 });
+    }
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error("Could not mark Google Ads property lead WhatsApp click:", error instanceof Error ? error.message : "Unknown error");
+    return NextResponse.json({ error: "Lead could not be updated." }, { status: 503 });
+  }
 }

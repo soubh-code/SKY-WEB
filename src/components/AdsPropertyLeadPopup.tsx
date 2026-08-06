@@ -114,6 +114,8 @@ export function AdsPropertyLeadPopup() {
   const [honeypot, setHoneypot] = useState("");
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitError, setSubmitError] = useState("");
+  const [leadId, setLeadId] = useState("");
+  const [leadUpdateToken, setLeadUpdateToken] = useState("");
   const dialogRef = useRef<HTMLDivElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
   const locationRef = useRef<HTMLDivElement>(null);
@@ -268,7 +270,11 @@ export function AdsPropertyLeadPopup() {
       });
 
       if (!response.ok) throw new Error("Lead submission failed");
+      const result = await response.json() as { leadId?: string; updateToken?: string };
+      if (!result.leadId || !result.updateToken) throw new Error("Lead confirmation missing");
 
+      setLeadId(result.leadId);
+      setLeadUpdateToken(result.updateToken);
       setSubmitted(true);
       trackPopupEvent("ads_property_form_success");
     } catch {
@@ -284,6 +290,20 @@ export function AdsPropertyLeadPopup() {
     const message = `Hi, please provide me information about current properties in ${formatLocationList(locations)}.`;
     return `https://wa.me/${business.whatsappSchema.replace("+", "")}?text=${encodeURIComponent(message)}`;
   }, [locations]);
+
+  const handleWhatsAppClick = () => {
+    trackPopupEvent("ads_property_whatsapp_click");
+    if (!leadId || !leadUpdateToken) return;
+
+    void fetch("/api/ads-property-lead", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ leadId, updateToken: leadUpdateToken }),
+      keepalive: true,
+    }).catch(() => {
+      // WhatsApp should still open if the optional status update fails.
+    });
+  };
 
   if (!open) return null;
 
@@ -328,7 +348,7 @@ export function AdsPropertyLeadPopup() {
                 href={whatsappHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={() => trackPopupEvent("ads_property_whatsapp_click")}
+                onClick={handleWhatsAppClick}
               >
                 <MessageCircle aria-hidden="true" size={20} />
                 Get Details Instantly on WhatsApp
