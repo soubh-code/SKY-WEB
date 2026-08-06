@@ -131,16 +131,11 @@ export async function POST(request: NextRequest) {
       return attributionKeys.has(key) && cleanedValue ? [[key, cleanedValue]] : [];
     }),
   );
-  const isPaidGoogleAttribution = Boolean(attribution.gclid || attribution.gbraid || attribution.wbraid) || (
-    attribution.utm_source?.toLowerCase() === "google" && attribution.utm_medium?.toLowerCase() === "cpc"
-  );
-
   if (
     name.length < 2 ||
     !/^[6-9]\d{9}$/.test(phone) ||
     !allowedBudgets.has(budget) ||
-    !locations.length ||
-    !isPaidGoogleAttribution
+    !locations.length
   ) {
     return NextResponse.json({ error: "Please check the submitted details." }, { status: 400 });
   }

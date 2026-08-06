@@ -335,6 +335,43 @@
   to { transform: rotate(360deg); }
 }
 
+@media (min-width: 761px) and (max-width: 1100px) {
+  .overlay {
+    padding: 1rem;
+  }
+
+  .dialog {
+    grid-template-columns: minmax(230px, 0.72fr) minmax(0, 1.28fr);
+    width: min(900px, 100%);
+    max-height: 94dvh;
+  }
+
+  .imageCopy {
+    right: 1.4rem;
+    bottom: 1.4rem;
+    left: 1.4rem;
+  }
+
+  .formPanel {
+    padding: 2.25rem clamp(1.5rem, 3.5vw, 2.5rem);
+  }
+
+  .formPanel h2 {
+    font-size: clamp(2.3rem, 5vw, 3.25rem);
+  }
+}
+
+@media (min-width: 761px) and (max-width: 900px) {
+  .form {
+    grid-template-columns: 1fr;
+  }
+
+  .continueButton,
+  .submitError {
+    grid-column: auto;
+  }
+}
+
 @media (max-width: 760px) {
   .overlay {
     align-items: end;

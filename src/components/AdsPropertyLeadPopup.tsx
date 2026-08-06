@@ -8,7 +8,6 @@ import { usePathname } from "next/navigation";
 import { FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import styles from "./AdsPropertyLeadPopup.module.css";
 
-const ADS_SESSION_KEY = "sky-google-ads-visitor";
 const POPUP_SHOWN_KEY = "sky-ads-property-popup-shown";
 const ADS_ATTRIBUTION_KEY = "sky-google-ads-attribution";
 const ADS_LANDING_URL_KEY = "sky-google-ads-landing-url";
@@ -38,16 +37,8 @@ type FormErrors = Partial<Record<"name" | "phone" | "budget" | "locations", stri
 
 const trackPopupEvent = (eventName: string) => {
   sendGoogleTagEvent(eventName, {
-    event_category: "google_ads_lead_popup",
+    event_category: "property_lead_popup",
   });
-};
-
-const isPaidGoogleVisit = (params: URLSearchParams) => {
-  const hasClickId = ["gclid", "gbraid", "wbraid"].some((key) => Boolean(params.get(key)?.trim()));
-  const source = params.get("utm_source")?.toLowerCase();
-  const medium = params.get("utm_medium")?.toLowerCase();
-
-  return hasClickId || (source === "google" && medium === "cpc");
 };
 
 const readSessionValue = (key: string) => {
@@ -124,45 +115,31 @@ export function AdsPropertyLeadPopup() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const paidVisit = isPaidGoogleVisit(params);
-
-    if (paidVisit) {
-      writeSessionValue(ADS_SESSION_KEY, "1");
-      writeSessionValue(ADS_ATTRIBUTION_KEY, JSON.stringify(getAttribution(params)));
+    writeSessionValue(
+      ADS_ATTRIBUTION_KEY,
+      JSON.stringify({ ...getStoredAttribution(), ...getAttribution(params) }),
+    );
+    if (!readSessionValue(ADS_LANDING_URL_KEY)) {
       writeSessionValue(ADS_LANDING_URL_KEY, window.location.href);
     }
-    if (!paidVisit && readSessionValue(ADS_SESSION_KEY) !== "1") return;
     if (readSessionValue(POPUP_SHOWN_KEY) === "1") return;
 
-    let frame = 0;
-    const firstSection =
-      document.querySelector<HTMLElement>("main section") ?? document.querySelector<HTMLElement>("main");
-    if (!firstSection) return;
-    const sectionTop = firstSection.getBoundingClientRect().top + window.scrollY;
-    const triggerPoint = sectionTop + firstSection.offsetHeight * 0.4;
+    const completedProjectsSection = document.getElementById("our-projects");
+    if (!completedProjectsSection) return;
 
-    const checkProgress = () => {
-      frame = 0;
-      if (window.scrollY < triggerPoint) return;
-
+    const showPopup = () => {
       writeSessionValue(POPUP_SHOWN_KEY, "1");
       setOpen(true);
-      trackPopupEvent("ads_property_popup_view");
-      window.removeEventListener("scroll", scheduleCheck);
+      trackPopupEvent("property_popup_view");
+      observer.disconnect();
     };
 
-    const scheduleCheck = () => {
-      if (frame) return;
-      frame = window.requestAnimationFrame(checkProgress);
-    };
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting && entry.boundingClientRect.bottom <= 0) showPopup();
+    });
+    observer.observe(completedProjectsSection);
 
-    checkProgress();
-    window.addEventListener("scroll", scheduleCheck, { passive: true });
-
-    return () => {
-      window.removeEventListener("scroll", scheduleCheck);
-      if (frame) window.cancelAnimationFrame(frame);
-    };
+    return () => observer.disconnect();
   }, [pathname]);
 
   useEffect(() => {
@@ -193,7 +170,7 @@ export function AdsPropertyLeadPopup() {
   const closePopup = () => {
     setOpen(false);
     setDropdownOpen(false);
-    trackPopupEvent("ads_property_popup_close");
+    trackPopupEvent("property_popup_close");
   };
 
   const handleDialogKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -247,7 +224,7 @@ export function AdsPropertyLeadPopup() {
     event.preventDefault();
     if (requestInFlightRef.current || submitted) return;
 
-    trackPopupEvent("ads_property_continue_click");
+    trackPopupEvent("property_continue_click");
     if (!validate()) return;
 
     requestInFlightRef.current = true;
@@ -276,10 +253,10 @@ export function AdsPropertyLeadPopup() {
       setLeadId(result.leadId);
       setLeadUpdateToken(result.updateToken);
       setSubmitted(true);
-      trackPopupEvent("ads_property_form_success");
+      trackPopupEvent("property_form_success");
     } catch {
       setSubmitError("We couldn't record your details. Please try again.");
-      trackPopupEvent("ads_property_form_error");
+      trackPopupEvent("property_form_error");
     } finally {
       requestInFlightRef.current = false;
       setSubmitting(false);
@@ -292,7 +269,7 @@ export function AdsPropertyLeadPopup() {
   }, [locations]);
 
   const handleWhatsAppClick = () => {
-    trackPopupEvent("ads_property_whatsapp_click");
+    trackPopupEvent("property_whatsapp_click");
     if (!leadId || !leadUpdateToken) return;
 
     void fetch("/api/ads-property-lead", {
