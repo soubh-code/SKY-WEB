@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import { MetaPixel } from "@/components/MetaPixel";
 import { CleanLegacyUrlHash } from "@/components/CleanLegacyUrlHash";
+import { AdsPropertyLeadPopup } from "@/components/AdsPropertyLeadPopup";
 import { business, siteUrl } from "@/lib/business";
 import { Cormorant_Garamond, Inter } from "next/font/google";
 import "./globals.css";
@@ -162,6 +163,7 @@ export default function RootLayout({
         <GoogleAnalytics />
         <MetaPixel />
         <CleanLegacyUrlHash />
+        <AdsPropertyLeadPopup />
         {children}
       </body>
     </html>

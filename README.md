@@ -16,6 +16,18 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Google Ads Property Lead Email
+
+The Google Ads property popup submits leads through the server-only `/api/ads-property-lead` endpoint. Configure these variables locally in `.env.local` and in the Vercel project environment settings:
+
+```bash
+RESEND_API_KEY=your_resend_api_key
+RESEND_FROM_EMAIL="Sky Skrabers Website <leads@skyskrabers.in>"
+ADS_LEAD_NOTIFICATION_EMAIL=help@skyskrabers.in
+```
+
+Verify `skyskrabers.in` in Resend before using the example sender. Never prefix these variables with `NEXT_PUBLIC_`.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.

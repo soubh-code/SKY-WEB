@@ -1,6 +1,7 @@
 "use client";
 
 import { googleAnalyticsId } from "@/lib/business";
+import { googleAdsId, isWhatsAppUrl, trackWhatsAppConversion } from "@/lib/google-ads";
 import { usePathname, useSearchParams } from "next/navigation";
 import Script from "next/script";
 import { Suspense, useEffect, useRef, useState } from "react";
@@ -48,6 +49,14 @@ function AnalyticsEvents() {
       const element = target?.closest<HTMLElement>("a, button");
       if (!element) return;
 
+      const anchor = element instanceof HTMLAnchorElement ? element : element.closest<HTMLAnchorElement>("a");
+      const href = anchor?.href || "";
+      const text = element.textContent?.trim() || anchor?.ariaLabel || "";
+
+      if (anchor && isWhatsAppUrl(href)) {
+        trackWhatsAppConversion(event);
+      }
+
       const explicitEvent = element.dataset.analyticsEvent;
       const explicitLabel = element.dataset.analyticsLabel || element.textContent?.trim() || undefined;
 
@@ -58,10 +67,6 @@ function AnalyticsEvents() {
         });
         return;
       }
-
-      const anchor = element instanceof HTMLAnchorElement ? element : element.closest<HTMLAnchorElement>("a");
-      const href = anchor?.href || "";
-      const text = element.textContent?.trim() || anchor?.ariaLabel || "";
 
       if (href.includes("wa.me") || href.toLowerCase().includes("whatsapp")) {
         sendEvent("whatsapp_click", {
@@ -105,6 +110,7 @@ function AnalyticsEvents() {
 
     const handleSubmit = (event: SubmitEvent) => {
       const form = event.target instanceof HTMLFormElement ? event.target : null;
+      if (form?.dataset.skipGlobalAnalytics === "true") return;
       sendEvent("contact_form_submit", {
         event_category: "lead",
         event_label: form?.getAttribute("name") || form?.id || "Contact form",
@@ -143,6 +149,7 @@ export function GoogleAnalytics() {
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
           gtag('config', '${googleAnalyticsId}');
+          gtag('config', '${googleAdsId}');
         `}
       </Script>
       <Suspense fallback={null}>
