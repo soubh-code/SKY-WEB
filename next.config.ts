@@ -34,7 +34,7 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src 'self' data: blob: https://cdn.sanity.io https://www.google.com https://www.google.co.in https://*.googleusercontent.com https://*.gstatic.com https://www.google-analytics.com https://www.googletagmanager.com https://www.facebook.com",
       "font-src 'self' https://fonts.gstatic.com",
-      "connect-src 'self' https://sanity.io https://*.sanity.io https://www.google-analytics.com https://analytics.google.com https://www.google.com https://www.googletagmanager.com https://www.facebook.com https://connect.facebook.net",
+      "connect-src 'self' https://sanity.io https://*.sanity.io https://www.google-analytics.com https://analytics.google.com https://www.google.com https://stats.g.doubleclick.net https://www.googletagmanager.com https://www.facebook.com https://connect.facebook.net",
       "frame-src https://www.google.com https://sanity.io https://*.sanity.io",
       "base-uri 'self'",
       "form-action 'self'",
