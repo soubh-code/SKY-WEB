@@ -111,6 +111,7 @@ export function AdsPropertyLeadPopup() {
   const nameInputRef = useRef<HTMLInputElement>(null);
   const locationRef = useRef<HTMLDivElement>(null);
   const requestInFlightRef = useRef(false);
+  const leadConversionTrackedRef = useRef(false);
   const previousFocusRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -249,6 +250,15 @@ export function AdsPropertyLeadPopup() {
       if (!response.ok) throw new Error("Lead submission failed");
       const result = await response.json() as { leadId?: string; updateToken?: string };
       if (!result.leadId || !result.updateToken) throw new Error("Lead confirmation missing");
+
+      if (
+        !leadConversionTrackedRef.current &&
+        typeof window !== "undefined" &&
+        typeof window.gtag === "function"
+      ) {
+        leadConversionTrackedRef.current = true;
+        window.gtag("event", "conversion_event_submit_lead_form");
+      }
 
       setLeadId(result.leadId);
       setLeadUpdateToken(result.updateToken);
