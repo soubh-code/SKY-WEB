@@ -2,8 +2,8 @@ import type { NextConfig } from "next";
 
 const isDev = process.env.NODE_ENV !== "production";
 const scriptSrc = isDev
-  ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://connect.facebook.net"
-  : "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://connect.facebook.net";
+  ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.googleadservices.com https://www.google.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://connect.facebook.net"
+  : "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.googleadservices.com https://www.google.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://connect.facebook.net";
 
 const securityHeaders = [
   {
@@ -32,10 +32,10 @@ const securityHeaders = [
       "default-src 'self'",
       scriptSrc,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "img-src 'self' data: blob: https://cdn.sanity.io https://www.google.com https://www.google.co.in https://*.googleusercontent.com https://*.gstatic.com https://www.google-analytics.com https://www.googletagmanager.com https://www.facebook.com",
+      "img-src 'self' data: blob: https://cdn.sanity.io https://www.google.com https://google.com https://www.google.co.in https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com https://www.googleadservices.com https://*.googleusercontent.com https://*.gstatic.com https://www.google-analytics.com https://www.googletagmanager.com https://www.facebook.com",
       "font-src 'self' https://fonts.gstatic.com",
-      "connect-src 'self' https://sanity.io https://*.sanity.io https://www.google-analytics.com https://analytics.google.com https://www.google.com https://stats.g.doubleclick.net https://www.googletagmanager.com https://www.facebook.com https://connect.facebook.net",
-      "frame-src https://www.google.com https://sanity.io https://*.sanity.io",
+      "connect-src 'self' https://sanity.io https://*.sanity.io https://www.google-analytics.com https://analytics.google.com https://www.google.com https://google.com https://stats.g.doubleclick.net https://pagead2.googlesyndication.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://ad.doubleclick.net https://www.googletagmanager.com https://www.facebook.com https://connect.facebook.net",
+      "frame-src https://www.google.com https://www.googletagmanager.com https://sanity.io https://*.sanity.io",
       "base-uri 'self'",
       "form-action 'self'",
       "frame-ancestors 'none'",
