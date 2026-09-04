@@ -119,14 +119,17 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
             const mobileTransform = isMobileGallery ? getMobileTransform(relativeAngle, radius, isActive) : null;
 
             return (
-              <button
-                type="button"
+              <a
+                href={item.slug ? `/completed-projects/${item.slug}` : undefined}
                 key={item.name}
                 className={cn("circular-gallery__item", isActive && "is-active")}
-                aria-label={`Show ${item.name}`}
+                aria-label={`Open ${item.name} completed project`}
                 data-analytics-event="property_card_click"
                 data-analytics-label={`${item.name} completed project gallery card`}
-                onClick={() => onItemSelect?.(index)}
+                onClick={(event) => {
+                  event.preventDefault();
+                  onItemSelect?.(index);
+                }}
                 style={
                   {
                     "--item-transform":
@@ -158,7 +161,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                   ) : null}
                   <span>{item.year} · {item.configuration}</span>
                 </span>
-              </button>
+              </a>
             );
           })}
         </div>

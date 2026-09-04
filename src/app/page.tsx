@@ -35,7 +35,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { type MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -1042,10 +1042,14 @@ function CompletedProjects() {
         style={{ willChange: "transform, opacity" }}
       >
         {projects.map((project, index) => (
-          <button
+          <a
+            href={`/completed-projects/${project.slug}`}
             key={project.name}
             className={active === index ? "dot is-active" : "dot"}
-            onClick={() => selectProject(index)}
+            onClick={(event) => {
+              event.preventDefault();
+              selectProject(index);
+            }}
             aria-label={`Show ${project.name}`}
           />
         ))}
@@ -1056,13 +1060,15 @@ function CompletedProjects() {
 
 function OngoingProjects() {
   const router = useRouter();
-  const { MotionDiv, MotionButton, prefersReducedMotion } = useDeferredMotion();
+  const { MotionDiv, MotionAnchor, prefersReducedMotion } = useDeferredMotion();
   const [active, setActive] = useState(2);
   const [clickToExpand, setClickToExpand] = useState(false);
   const [armedProject, setArmedProject] = useState<number | null>(null);
   const icons = [Home, Building2, Sparkles, Waves, MapPin, WalletCards, MapPin];
   const activateProject = (index: number) => setActive(index);
-  const handleProjectClick = (index: number) => {
+  const handleProjectClick = (event: MouseEvent<HTMLAnchorElement>, index: number) => {
+    event.preventDefault();
+
     if (clickToExpand && (active !== index || armedProject !== index)) {
       activateProject(index);
       setArmedProject(index);
@@ -1138,13 +1144,14 @@ function OngoingProjects() {
         style={{ willChange: "transform, opacity" }}
       >
         {ongoing.map((project, index) => (
-          <MotionButton
+          <MotionAnchor
+            href={`/projects/${project.slug}`}
             key={project.name}
             className={`ongoing-card ${active === index ? "is-active" : ""}`}
             onPointerEnter={(event) => {
               if (!clickToExpand && event.pointerType !== "touch") activateProject(index);
             }}
-            onClick={() => handleProjectClick(index)}
+            onClick={(event) => handleProjectClick(event, index)}
             data-analytics-event="property_card_click"
             data-analytics-label={`${project.name} ongoing project card`}
             onFocus={() => {
@@ -1155,7 +1162,7 @@ function OngoingProjects() {
                 ? `Expand ${project.name} project card`
                 : `Open ${project.name} project page`
             }
-            aria-pressed={active === index}
+            aria-expanded={active === index}
             variants={
               prefersReducedMotion
                 ? {
@@ -1200,7 +1207,7 @@ function OngoingProjects() {
               </span>
               <i />
             </span>
-          </MotionButton>
+          </MotionAnchor>
         ))}
       </MotionDiv>
     </section>

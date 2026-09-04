@@ -16,6 +16,7 @@ type MotionOnlyProps = {
 
 type StaticDivProps = ComponentPropsWithoutRef<"div"> & MotionOnlyProps;
 type StaticButtonProps = ComponentPropsWithoutRef<"button"> & MotionOnlyProps;
+type StaticAnchorProps = ComponentPropsWithoutRef<"a"> & MotionOnlyProps;
 
 function stripMotionProps<T extends MotionOnlyProps>(props: T) {
   const {
@@ -46,6 +47,13 @@ const StaticButton = forwardRef(function StaticButton(
   return <button ref={ref} {...stripMotionProps(props)} />;
 });
 
+const StaticAnchor = forwardRef(function StaticAnchor(
+  props: StaticAnchorProps,
+  ref: ForwardedRef<HTMLAnchorElement>,
+) {
+  return <a ref={ref} {...stripMotionProps(props)} />;
+});
+
 export function useDeferredMotion() {
   const [motion, setMotion] = useState<(typeof import("framer-motion"))["motion"] | null>(null);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
@@ -72,6 +80,7 @@ export function useDeferredMotion() {
   return {
     MotionDiv: motion?.div ?? StaticDiv,
     MotionButton: motion?.button ?? StaticButton,
+    MotionAnchor: motion?.a ?? StaticAnchor,
     prefersReducedMotion,
   };
 }

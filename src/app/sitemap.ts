@@ -1,7 +1,9 @@
 import type { MetadataRoute } from "next";
 import { siteUrl } from "@/lib/business";
-import { blogPosts } from "./blogs/blog-data";
+import { getBlogPosts } from "@/sanity/client";
 import { completedProjects } from "./completed-projects/completed-project-data";
+
+export const revalidate = 60;
 
 const staticRoutes = [
   "",
@@ -30,27 +32,19 @@ const staticRoutes = [
   "/projects/kalkaji",
 ] as const;
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const now = new Date();
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const blogPosts = await getBlogPosts();
   const staticPages = staticRoutes.map((route) => ({
     url: `${siteUrl}${route}`,
-    lastModified: now,
-    changeFrequency: route === "" ? "weekly" : "monthly",
-    priority: route === "" ? 1 : 0.72,
   })) satisfies MetadataRoute.Sitemap;
 
   const blogPages = blogPosts.map((post) => ({
     url: `${siteUrl}/blogs/${post.slug}`,
     lastModified: post.date,
-    changeFrequency: "monthly",
-    priority: 0.64,
   })) satisfies MetadataRoute.Sitemap;
 
   const completedProjectPages = completedProjects.map((project) => ({
     url: `${siteUrl}/completed-projects/${project.slug}`,
-    lastModified: now,
-    changeFrequency: "monthly",
-    priority: 0.64,
   })) satisfies MetadataRoute.Sitemap;
 
   return [...staticPages, ...blogPages, ...completedProjectPages];
