@@ -4,6 +4,9 @@ import { VirtualToursContent } from "./VirtualToursContent";
 export const metadata: Metadata = {
   title: "Virtual Tours",
   description: "Explore Sky Skrabers virtual tour previews for premium South Delhi residences.",
+  alternates: {
+    canonical: "/virtual-tours",
+  },
 };
 
 export default function VirtualToursPage() {

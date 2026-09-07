@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import { RouteLoadingLink } from "@/components/RouteLoadingLink";
 import { business } from "@/lib/business";
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "/privacy-policy",
+  },
+};
 
 export default function PrivacyPolicyPage() {
   return (
