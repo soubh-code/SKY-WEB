@@ -15,7 +15,7 @@ function block(key: string, style: string, ...passages: Passage[]): PortableText
       _type: "span",
       _key: `${key}-${index}`,
       text: passage.text,
-      marks: passage.href ? [`${key}-link-${index}`] : [],
+      marks: passage.href ? [`${key}-link-${index}`, "underline", "strong"] : [],
     })),
   };
 }
