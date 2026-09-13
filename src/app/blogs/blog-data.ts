@@ -1,5 +1,6 @@
 import type { PortableTextBlock } from "next-sanity";
 import { lajpatNagar2BhkPost } from "./lajpat-nagar-2bhk-post";
+import { constructionQualityPost } from "./construction-quality-post";
 
 export type BlogMetric = {
   label: string;
@@ -32,6 +33,7 @@ export type BlogPost = {
 };
 
 export const blogPosts: BlogPost[] = [
+  constructionQualityPost,
   lajpatNagar2BhkPost,
   {
     slug: "south-delhi-micro-market",
