@@ -3,6 +3,7 @@ import { lajpatNagar2BhkPost } from "./lajpat-nagar-2bhk-post";
 import { constructionQualityPost } from "./construction-quality-post";
 import { oneCroreRealEstatePost } from "./one-crore-real-estate-post";
 import { houseVsHomePost } from "./house-vs-home-post";
+import { smartInvestor2027Post } from "./smart-investor-2027-post";
 
 export type BlogMetric = {
   label: string;
@@ -35,6 +36,7 @@ export type BlogPost = {
 };
 
 export const blogPosts: BlogPost[] = [
+  smartInvestor2027Post,
   houseVsHomePost,
   oneCroreRealEstatePost,
   constructionQualityPost,
