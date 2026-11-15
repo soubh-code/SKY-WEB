@@ -6,6 +6,8 @@ import { houseVsHomePost } from "./house-vs-home-post";
 import { smartInvestor2027Post } from "./smart-investor-2027-post";
 import { fiveReasonsSkySkrabersPost } from "./five-reasons-sky-skrabers-post";
 import { lajpatNagarTokenChecklistPost } from "./lajpat-nagar-token-checklist-post";
+import { firstFloorVsTopFloorPost } from "./first-floor-vs-top-floor-post";
+import { lajpatNagarParkingPost } from "./lajpat-nagar-parking-post";
 
 export type BlogMetric = {
   label: string;
@@ -38,6 +40,8 @@ export type BlogPost = {
 };
 
 export const blogPosts: BlogPost[] = [
+  lajpatNagarParkingPost,
+  firstFloorVsTopFloorPost,
   lajpatNagarTokenChecklistPost,
   fiveReasonsSkySkrabersPost,
   smartInvestor2027Post,
