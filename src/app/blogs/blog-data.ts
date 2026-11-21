@@ -8,6 +8,7 @@ import { fiveReasonsSkySkrabersPost } from "./five-reasons-sky-skrabers-post";
 import { lajpatNagarTokenChecklistPost } from "./lajpat-nagar-token-checklist-post";
 import { firstFloorVsTopFloorPost } from "./first-floor-vs-top-floor-post";
 import { lajpatNagarParkingPost } from "./lajpat-nagar-parking-post";
+import { lajpatNagarCarpetAreaPost } from "./lajpat-nagar-carpet-area-post";
 
 export type BlogMetric = {
   label: string;
@@ -40,6 +41,7 @@ export type BlogPost = {
 };
 
 export const blogPosts: BlogPost[] = [
+  lajpatNagarCarpetAreaPost,
   lajpatNagarParkingPost,
   firstFloorVsTopFloorPost,
   lajpatNagarTokenChecklistPost,
